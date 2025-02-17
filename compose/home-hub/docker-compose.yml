@@ -1,0 +1,3 @@
+include:
+  - home-assistant.yml
+  - ntp.yml

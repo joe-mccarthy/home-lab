@@ -3,3 +3,4 @@ $ORIGIN homelab.int.
 
 dns       IN  A   192.168.1.200
 homepage    IN  A   192.168.1.200
+homeasssistant    IN  A   192.168.1.200

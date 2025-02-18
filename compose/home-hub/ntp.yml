@@ -4,7 +4,7 @@ services:
     container_name: ntp
     environment:
       ENABLE_NTS: "true"
-      NTP_SERVERS: "time1.google.com,time2.google.com,time3.google.com,time4.google.com"
+      NTP_SERVERS: "time1.google.com,time2.google.com"
     ports:
       - 123:123/udp
     restart: always

@@ -3,13 +3,10 @@ services:
     image: 'jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
     ports:
-      # These ports are in format <host-port>:<container-port>
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
       - '81:81' # Admin Web Port
-      # Add any other Stream port you want to expose
-      # - '21:21' # FTP
 
     volumes:
-      - ./proxy:/data
-      - ~/letsencrypt:/etc/letsencrypt
+      - /home/joseph/docker/volumes/proxy/data:/data
+      - /home/joseph/docker/volumes/proxy/letsencrypt:/etc/letsencrypt

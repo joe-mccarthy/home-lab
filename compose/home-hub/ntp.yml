@@ -3,7 +3,6 @@ services:
     image: dockurr/chrony
     container_name: ntp
     environment:
-      ENABLE_NTS: "true"
       NTP_SERVERS: "time1.google.com,time2.google.com"
     ports:
       - 123:123/udp

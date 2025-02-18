@@ -11,5 +11,5 @@ services:
       # - '21:21' # FTP
 
     volumes:
-      - ./data:/data
-      - ./letsencrypt:/etc/letsencrypt
+      - ./proxy:/data
+      - ~/letsencrypt:/etc/letsencrypt

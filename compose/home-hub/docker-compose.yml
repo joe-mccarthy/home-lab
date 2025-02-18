@@ -2,3 +2,4 @@ include:
   - home-assistant.yml
   - ntp.yml
   - home-page.yml
+  - core-dns.yml

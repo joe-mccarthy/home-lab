@@ -11,4 +11,5 @@ services:
       - ./config/coredns/Corefile:/etc/coredns/Corefile
       - ./config/coredns/db.homelab.int:/etc/coredns/db.homelab.int
     network_mode: host
+    privileged: true
     restart: unless-stopped

@@ -3,3 +3,4 @@ include:
   - ntp.yml
   - home-page.yml
   - core-dns.yml
+  - proxy.yml

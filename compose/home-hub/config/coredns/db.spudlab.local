@@ -1,6 +1,0 @@
-$ORIGIN spudlab.local.
-@         IN  SOA dns.spudlab.local. joe.spudlab.local. 2502011720 7200 3600 1209600 60
-
-dns     IN  A   192.168.1.200
-homepage    IN A 192.168.1.200
-homeassistant    IN A 192.168.1.200

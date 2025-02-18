@@ -9,6 +9,7 @@ services:
       - "8080:8080"
     volumes:
       - ./config/coredns/Corefile:/etc/coredns/Corefile
-      - ./config/coredns/db.spudlab.local:/etc/coredns/db.spudlab.local
+      - ./config/coredns/db.homelab.int:/etc/coredns/db.homelab.int
     privileged: true
+    network_mode: host
     restart: unless-stopped

@@ -6,7 +6,7 @@
 }
 
 homelab.int:53 {
-    file /etc/coredns/db.spudlab.local
+    file /etc/coredns/db.homelab.int
     log
     errors
 }

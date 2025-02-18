@@ -10,3 +10,5 @@ services:
     volumes:
       - ./config/coredns/Corefile:/etc/coredns/Corefile
       - ./config/coredns/db.homelab.int:/etc/coredns/db.homelab.int
+    network_mode: host
+    restart: unless-stopped

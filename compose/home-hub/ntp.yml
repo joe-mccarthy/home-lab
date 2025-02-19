@@ -4,7 +4,5 @@ services:
     container_name: ntp
     environment:
       NTP_SERVERS: "time1.google.com,time2.google.com"
-    ports:
-      - 123:123/udp
     restart: always
     network_mode: host

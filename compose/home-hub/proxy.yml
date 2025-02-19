@@ -7,7 +7,17 @@ services:
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
       - '81:81' # Admin Web Port
-
+    dns:
+      - 192.168.1.1
+    networks:
+      static-network:
+        ipv4_address: 172.20.1.1
     volumes:
       - /home/joseph/docker/volumes/proxy/data:/data
       - /home/joseph/docker/volumes/proxy/letsencrypt:/etc/letsencrypt
+
+networks:
+  static-network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

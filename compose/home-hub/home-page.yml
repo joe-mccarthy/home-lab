@@ -10,3 +10,7 @@ services:
     volumes:
       - ./config/homepage:/app/config 
     restart: unless-stopped
+    dns:
+      - 192.168.1.1
+    env_file:
+      - default.env

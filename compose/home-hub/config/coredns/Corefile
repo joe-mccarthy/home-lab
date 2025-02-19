@@ -1,5 +1,5 @@
 .:53 {
-    forward . 8.8.8.8 8.8.4.4
+    forward . 192.168.1.200:55
     log
     errors
     health :8080

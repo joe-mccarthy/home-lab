@@ -13,8 +13,8 @@ services:
       static-network:
         ipv4_address: 172.20.1.1
     volumes:
-      - /home/joseph/docker/volumes/proxy/data:/data
-      - /home/joseph/docker/volumes/proxy/letsencrypt:/etc/letsencrypt
+      - ~/docker/volumes/proxy/data:/data
+      - ~/docker/volumes/proxy/letsencrypt:/etc/letsencrypt
 
 networks:
   static-network:

@@ -12,7 +12,7 @@ services:
             - DB_CONNECTION=sqlite
             - SPEEDTEST_SCHEDULE=6 */2 * * *
         volumes:
-            - ./config/speedtest/data:/config
-            - ./config/speedtest/keys:/config/keys
+            - ~/docker/volumes/speedtest/data:/config
+            - ~/docker/volumes/speedtest/keys:/config/keys
         env_file:
             - default.env

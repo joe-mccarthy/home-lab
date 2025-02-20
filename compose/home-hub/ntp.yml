@@ -5,4 +5,6 @@ services:
     environment:
       NTP_SERVERS: "time1.google.com,time2.google.com"
     restart: always
-    network_mode: host
+    ports:
+      - 123:123/udp
+    restart: always

@@ -8,5 +8,12 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./config:/app/config 
+      - ./docker/homepage/config:/app/config 
     restart: unless-stopped
+    networks:
+      - host
+
+networks:
+  host:
+    name: host
+    external: true

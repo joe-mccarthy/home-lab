@@ -37,9 +37,5 @@
       href: http://homeassistant.homelab.int
       description: Home Automation
 
-  - Home Assistant:
-      icon: home-assistant.png
-      href: http://homeassistant.homelab.int
-      description: Home Automation
 
 

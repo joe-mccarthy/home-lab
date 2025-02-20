@@ -1,0 +1,9 @@
+services:
+  ntp:
+    image: dockurr/chrony
+    container_name: ntp
+    environment:
+      NTP_SERVERS: "time1.google.com,time2.google.com"
+    restart: always
+    ports:
+      - 123:123/udp

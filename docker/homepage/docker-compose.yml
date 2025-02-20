@@ -8,5 +8,5 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./config/homepage:/app/config 
+      - ./config:/app/config 
     restart: unless-stopped

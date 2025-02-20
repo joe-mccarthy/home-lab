@@ -10,10 +10,3 @@ services:
     volumes:
       - ./docker/homepage/config:/app/config 
     restart: unless-stopped
-    networks:
-      - host
-
-networks:
-  host:
-    name: host
-    external: true

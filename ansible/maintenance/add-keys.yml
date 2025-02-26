@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+  vars:
+    user_keys: "{{ lookup('env', 'USER') }}"
+
+  tasks:
+
+    - name: "Setting authorized key for user {{ user_keys }}"
+      ansible.posix.authorized_key:
+        user: "{{ user_keys }}"
+        state: present
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/homelab.pub') }}"

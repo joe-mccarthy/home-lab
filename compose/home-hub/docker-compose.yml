@@ -1,8 +1,0 @@
-include:
-  - home-assistant.yml
-  - ntp.yml
-  - home-page.yml
-  - core-dns.yml
-  - proxy.yml
-  - adguard.yml
-  - speedtest.yml

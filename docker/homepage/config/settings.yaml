@@ -1,5 +1,0 @@
-useEqualHeights: true
-layout:
-  Core:
-    style: row
-    columns: 4

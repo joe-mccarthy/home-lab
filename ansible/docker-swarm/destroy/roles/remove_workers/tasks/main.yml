@@ -1,14 +1,13 @@
 ---
-- name: drain worker nodes
-  ansible.builtin.shell: docker node update --availability drain {{ item }}
-  with_items: "{{ groups['docker'] }}"
-  ignore_errors: yes
-  changed_when: false
-  register: drain_worker
+
+- name: Get Work Nodes
+  ansible.builtin.shell: docker node ls -f 'role=worker' -q
+  register: worker_nodes
 
 - name: Remove worker nodes
-  ansible.builtin.shell: docker node rm -f {{ item }}
-  with_items: "{{ groups['docker'] }}"
+  ansible.builtin.shell: docker node update --availability drain {{ item }}
+  with_items: "{{ worker_nodes.stdout_lines | list }}"
   ignore_errors: yes
   changed_when: false
   register: remove_worker
+  when: worker_nodes.stdout != "0"

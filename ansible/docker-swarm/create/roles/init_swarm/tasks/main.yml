@@ -7,7 +7,7 @@
 
 - name: Initialize Docker Swarm
   ansible.builtin.command:
-    cmd: docker swarm init --advertise-addr {{ ansible_default_ipv4.address }}
+    cmd: docker swarm init --advertise-addr {{ ansible_default_ipv4.address }} --force-new-cluster
   when: "'Swarm: inactive' in swarm_check.stdout"
   register: swarm_init
   changed_when: swarm_init.rc == 0

@@ -1,6 +1,13 @@
 ---
+- name: Get Docker Service Count
+  ansible.builtin.shell: docker service ls -q | wc -l
+  register: service_count
+  changed_when: false
+  ignore_errors: yes
+
 - name: Stop All Docker Services
   ansible.builtin.shell: docker service ls -q | xargs docker service rm
   ignore_errors: yes
   changed_when: false
   register: service_stop
+  when: service_count.stdout != "0"

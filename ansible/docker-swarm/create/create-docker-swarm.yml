@@ -23,3 +23,9 @@
   become: true
   roles:
     - join_workers
+
+- name: Deploy Portainer
+  hosts: manager[0]
+  become: true
+  roles:
+    - deploy_portainer

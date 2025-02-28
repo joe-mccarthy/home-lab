@@ -1,0 +1,25 @@
+---
+# - name : Set Up Docker
+#   hosts: cluster
+#   become: true
+#   roles:
+#     - docker_install
+
+
+- name: Init Docker Swarm
+  hosts: manager[0]
+  become: true
+  roles:
+    - init_swarm
+
+- name: Join Managers
+  hosts: manager
+  become: true
+  roles:
+    - join_managers
+
+- name: Join Workers
+  hosts: docker
+  become: true
+  roles:
+    - join_workers

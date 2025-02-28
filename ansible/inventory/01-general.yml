@@ -1,12 +1,12 @@
 cluster:
   children:
     docker:
-    mananger:
+    manager:
 
 docker:
     hosts:
       docker-[01:06].spudlab.xyz:
 
-mananger:
+manager:
     hosts:
       manager-[01:02].spudlab.xyz:

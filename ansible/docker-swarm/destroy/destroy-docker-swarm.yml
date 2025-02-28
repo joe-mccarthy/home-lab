@@ -14,8 +14,8 @@
     - remove_workers
       
 - name: remove managers
-  hosts: manager
+  hosts: cluster
   become: true
   ignore_errors: yes
   roles:
-    - remove_managers
+    - leave_swarm

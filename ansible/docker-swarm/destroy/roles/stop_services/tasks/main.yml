@@ -1,0 +1,6 @@
+---
+- name: Stop All Docker Services
+  ansible.builtin.shell: docker service ls -q | xargs docker service rm
+  ignore_errors: yes
+  changed_when: false
+  register: service_stop

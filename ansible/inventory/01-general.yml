@@ -5,8 +5,8 @@ cluster:
 
 docker:
     hosts:
-      docker-[01:06].spudlab.xyz:
+      docker-[01:06]:
 
 manager:
     hosts:
-      manager-[01:02].spudlab.xyz:
+      manager-[01:02]:

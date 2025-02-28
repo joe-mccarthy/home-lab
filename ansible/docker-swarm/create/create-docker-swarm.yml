@@ -1,9 +1,9 @@
 ---
-# - name : Set Up Docker
-#   hosts: cluster
-#   become: true
-#   roles:
-#     - docker_install
+- name : Set Up Docker
+  hosts: cluster
+  become: true
+  roles:
+    - docker_install
 
 
 - name: Init Docker Swarm

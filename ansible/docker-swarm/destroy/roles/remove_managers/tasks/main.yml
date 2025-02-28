@@ -1,0 +1,6 @@
+---
+- name: leave swarm
+  ansible.builtin.shell: docker swarm leave --force
+  ignore_errors: yes
+  changed_when: false
+  register: leave_swarm

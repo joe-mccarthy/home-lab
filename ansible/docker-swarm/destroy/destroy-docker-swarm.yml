@@ -1,0 +1,21 @@
+---
+- name: Stop All Services
+  hosts: manager[0]
+  become: true
+  ignore_errors: yes
+  roles:
+    - stop_services
+
+- name: remove workers
+  hosts: manager[0]
+  become: true
+  ignore_errors: yes
+  roles:
+    - remove_workers
+      
+- name: remove managers
+  hosts: manager
+  become: true
+  ignore_errors: yes
+  roles:
+    - remove_managers

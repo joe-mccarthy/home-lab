@@ -14,17 +14,17 @@
   ansible.builtin.file:
     path: /home/docker-compose/portainer
     state: directory
-    mode: '0755'  # Optional file permissions
-    owner: nobody  # Optional ownership
-    group: nogroup  # Optional group ownership
+    mode: '0755' 
+    owner: nobody 
+    group: nogroup  
 
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "templates/docker_compose.yaml.j2"
+    src: "../../../../../compose/portainer/docker_compose.yaml"
     dest: "/home/docker-compose/portainer/docker-compose.yaml"
-    mode: '0755'  # Optional file permissions
-    owner: nobody  # Optional ownership
-    group: nogroup  # Optional group ownership
+    mode: '0755' 
+    owner: nobody 
+    group: nogroup  
   notify:
     - Start Portainer
 

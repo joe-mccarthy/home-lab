@@ -1,0 +1,7 @@
+---
+- name: Deploy Pi-Hole
+  hosts: manager[0]
+  become: true
+  roles:
+    - check_nfs
+    - deploy_pihole

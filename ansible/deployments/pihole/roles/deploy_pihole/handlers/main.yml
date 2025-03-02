@@ -1,0 +1,6 @@
+---
+- name: Start Pi-Hole
+  community.docker.docker_compose:
+    project_src: /home/docker-compose/pihole
+    state: present
+    restarted: true

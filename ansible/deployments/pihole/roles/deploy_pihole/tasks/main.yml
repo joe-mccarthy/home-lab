@@ -1,0 +1,34 @@
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Setup Pi-Hole  directory
+  ansible.builtin.file:
+    path: /home/docker-compose/pihole
+    state: directory
+    mode: '0755' 
+    owner: nobody 
+    group: nogroup  
+
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "../../../../../compose/pihole/docker-compose.yaml"
+    dest: "/home/docker-compose/pihole/docker-compose.yaml"
+    mode: '0755' 
+    owner: nobody 
+    group: nogroup  
+  notify:
+    - Start Pi-Hole
+
+- name: Deploy Pi-Hole stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/pihole/docker-compose.yaml pihole
+  register: swarm_check
+  changed_when: false

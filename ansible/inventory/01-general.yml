@@ -13,3 +13,10 @@ docker:
 manager:
     hosts:      
       manager-[01:02]:
+      nfs:
+        swarm_labels:
+          zigbee: "true"
+
+cluster-support:
+  hosts:
+    nfs:

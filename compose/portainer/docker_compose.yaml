@@ -20,6 +20,8 @@ services:
       - "8000:8000"
     networks:
       - agent_network
+    volumes:
+      - /mnt/nfs/docker/portainer_data:/data
     deploy:
       mode: replicated
       replicas: 1

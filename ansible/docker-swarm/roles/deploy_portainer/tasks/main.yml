@@ -10,6 +10,14 @@
     state: started
     enabled: true
 
+- name: Create a NFS directory if it does not exist
+  ansible.builtin.file:
+    path: /mnt/nfs/docker/portainer_data
+    state: directory
+    mode: '7777'
+    owner: nobody
+    group: nogroup
+
 - name: Setup Portainer directory
   ansible.builtin.file:
     path: /home/docker-compose/portainer

@@ -1,0 +1,31 @@
+---
+- name: install nfs server depenedences
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nfs-kernel-server
+    - nfs-common
+
+- name: Reload systemd to recognize NFS changes
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: /exports/docker
+    state: directory
+    mode: '7777'
+    owner: nobody
+    group: nogroup
+
+- name: Copy exports file to host
+  ansible.builtin.template:
+    src: "templates/exports.j2"
+    dest: "/etc/exports"
+    mode: '7777'
+    owner: nobody
+    group: nogroup
+  notify:
+    - Restart NFS Server
+

@@ -1,10 +1,21 @@
 ---
+- name: Setup NFS
+  hosts: nfs
+  become: true
+  roles:
+    - setup_nfs_server
+
+- name: Mount NFS
+  hosts: cluster
+  become: true
+  roles:
+    - mount_nfs
+
 - name : Set Up Docker
   hosts: cluster
   become: true
   roles:
     - docker_install
-
 
 - name: Init Docker Swarm
   hosts: manager[0]

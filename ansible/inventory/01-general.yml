@@ -5,10 +5,7 @@ cluster:
 
 docker:
     hosts:
-      docker-01:
-        swarm_labels:
-          label_example: "example"
-      docker-[02:06]:
+      docker-[01:06]:
 
 manager:
     hosts:      

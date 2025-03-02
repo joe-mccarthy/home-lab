@@ -1,0 +1,7 @@
+---
+- name: Deploy Home Assistant
+  hosts: manager[0]
+  become: true
+  roles:
+    - check_nfs
+    - deploy_home_assistant

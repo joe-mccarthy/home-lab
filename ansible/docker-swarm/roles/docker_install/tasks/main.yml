@@ -48,3 +48,9 @@
     name: docker
     enabled: true
     state: started
+
+- name: Docker Permissions
+  command: "{{ item }}"
+  with_items:
+  - usermod -aG docker $USER
+  ignore_errors: yes

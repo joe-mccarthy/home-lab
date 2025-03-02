@@ -1,0 +1,10 @@
+---
+
+- name: Set Labels on swarm nodes
+  community.docker.docker_node:
+        hostname: "{{ inventory_hostname_short }}"
+        labels: "{{ swarm_labels }}"
+        labels_state: replace
+  delegate_to: "manager-01"
+  when: swarm_labels is defined
+  

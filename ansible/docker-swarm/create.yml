@@ -24,6 +24,12 @@
   roles:
     - join_workers
 
+- name: Assign Labels
+  hosts: cluster
+  become: true
+  roles:
+    - assign_labels
+
 - name: Deploy Portainer
   hosts: manager[0]
   become: true

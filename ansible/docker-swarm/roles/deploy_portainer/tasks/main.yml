@@ -29,7 +29,7 @@
 - name: Copy compose from template to host
   ansible.builtin.template:
     src: "../../../../../compose/portainer/docker-compose.yaml"
-    dest: "/home/docker-compose/portainer/docker-compose.yaml"
+    dest: "/home/docker-compose/portainer/docker-compose.yaml"  
     mode: '0755' 
     owner: nobody 
     group: nogroup  

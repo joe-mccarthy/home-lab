@@ -29,6 +29,6 @@
 
 - name: Deploy Home Assistant stack
   ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml home_assistant
-  register: swarm_check
+    cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml homeassistant
+  register: swarm_check 
   changed_when: false

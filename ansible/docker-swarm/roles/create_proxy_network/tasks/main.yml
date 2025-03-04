@@ -1,0 +1,6 @@
+---
+- name: create proxy network for traefik
+  community.docker.docker_network:
+    name: proxy
+    driver: overlay
+    state: present

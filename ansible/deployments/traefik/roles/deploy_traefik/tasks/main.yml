@@ -9,9 +9,9 @@
     state: started
     enabled: true
 
-- name: Setup Pi-Hole  directory
+- name: Setup traefik directory
   ansible.builtin.file:
-    path: /home/docker-compose/pihole
+    path: /home/docker-compose/traefik
     state: directory
     mode: '0755' 
     owner: nobody 
@@ -19,16 +19,16 @@
 
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "../../../../../compose/pihole/docker-compose.yaml"
-    dest: "/home/docker-compose/pihole/docker-compose.yaml"
+    src: "../../../../../compose/traefik/docker-compose.yaml"
+    dest: "/home/docker-compose/traefik/docker-compose.yaml"
     mode: '0755' 
     owner: nobody 
     group: nogroup  
   notify:
-    - Start Pi-Hole
+    - Start Traefik
 
-- name: Deploy Pi-Hole stack
+- name: Deploy traefik  stack
   ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/pihole/docker-compose.yaml pihole
+    cmd: docker stack deploy -c /home/docker-compose/traefik/docker-compose.yaml traefik
   register: swarm_check
   changed_when: false

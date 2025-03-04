@@ -1,6 +1,6 @@
 ---
-- name: Start Pi-Hole
+- name: Start Traefik
   community.docker.docker_compose:
-    project_src: /home/docker-compose/pihole
+    project_src: /home/docker-compose/traefik
     state: present
     restarted: true

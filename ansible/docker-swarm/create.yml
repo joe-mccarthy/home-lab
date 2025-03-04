@@ -41,6 +41,18 @@
   roles:
     - assign_labels
 
+- name: Create Proxy Network
+  hosts: manager[0]
+  become: true
+  roles:
+    - create_proxy_network
+
+- name: Deploy Traefik
+  hosts: manager[0]
+  become: true
+  roles:
+    - deploy_traefik
+    
 - name: Deploy Portainer
   hosts: manager[0]
   become: true

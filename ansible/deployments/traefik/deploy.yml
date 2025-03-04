@@ -1,7 +1,7 @@
 ---
-- name: Deploy Pi-Hole
+- name: Deploy traefik
   hosts: manager[0]
   become: true
   roles:
     - check_nfs
-    - deploy_pihole
+    - deploy_traefik

@@ -1,5 +1,5 @@
 services:
-  agent:
+  agent:    
     image: portainer/agent:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -12,6 +12,7 @@ services:
         constraints: [node.platform.os == linux]
 
   portainer:
+    container_name: portainer
     image: portainer/portainer-ce:latest
     command: -H tcp://tasks.agent:9001 --tlsskipverify
     ports:
@@ -19,7 +20,8 @@ services:
       - "9000:9000"
       - "8000:8000"
     networks:
-      - agent_network
+      agent_network:
+      proxy:
     volumes:
       - /mnt/nfs/docker/portainer_data:/data
     deploy:
@@ -27,8 +29,16 @@ services:
       replicas: 1
       placement:
         constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.portainer.entrypoints=web"
+        - "traefik.http.routers.portainer.rule=Host(`portainer.spudlab.xyz`)"
+        - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+        - "traefik.docker.network=proxy"
 
 networks:
   agent_network:
     driver: overlay
     attachable: true
+  proxy:
+    external: true

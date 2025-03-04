@@ -1,0 +1,36 @@
+
+services:
+  traefik:
+    image: "traefik:latest"
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command:
+      - "--global.checknewversion=false"
+      - "--global.sendanonymoususage=false"
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--api.debug=true"
+      - "--entrypoints.web.address=:80"
+
+      - "--providers.docker=true"
+      - "--providers.swarm.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedByDefault=false"
+      - "--providers.docker.network=proxy"
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+
+    volumes:
+      - /mnt/nfs/docker/traefik/data:/etc/traefik
+      - /mnt/nfs/docker/traefik/certs:/ssl-certs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  proxy:
+    external: true

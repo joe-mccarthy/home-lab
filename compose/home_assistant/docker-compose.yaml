@@ -4,6 +4,9 @@ services:
     image: "ghcr.io/home-assistant/home-assistant:stable"
     restart: unless-stopped
     privileged: true
+    networks:
+      proxy:
+      default:
     ports:
       - "8123:8123"
     volumes:
@@ -18,3 +21,13 @@ services:
       placement:
         constraints:
           - node.labels.zigbee == true
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.homeassistant.entrypoints=web"
+        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.spudlab.xyz`)"
+        - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+        - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true

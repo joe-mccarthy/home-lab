@@ -1,0 +1,4 @@
+---
+secrets:
+  cf_token: "{{ vault_cf_token }}"
+  cf_email: "{{ vault_cf_email }}"

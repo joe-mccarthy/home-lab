@@ -14,3 +14,18 @@
     mode: '0755' 
     owner: nobody 
     group: nogroup  
+
+- name: Create multiple files
+  ansible.builtin.file: 
+      path: "/mnt/nfs/docker/home_assistant/{{ item }}"
+      state: touch
+  with_items:
+    - automations.yaml
+    - scenes.yaml
+    - scripts.yaml
+
+- name: copy default configuration
+  template:
+    src: "templates/configuration.yaml.j2"
+    dest: "/mnt/nfs/docker/home_assistant/configuration.yaml"
+    force: false

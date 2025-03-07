@@ -46,15 +46,3 @@
   become: true
   roles:
     - create_proxy_network
-
-- name: Deploy Traefik
-  hosts: manager[0]
-  become: true
-  roles:
-    - deploy_traefik
-    
-- name: Deploy Portainer
-  hosts: manager[0]
-  become: true
-  roles:
-    - deploy_portainer

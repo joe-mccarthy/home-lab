@@ -14,16 +14,20 @@
     path: /home/docker-compose/traefik
     state: directory
     mode: '0755' 
-    owner: nobody 
-    group: nogroup  
+
+- name: itterate over my_environment in group vars yml
+  docker_secret:
+    name: "{{ item.key }}"
+    data: "{{ item.value }}"
+    force: true
+  with_dict: "{{ secrets }}"
+  no_log: true
 
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "../../../../../compose/traefik/docker-compose.yaml"
+    src: "templates/docker-compose.yaml"
     dest: "/home/docker-compose/traefik/docker-compose.yaml"
     mode: '0755' 
-    owner: nobody 
-    group: nogroup  
   notify:
     - Start Traefik
 

@@ -1,0 +1,10 @@
+---
+- name: Deploy Portainer
+  hosts: manager[0]
+  become: true
+  roles:
+    - docker
+    - nfs
+    - deploy
+
+

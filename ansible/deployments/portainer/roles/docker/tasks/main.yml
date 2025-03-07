@@ -1,0 +1,25 @@
+---
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Remove service
+  docker_swarm_service:
+    name: portainer_portainer
+    state: absent
+  ignore_errors: true
+
+- name: itterate over my_environment in group vars yml
+  docker_secret:
+    name: "{{ item.key }}"
+    data: "{{ item.value }}"
+    force: true
+  with_dict: "{{ secrets }}"
+  no_log: true

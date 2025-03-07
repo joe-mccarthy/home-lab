@@ -1,0 +1,4 @@
+---
+- import_playbook: ../traefik/deploy.yml
+- import_playbook: ../portainer/deploy.yml
+- import_playbook: ../home-assistant/deploy.yml

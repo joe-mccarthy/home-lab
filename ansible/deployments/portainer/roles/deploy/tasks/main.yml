@@ -1,0 +1,16 @@
+---
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "templates/docker-compose.yaml"
+    dest: "/home/docker-compose/portainer/docker-compose.yaml"  
+    mode: '0755' 
+    owner: nobody 
+    group: nogroup  
+  notify:
+    - Start Portainer
+
+- name: Deploy Portainer stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/portainer/docker-compose.yaml portainer
+  register: swarm_check
+  changed_when: false

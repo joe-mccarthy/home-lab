@@ -19,7 +19,7 @@
 
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "../../../../../compose/home_assistant/docker-compose.yaml"
+    src: "templates/docker-compose.yaml"
     dest: "/home/docker-compose/home_assistant/docker-compose.yaml"
     mode: '0755' 
     owner: nobody 

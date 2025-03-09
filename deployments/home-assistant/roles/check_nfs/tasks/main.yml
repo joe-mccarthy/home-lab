@@ -26,6 +26,6 @@
 
 - name: copy default configuration
   template:
-    src: "templates/configuration.yaml.j2"
+    src: "templates/configuration.yaml"
     dest: "/mnt/nfs/docker/home_assistant/configuration.yaml"
     force: false

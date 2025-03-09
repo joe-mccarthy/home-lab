@@ -10,4 +10,4 @@
       ansible.posix.authorized_key:
         user: "{{ user_keys }}"
         state: present
-        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/homelab.pub') }}"
+        key: "{{ lookup('file', lookup('env','HOME') +  public_key ) }}"

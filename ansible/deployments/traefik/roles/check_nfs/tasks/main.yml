@@ -14,3 +14,11 @@
     mode: '0777' 
     owner: nobody 
     group: nogroup  
+
+- name: Create multiple files
+  ansible.builtin.file: 
+      path: "/mnt/nfs/docker/traefik/{{ item }}"
+      state: touch
+      mode: '0600'
+  with_items:
+    - acme.json

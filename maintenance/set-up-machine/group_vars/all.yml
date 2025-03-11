@@ -1,2 +1,2 @@
 ---
-public_key: "/.ssh/homelab.pub"
+public_key: "/.ssh/homelab.pub" # This is the path to the public key

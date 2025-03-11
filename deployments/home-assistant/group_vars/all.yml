@@ -1,2 +1,2 @@
 ---
-proxy: "{{ vault_proxy }}"
+proxy: "{{ vault_proxy }}" # Proxy for Home Assistant to accept connections

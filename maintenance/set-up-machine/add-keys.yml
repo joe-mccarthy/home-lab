@@ -2,12 +2,12 @@
 - hosts: all
   become: true
   vars:
-    user_keys: "{{ lookup('env', 'USER') }}"
+    user_keys: "{{ lookup('env', 'USER') }}" # This is the user that will be added to the authorized keys
 
   tasks:
 
     - name: "Setting authorized key for user {{ user_keys }}"
-      ansible.posix.authorized_key:
-        user: "{{ user_keys }}"
-        state: present
-        key: "{{ lookup('file', lookup('env','HOME') +  public_key ) }}"
+      ansible.posix.authorized_key: 
+        user: "{{ user_keys }}" # This is the user that will be added to the authorized keys
+        state: present # This is the state of the key
+        key: "{{ lookup('file', lookup('env','HOME') +  public_key ) }}" # This is the path to the public key

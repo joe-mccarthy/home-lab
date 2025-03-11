@@ -35,7 +35,7 @@
   roles:
     - join_workers
 
-- name: Assign Labels
+- name: Assign  
   hosts: cluster
   become: true
   roles:

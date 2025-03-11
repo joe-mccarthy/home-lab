@@ -11,18 +11,18 @@
   ansible.builtin.file:
     path: /home/docker-compose/home_assistant
     state: directory
-    mode: '0755' 
-    owner: nobody 
-    group: nogroup  
+    mode: '0755'
+    owner: nobody
+    group: nogroup
 
 - name: Create multiple files
-  ansible.builtin.file: 
-      path: "/mnt/nfs/docker/home_assistant/{{ item }}"
-      state: touch
+  ansible.builtin.file:
+    path: "/mnt/nfs/docker/home_assistant/{{ item }}"
+    state: touch
   with_items:
-    - automations.yaml
-    - scenes.yaml
-    - scripts.yaml
+  - automations.yaml
+  - scenes.yaml
+  - scripts.yaml
 
 - name: copy default configuration
   template:

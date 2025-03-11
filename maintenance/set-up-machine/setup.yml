@@ -1,13 +1,44 @@
 ---
-- hosts: all
-  become: true
+- hosts: all # Run on all hosts listed in the inventory file
+  become: true # Run as root
   vars:
     user_keys: "{{ lookup('env', 'USER') }}" # This is the user that will be added to the authorized keys
 
   tasks:
+  - name: "Setting authorized key for user {{ user_keys }}"
+    ansible.posix.authorized_key:
+      user: "{{ user_keys }}" # This is the user that will be added to the authorized keys
+      state: present # This is the state of the key
+      key: "{{ lookup('file', lookup('env','HOME') +  public_key ) }}" # This is the path to the public key
 
-    - name: "Setting authorized key for user {{ user_keys }}"
-      ansible.posix.authorized_key: 
-        user: "{{ user_keys }}" # This is the user that will be added to the authorized keys
-        state: present # This is the state of the key
-        key: "{{ lookup('file', lookup('env','HOME') +  public_key ) }}" # This is the path to the public key
+  - name: Update Ubuntu # Check if apt packages are up to date
+    when: ansible_facts['os_family'] == 'Debian'
+    ansible.builtin.apt:
+      upgrade: dist
+      update_cache: true # update the cache of the apt packages
+
+  - name: Check if a reboot is required on Ubuntu # Check if a reboot is required
+    when: ansible_facts['os_family'] == 'Debian'
+    ansible.builtin.stat:
+      path: /var/run/reboot-required
+    register: ubuntu_reboot_required # Register the output of the command
+
+  - name: Reboot Ubuntu if required # Reboot the machine if a reboot is required
+    when: ubuntu_reboot_required.stat.exists | default(false)
+    ansible.builtin.reboot:
+      reboot_timeout: 600
+
+  - name: Install Core Packages # Install list of core packages
+    ansible.builtin.apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+    - htop # htop is a better version of top
+    - curl # curl is a command line tool for transferring data with URL syntax
+    - wget # wget is a free utility for non-interactive download of files from the web
+    - git # git is a free and open source distributed version control system
+    - unzip # unzip is a utility that helps you list, test and extract compressed ZIP archives
+    - zip # zip is a compression and file packaging utility
+    - lm-sensors # lm-sensors is a hardware health monitoring package for Linux
+    - net-tools # net-tools is a package that includes essential tools for network configuration
+    - dnsutils # dnsutils is a package that includes essential tools for DNS configuration

@@ -1,3 +1,4 @@
 ---
-secrets: # will be created into docker secrets and used in portainer service
+secrets:
+  # will be created into docker secrets and used in portainer service
   portainer_admin_password: "{{ vault_portainer_admin_password }}" # Portainer admin password

@@ -14,7 +14,7 @@
   ansible.builtin.command:
     cmd: docker swarm join --token {{ manager_token }} {{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377
   when:
-    - manager_token is defined
-    - "'Swarm: inactive' in swarm_check.stdout"
+  - manager_token is defined
+  - "'Swarm: inactive' in swarm_check.stdout"
   register: swarm_join
   changed_when: "'This node joined a swarm as a manager' in swarm_join.stdout"

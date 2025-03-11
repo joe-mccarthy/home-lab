@@ -5,7 +5,7 @@
 
 - name: delete all docker images
   ansible.builtin.shell: docker image prune -a -f
-  ignore_errors: yes  
+  ignore_errors: yes
 
 - name: delete all docker volumes
   ansible.builtin.shell: docker volume prune -f

@@ -1,3 +1,4 @@
+---
 - name: Ensure docker-compose is installed
   ansible.builtin.package:
     name: docker-compose
@@ -13,22 +14,22 @@
   ansible.builtin.file:
     path: /home/docker-compose/home-assistant
     state: directory
-    mode: '0755' 
-    owner: nobody 
-    group: nogroup  
+    mode: '0755'
+    owner: nobody
+    group: nogroup
 
 - name: Copy compose from template to host
   ansible.builtin.template:
     src: "templates/docker-compose.yaml"
     dest: "/home/docker-compose/home_assistant/docker-compose.yaml"
-    mode: '0755' 
-    owner: nobody 
-    group: nogroup  
+    mode: '0755'
+    owner: nobody
+    group: nogroup
   notify:
-    - Start Home Assistant
+  - Start Home Assistant
 
 - name: Deploy Home Assistant stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml homeassistant
-  register: swarm_check 
+  register: swarm_check
   changed_when: false

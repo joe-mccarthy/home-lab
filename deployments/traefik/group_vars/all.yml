@@ -1,4 +1,5 @@
 ---
-secrets: # will be created into docker secrets and used in traefik service
+secrets:
+  # will be created into docker secrets and used in traefik service
   cf_token: "{{ vault_cf_token }}" # Cloudflare API token
   cf_email: "{{ vault_cf_email }}" # Cloudflare email

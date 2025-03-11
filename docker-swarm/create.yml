@@ -3,46 +3,46 @@
   hosts: nfs
   become: true
   roles:
-    - setup_nfs_server
+  - setup_nfs_server
 
 - name: Mount NFS
   hosts: cluster
   become: true
   roles:
-    - mount_nfs
+  - mount_nfs
 
-- name : Set Up Docker
+- name: Set Up Docker
   hosts: cluster
   become: true
   roles:
-    - docker_install
+  - docker_install
 
 - name: Init Docker Swarm
   hosts: manager[0]
   become: true
   roles:
-    - init_swarm
+  - init_swarm
 
 - name: Join Managers
   hosts: manager
   become: true
   roles:
-    - join_managers
+  - join_managers
 
 - name: Join Workers
   hosts: docker
   become: true
   roles:
-    - join_workers
+  - join_workers
 
-- name: Assign  
+- name: Assign
   hosts: cluster
   become: true
   roles:
-    - assign_labels
+  - assign_labels
 
 - name: Create Proxy Network
   hosts: manager[0]
   become: true
   roles:
-    - create_proxy_network
+  - create_proxy_network

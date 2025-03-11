@@ -4,21 +4,21 @@
   become: true
   ignore_errors: yes
   roles:
-    - stop_services
+  - stop_services
 
 - name: remove workers
   hosts: manager[0]
   become: true
   ignore_errors: yes
   roles:
-    - remove_workers
-      
+  - remove_workers
+
 - name: leave swarm
   hosts: docker
   become: true
   ignore_errors: yes
   roles:
-    - leave_swarm
+  - leave_swarm
 
 - name: leave swarm
   hosts: manager
@@ -26,11 +26,11 @@
   become: true
   ignore_errors: yes
   roles:
-    - leave_swarm
+  - leave_swarm
 
 - name: clean docker
   hosts: cluster
   become: true
   ignore_errors: yes
   roles:
-    - docker_clean_up
+  - docker_clean_up

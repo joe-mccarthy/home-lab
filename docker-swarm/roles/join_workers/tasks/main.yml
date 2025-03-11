@@ -13,13 +13,13 @@
 - name: Join worker to Swarm
   ansible.builtin.command:
     argv:
-      - docker
-      - swarm
-      - join
-      - --token
-      - "{{ worker_token }}"
-      - "{{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377"
+    - docker
+    - swarm
+    - join
+    - --token
+    - "{{ worker_token }}"
+    - "{{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377"
   when:
-    - worker_token is defined
-    - "'Swarm: inactive' in swarm_check.stdout"
+  - worker_token is defined
+  - "'Swarm: inactive' in swarm_check.stdout"
   changed_when: true

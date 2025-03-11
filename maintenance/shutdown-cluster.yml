@@ -2,6 +2,6 @@
 - hosts: cluster
   become: true
   tasks:
-    - name: Delay shutting down the remote node
-      community.general.shutdown:
-        delay: 60
+  - name: Delay shutting down the remote node
+    community.general.shutdown:
+      delay: 60

@@ -13,7 +13,7 @@
   ansible.builtin.file:
     path: /home/docker-compose/traefik
     state: directory
-    mode: '0755' 
+    mode: '0755'
 
 - name: itterate over my_environment in group vars yml
   docker_secret:
@@ -27,9 +27,9 @@
   ansible.builtin.template:
     src: "templates/docker-compose.yaml"
     dest: "/home/docker-compose/traefik/docker-compose.yaml"
-    mode: '0755' 
+    mode: '0755'
   notify:
-    - Start Traefik
+  - Start Traefik
 
 - name: Deploy traefik  stack
   ansible.builtin.command:

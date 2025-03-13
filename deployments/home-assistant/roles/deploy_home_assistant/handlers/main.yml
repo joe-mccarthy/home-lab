@@ -1,6 +1,6 @@
 ---
 - name: Start Home Assistant
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: /home/docker-compose/home_assistant
     state: present
     restarted: true

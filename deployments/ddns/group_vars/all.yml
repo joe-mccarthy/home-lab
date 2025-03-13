@@ -1,0 +1,5 @@
+---
+secrets:
+  # api key used to update stale dns records
+  cf_token: "{{ vault_cf_token }}" # Cloudflare API token
+  dns_domains: "{{ vault_dns_domains }}" # List of domains to update

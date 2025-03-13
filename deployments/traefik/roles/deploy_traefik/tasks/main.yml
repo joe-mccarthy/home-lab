@@ -15,6 +15,12 @@
     state: directory
     mode: '0755'
 
+- name: Remove service
+  docker_swarm_service:
+    name: traefik_traefik
+    state: absent
+  ignore_errors: true
+
 - name: itterate over my_environment in group vars yml
   docker_secret:
     name: "{{ item.key }}"

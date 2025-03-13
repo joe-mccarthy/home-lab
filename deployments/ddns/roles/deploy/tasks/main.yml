@@ -12,13 +12,13 @@
 
 - name: Remove service
   docker_swarm_service:
-    name: homeassistant_homeassistant
+    name: ddns_cloudflare-ddns
     state: absent
   ignore_errors: true
 
-- name: Setup Home Assistant directory
+- name: Setup DDNS directory
   ansible.builtin.file:
-    path: /home/docker-compose/home-assistant
+    path: /home/docker-compose/ddns
     state: directory
     mode: '0755'
     owner: nobody
@@ -26,17 +26,16 @@
 
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "templates/docker-compose.yaml"
-    dest: "/home/docker-compose/home_assistant/docker-compose.yaml"
+    src: "templates/docker-compose.yml"
+    dest: "/home/docker-compose/ddns/docker-compose.yaml"
     mode: '0755'
     owner: nobody
     group: nogroup
   notify:
-  - Start Home Assistant
+  - Start DDNS 
 
-- name: Deploy Home Assistant stack
+- name: Deploy DDNS stack
   ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml homeassistant
+    cmd: docker stack deploy -c /home/docker-compose/ddns/docker-compose.yaml ddns
   register: swarm_check
   changed_when: false
-

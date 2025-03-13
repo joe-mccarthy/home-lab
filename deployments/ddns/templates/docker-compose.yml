@@ -1,0 +1,19 @@
+services:
+  cloudflare-ddns:
+    image: favonia/cloudflare-ddns:latest
+    restart: always
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [all]
+    security_opt: [no-new-privileges:true]
+    environment:
+      - CLOUDFLARE_API_TOKEN={{ secrets.cf_token }}
+      - DOMAINS={{ secrets.dns_domains }}
+      - ZONE_ID={{ general.domain }}
+      - PROXIED=true
+      - IP6_PROVIDER=none
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"

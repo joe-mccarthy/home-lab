@@ -1,7 +1,7 @@
 ---
-- name: Start Portainer
+- name: Start DDNS 
   community.docker.docker_compose:
-    project_src: /home/docker-compose/portainer
+    project_src: /home/docker-compose/ddns
     state: present
     restarted: true
 

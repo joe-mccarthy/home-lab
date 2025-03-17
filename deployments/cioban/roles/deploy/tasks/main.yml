@@ -1,0 +1,41 @@
+---
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Remove service
+  docker_swarm_service:
+    name: cioban_cioban
+    state: absent
+  ignore_errors: true
+
+- name: Setup Watchtower directory
+  ansible.builtin.file:
+    path: /home/docker-compose/cioban
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "templates/docker-compose.yml"
+    dest: "/home/docker-compose/cioban/docker-compose.yaml"
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+  notify:
+  - Start Cioban 
+
+- name: Deploy Cioban stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/cioban/docker-compose.yaml --with-registry-auth cioban 
+  register: swarm_check
+  changed_when: false

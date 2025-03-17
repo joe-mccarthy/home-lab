@@ -1,0 +1,41 @@
+---
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Remove service
+  docker_swarm_service:
+    name: blog_blog
+    state: absent
+  ignore_errors: true
+
+- name: Setup Blog directory
+  ansible.builtin.file:
+    path: /home/docker-compose/blog
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "templates/docker-compose.yml"
+    dest: "/home/docker-compose/blog/docker-compose.yaml"
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+  notify:
+  - Start Blog 
+
+- name: Deploy Blog stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/blog/docker-compose.yaml --with-registry-auth blog 
+  register: swarm_check
+  changed_when: false

@@ -54,3 +54,8 @@
   with_items:
   - usermod -aG docker $USER
   ignore_errors: yes
+
+- name: docker login to registry
+  ansible.builtin.command:
+    cmd: docker login -u {{ registry_user }} -p {{ registry_password }} {{ registry_url }}
+

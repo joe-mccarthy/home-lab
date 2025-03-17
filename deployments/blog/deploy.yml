@@ -1,0 +1,6 @@
+---
+- name: Deploy Blog
+  hosts: manager[0]
+  become: true
+  roles:
+  - deploy

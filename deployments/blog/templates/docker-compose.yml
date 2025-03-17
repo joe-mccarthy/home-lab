@@ -1,0 +1,33 @@
+services:
+  blog:
+    image: ghcr.io/joe-mccarthy/joe-mccarthy.github.io:latest 
+    container_name: blog
+    networks:
+      proxy:
+      default:
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+      mode: replicated
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.blog.entrypoints=web"
+        - "traefik.http.routers.blog.rule=Host(`blog.{{ general.domain }}`)"
+        - "traefik.http.middlewares.blog-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.blog.middlewares=blog-https-redirect"
+        - "traefik.http.routers.blog-secure.entrypoints=websecure"
+        - "traefik.http.routers.blog-secure.rule=Host(`blog.{{ general.domain }}`)"
+        - "traefik.http.routers.blog-secure.tls=true"
+        - "traefik.http.routers.blog-secure.service=blog"
+        - "traefik.http.routers.blog-secure.tls.certresolver=letsencrypt"
+        - "traefik.http.services.blog.loadbalancer.server.port=80"
+        - "traefik.http.services.blog.loadbalancer.passhostheader=true"
+        - "traefik.docker.network=proxy"
+        - "shepherd.autodeploy=true"
+        - "shepherd.auth.config=blog"
+        - "ai.ix.auto-update=true"
+
+networks:
+  proxy:
+    external: true

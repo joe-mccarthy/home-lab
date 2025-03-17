@@ -1,0 +1,17 @@
+services:
+ cioban:
+    image: registry.gitlab.com/ix.ai/cioban:latest
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        ai.ix.auto-update: 'true' # cioban updates cioban
+        traefik.enable: 'false'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:rw'
+      - '~/.docker/config.json:/root/.docker/config.json:ro'
+    environment:
+      SLEEP_TIME: '1m'
+      FILTER_SERVICES: 'label=ai.ix.auto-update'
+      LOGLEVEL: INFO

@@ -3,3 +3,5 @@
 - import_playbook: ../portainer/deploy.yml
 - import_playbook: ../home-assistant/deploy.yml
 - import_playbook: ../ddns/deploy.yml
+- import_playbook: ../blog/deploy.yml
+- import_playbook: ../cioban/deploy.yml

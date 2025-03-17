@@ -31,11 +31,13 @@
     mode: '0755'
     owner: nobody
     group: nogroup
-  notify:
-  - Start Cioban 
 
 - name: Deploy Cioban stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/cioban/docker-compose.yaml --with-registry-auth cioban 
   register: swarm_check
   changed_when: false
+
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose 

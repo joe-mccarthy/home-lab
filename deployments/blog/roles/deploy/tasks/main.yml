@@ -31,11 +31,13 @@
     mode: '0755'
     owner: nobody
     group: nogroup
-  notify:
-  - Start Blog 
 
 - name: Deploy Blog stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/blog/docker-compose.yaml --with-registry-auth blog 
   register: swarm_check
   changed_when: false
+
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose 

@@ -6,11 +6,13 @@
     mode: '0755'
     owner: nobody
     group: nogroup
-  notify:
-  - Start Portainer
 
 - name: Deploy Portainer stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/portainer/docker-compose.yaml portainer
   register: swarm_check
   changed_when: false
+
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose 

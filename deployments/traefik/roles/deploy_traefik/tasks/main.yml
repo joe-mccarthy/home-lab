@@ -34,11 +34,13 @@
     src: "templates/docker-compose.yaml"
     dest: "/home/docker-compose/traefik/docker-compose.yaml"
     mode: '0755'
-  notify:
-  - Start Traefik
 
 - name: Deploy traefik  stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/traefik/docker-compose.yaml traefik
   register: swarm_check
   changed_when: false
+
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose 

@@ -1,0 +1,35 @@
+services:
+  server:
+    image: docker.gitea.com/gitea:1.23.5
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    networks:
+      - proxy
+    volumes:
+      - /mnt/nfs/docker/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.git.entrypoints=web"
+        - "traefik.http.routers.git.rule=Host(`git.{{ general.domain }}`)"
+        - "traefik.http.middlewares.git-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.git.middlewares=git-https-redirect"
+        - "traefik.http.routers.git-secure.entrypoints=websecure"
+        - "traefik.http.routers.git-secure.rule=Host(`git.{{ general.domain }}`)"
+        - "traefik.http.routers.git-secure.tls=true"
+        - "traefik.http.routers.git-secure.service=git"
+        - "traefik.http.routers.git-secure.tls.certresolver=letsencrypt"
+        - "traefik.http.services.git.loadbalancer.server.port=3000"
+        - "traefik.http.services.git.loadbalancer.passhostheader=true"
+        - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true

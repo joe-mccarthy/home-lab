@@ -2,6 +2,8 @@ services:
  cioban:
     image: registry.gitlab.com/ix.ai/cioban:latest
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.role == manager

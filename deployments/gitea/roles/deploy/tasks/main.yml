@@ -12,7 +12,7 @@
 
 - name: Remove service
   docker_swarm_service:
-    name: gitea_gitea
+    name: gitea_server
     state: absent
   ignore_errors: true
 

@@ -1,0 +1,10 @@
+---
+- hosts: cluster # Run on all hosts listed in the inventory file
+  become: true # Run as root
+  vars:
+    user_keys: "{{ lookup('env', 'USER') }}" # This is the user that will be added to the authorized keys
+
+  tasks:
+  - name: docker login to registry
+    ansible.builtin.command:
+      cmd: docker login -u {{ registry_user }} -p {{ registry_password }} {{ registry_url }}

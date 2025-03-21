@@ -1,0 +1,4 @@
+---
+registry_user: "{{ vault_registry_user }}" # Registry user
+registry_password: "{{ vault_registry_password }}" # Registry password
+registry_url: "{{ vault_registry_url }}" # Registry URL

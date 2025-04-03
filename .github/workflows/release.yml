@@ -1,0 +1,42 @@
+name: Create Release
+# This GitHub Actions workflow automates the process of creating a release when a new tag is pushed to the repository.
+
+on:
+  push:
+    tags: [ '[0-9]+.[0-9]+.[0-9]+' ]
+    # Triggers the workflow when a new tag matching the semantic versioning pattern (e.g., 1.0.0) is pushed.
+    # The pattern `[0-9]+.[0-9]+.[0-9]+` ensures that only valid semantic version tags trigger the workflow.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Specifies the environment where the job will run. In this case, it uses the latest Ubuntu runner.
+
+    permissions:
+      contents: write
+      # Grants write access to repository contents, required for creating a release.
+      packages: write
+      # Grants write access to packages, in case the release involves publishing packages.
+
+    steps:
+      - uses: actions/checkout@v4
+        # Checks out the repository code to the runner.
+        with:
+          fetch-depth: 0
+          # Fetches the full history for all tags and branches.
+          # This is necessary to ensure that all commit history and tags are available for the release.
+
+      - name: Create Release
+        # Defines a step to create a release using the GitHub CLI (`gh`).
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The GitHub-provided token for authenticating API requests.
+          # This token is automatically provided by GitHub Actions and does not need to be manually configured.
+          tag: ${{ github.ref_name }}
+          # The name of the tag that triggered the workflow. This is extracted from the GitHub context.
+
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${tag#v}" \
+              --generate-notes       

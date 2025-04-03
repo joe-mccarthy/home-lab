@@ -1,18 +1,37 @@
 ---
+# This task file is responsible for deploying the Portainer stack using Docker Swarm.
+# It performs the following steps:
+# 1. Copies the docker-compose template to the target host.
+# 2. Deploys the Portainer stack using the `docker stack deploy` command.
+# 3. Cleans up temporary files and directories after deployment.
+
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "templates/docker-compose.yaml"
-    dest: "/home/docker-compose/portainer/docker-compose.yaml"
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    src: "templates/docker-compose.yaml"  # Path to the Jinja2 template for the docker-compose file.
+    dest: "/home/docker-compose/portainer/docker-compose.yaml"  # Destination path for the docker-compose file on the target host.
+    mode: '0755'  # Set the file permissions (read, write, execute for owner; read and execute for others).
+    owner: nobody  # Set the file owner to `nobody`, a common user for shared resources.
+    group: nogroup  # Set the file group to `nogroup`, a common group for shared resources.
+  # This task copies the docker-compose template to the target system, ensuring it is ready for deployment.
 
 - name: Deploy Portainer stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/portainer/docker-compose.yaml portainer
-  register: swarm_check
-  changed_when: false
+    # The `docker stack deploy` command deploys the stack using the specified compose file.
+    # - `-c`: Specifies the path to the docker-compose file.
+    # - `portainer`: The name of the stack to deploy.
+  register: swarm_check  # Store the output of the command in the `swarm_check` variable for debugging or logging purposes.
+  changed_when: false  # Prevent this task from marking the playbook as "changed" to avoid unnecessary notifications.
+  # This task deploys the Portainer stack to the Docker Swarm cluster.
 
 - name: delete compose directory
   ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose 
+    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+  # This task cleans up the temporary files and directories created during the deployment process.
+
+# Notes:
+# - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.
+# - The `docker-compose.yaml` template should define the services, networks, and volumes required for the Portainer stack.
+# - The cleanup step (`delete compose directory`) is optional and can be removed if the compose files need to be retained for debugging or future use.
+# - Use caution when setting permissions (`0755`) and ownership (`nobody:nogroup`) to avoid security risks.
+# - Always test the deployment in a staging environment before applying it to production.

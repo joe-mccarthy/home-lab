@@ -1,43 +1,62 @@
 ---
+# This playbook ensures the deployment of a blog service using Docker Swarm.
+# It performs tasks such as installing dependencies, managing Docker services,
+# setting up directories, deploying the stack, and cleaning up temporary files.
+
+# Task 1: Ensure docker-compose is installed
 - name: Ensure docker-compose is installed
   ansible.builtin.package:
-    name: docker-compose
-    state: present
+    name: docker-compose  # The package name for docker-compose
+    state: present        # Ensures the package is installed
+  # This ensures that docker-compose is available on the host for managing containers.
 
+# Task 2: Ensure Docker service is running
 - name: Ensure Docker service is running
   ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: true
+    name: docker          # The Docker service name
+    state: started        # Ensures the service is running
+    enabled: true         # Ensures the service starts on boot
+  # This guarantees that Docker is operational and ready to manage containers.
 
+# Task 3: Remove existing service (if any)
 - name: Remove service
   docker_swarm_service:
-    name: blog_blog
-    state: absent
-  ignore_errors: true
+    name: blog_blog       # The name of the existing service to remove
+    state: absent         # Ensures the service is removed
+  ignore_errors: true     # Ignores errors if the service does not exist
+  # This step removes any existing instance of the blog service to avoid conflicts during deployment.
 
+# Task 4: Setup Blog directory
 - name: Setup Blog directory
   ansible.builtin.file:
-    path: /home/docker-compose/blog
-    state: directory
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    path: /home/docker-compose/blog  # Path to the directory for the blog service
+    state: directory                 # Ensures the directory exists
+    mode: '0755'                     # Sets permissions to allow read, write, and execute
+    owner: nobody                    # Sets the owner to 'nobody'
+    group: nogroup                   # Sets the group to 'nogroup'
+  # This creates a directory to store the Docker Compose configuration for the blog service.
 
+# Task 5: Copy compose file from template to host
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "templates/docker-compose.yml"
-    dest: "/home/docker-compose/blog/docker-compose.yaml"
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    src: "templates/docker-compose.yml"  # Source template file
+    dest: "/home/docker-compose/blog/docker-compose.yaml"  # Destination on the host
+    mode: '0755'                         # Sets permissions for the file
+    owner: nobody                        # Sets the owner to 'nobody'
+    group: nogroup                       # Sets the group to 'nogroup'
+  # This copies the Docker Compose configuration from a template to the target directory.
 
+# Task 6: Deploy Blog stack
 - name: Deploy Blog stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/blog/docker-compose.yaml --with-registry-auth blog 
-  register: swarm_check
-  changed_when: false
+    # Deploys the stack using the specified Docker Compose file
+  register: swarm_check                 # Registers the output of the command
+  changed_when: false                   # Prevents marking the task as changed
+  # This deploys the blog service stack to the Docker Swarm cluster.
 
+# Task 7: Delete compose directory
 - name: delete compose directory
   ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose 
+    cmd: rm -rf /home/docker-compose  # Removes the temporary directory
+  # This cleans up the temporary directory used for deployment to avoid clutter.

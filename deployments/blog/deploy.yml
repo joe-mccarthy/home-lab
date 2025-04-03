@@ -1,6 +1,16 @@
 ---
-- name: Deploy Blog
-  hosts: manager[0]
-  become: true
+# This playbook is responsible for deploying the blog service to the Docker Swarm cluster.
+# It targets the first manager node in the cluster (manager[0]) and uses the "deploy" role
+# to execute the deployment tasks.
+
+- name: Deploy Blog  # A descriptive name for the playbook
+  hosts: manager[0]  # Specifies the target host group. In this case, the first manager node.
+  become: true       # Ensures the playbook runs with elevated privileges (e.g., sudo).
+
   roles:
-  - deploy
+    - deploy         # References the "deploy" role, which contains the tasks required
+                     # to deploy the blog service. This role is expected to handle:
+                     # - Installing dependencies (e.g., Docker, docker-compose)
+                     # - Configuring the environment (e.g., directories, permissions)
+                     # - Deploying the blog service using Docker Swarm
+                     # - Cleaning up temporary files or resources after deployment

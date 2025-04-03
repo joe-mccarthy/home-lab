@@ -1,2 +1,17 @@
 ---
-proxy: "{{ vault_proxy }}" # Proxy for Home Assistant to accept connections
+# This file contains group variables for the Home Assistant deployment.
+# It defines configuration values and secrets required for the deployment.
+# The secrets are securely stored in Ansible Vault and referenced here for use in playbooks.
+
+proxy: "{{ vault_proxy }}"
+# The `proxy` variable specifies the proxy configuration for Home Assistant.
+# This value is securely stored in Ansible Vault and injected at runtime.
+# It is used to configure the reverse proxy (e.g., Traefik or Nginx) to accept and route connections to Home Assistant.
+
+# Notes:
+# - Ensure that the `vault_proxy` variable is properly defined and encrypted in Ansible Vault.
+# - To edit the encrypted variables, use the following command:
+#   ansible-vault edit group_vars/all.yml
+# - The proxy configuration should align with the reverse proxy setup in your environment.
+# - Always test changes in a staging environment before applying them to production systems.
+# - Use Ansible Vault to securely manage sensitive data and avoid storing plaintext secrets in this file.

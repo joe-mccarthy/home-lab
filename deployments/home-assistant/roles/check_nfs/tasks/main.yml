@@ -1,31 +1,47 @@
 ---
+# This task file is responsible for ensuring that the required NFS directory and files for Home Assistant exist.
+# It creates the necessary directory structure, sets appropriate permissions, and copies default configuration files.
+
 - name: Create a NFS directory if it does not exist
   ansible.builtin.file:
-    path: /mnt/nfs/docker/home_assistant
-    state: directory
-    mode: '7777'
-    owner: nobody
-    group: nogroup
+    path: /mnt/nfs/docker/home_assistant  # The path to the NFS directory to be created.
+    state: directory  # Ensure the path is a directory. If it does not exist, it will be created.
+    mode: '0777'  # Set the directory permissions to allow full access (read, write, execute) for all users.
+    owner: nobody  # Set the directory owner to `nobody`, a common user for shared resources.
+    group: nogroup  # Set the directory group to `nogroup`, a common group for shared resources.
+  # This task ensures that the NFS directory is available for use by Home Assistant.
 
 - name: Setup Home Assistant directory
   ansible.builtin.file:
-    path: /home/docker-compose/home_assistant
-    state: directory
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    path: /home/docker-compose/home_assistant  # The path to the local directory to be created.
+    state: directory  # Ensure the path is a directory. If it does not exist, it will be created.
+    mode: '0755'  # Set the directory permissions (read, write, execute for owner; read and execute for others).
+    owner: nobody  # Set the directory owner to `nobody`.
+    group: nogroup  # Set the directory group to `nogroup`.
+  # This task creates the local directory structure required for Home Assistant deployment.
 
 - name: Create multiple files
   ansible.builtin.file:
-    path: "/mnt/nfs/docker/home_assistant/{{ item }}"
-    state: touch
+    path: "/mnt/nfs/docker/home_assistant/{{ item }}"  # Path to the files to be created inside the NFS directory.
+    state: touch  # Ensure the files exist. If they do not exist, they will be created as empty files.
   with_items:
-  - automations.yaml
-  - scenes.yaml
-  - scripts.yaml
+  - automations.yaml  # File for storing Home Assistant automation configurations.
+  - scenes.yaml  # File for storing Home Assistant scene configurations.
+  - scripts.yaml  # File for storing Home Assistant script configurations.
+  # This task ensures that the required configuration files for Home Assistant exist in the NFS directory.
 
-- name: copy default configuration
-  template:
-    src: "templates/configuration.yaml"
-    dest: "/mnt/nfs/docker/home_assistant/configuration.yaml"
-    force: false
+- name: Copy default configuration
+  ansible.builtin.template:
+    src: "templates/configuration.yaml"  # Path to the Jinja2 template for the default configuration file.
+    dest: "/mnt/nfs/docker/home_assistant/configuration.yaml"  # Destination path for the configuration file.
+    force: false  # Do not overwrite the file if it already exists.
+  # This task copies the default configuration file to the NFS directory if it does not already exist.
+
+# Notes:
+# - The `0777` permissions for the NFS directory are very permissive and allow full access to all users.
+#   Use caution when setting such permissions, especially in production environments.
+# - The `nobody` user and `nogroup` group are commonly used for shared resources in NFS setups.
+#   Ensure that these settings align with your NFS server's configuration.
+# - The `force: false` option ensures that existing configuration files are not overwritten, preserving user changes.
+# - Always test changes in a staging environment before applying them to production systems.
+# - Ensure that the NFS mount point (`/mnt/nfs/docker`) is already mounted and accessible on the target system.

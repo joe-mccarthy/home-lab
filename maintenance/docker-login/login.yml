@@ -1,10 +1,21 @@
 ---
-- hosts: cluster # Run on all hosts listed in the inventory file
-  become: true # Run as root
-  vars:
-    user_keys: "{{ lookup('env', 'USER') }}" # This is the user that will be added to the authorized keys
+# This playbook is responsible for logging into a private Docker registry on all nodes in the cluster.
+# It uses credentials and the registry URL defined in the group variables file (`group_vars/all.yml`).
+# The credentials are securely retrieved from an Ansible Vault to ensure sensitive information is protected.
 
-  tasks:
-  - name: docker login to registry
-    ansible.builtin.command:
+- hosts: cluster  # Target all hosts in the "cluster" group defined in the inventory.
+  become: true  # Run all tasks with elevated privileges (e.g., sudo) to ensure access to Docker commands.
+
+  tasks:  # Define the list of tasks to execute.
+
+  # Task 1: Log in to the private Docker registry
+  - name: docker login to private registry
+    ansible.builtin.command:  # Use the Ansible `command` module to execute the Docker login command.
       cmd: docker login -u {{ registry_user }} -p {{ registry_password }} {{ registry_url }}
+      # `docker login` command:
+      # - `-u {{ registry_user }}`: Specifies the username for the Docker registry.
+      # - `-p {{ registry_password }}`: Specifies the password for the Docker registry.
+      # - `{{ registry_url }}`: Specifies the URL of the Docker registry.
+    # This task logs into the private Docker registry using the credentials and URL provided in the group variables.
+    # The credentials (`registry_user` and `registry_password`) and the registry URL (`registry_url`) are securely
+    # retrieved from the Ansible Vault to avoid exposing sensitive information in plain text.

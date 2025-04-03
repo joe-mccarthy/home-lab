@@ -1,13 +1,41 @@
+# This is the main configuration file for Home Assistant.
+# It defines the default settings, HTTP configuration, frontend customization, and includes for automations, scripts, and scenes.
+
 default_config:
+# Enables the default configuration for Home Assistant.
+# This includes commonly used integrations such as the Home Assistant Cloud, mobile app support, and more.
+# You can override or extend the default configuration by adding additional settings below.
 
 http:
   use_x_forwarded_for: true
+  # Enables the use of the `X-Forwarded-For` header to determine the originating IP address of a request.
+  # This is useful when Home Assistant is behind a reverse proxy (e.g., Traefik or Nginx).
+
   trusted_proxies:
-    - {{ proxy }}     
+    - {{ proxy }}
+    # Specifies the IP address or CIDR range of trusted proxies.
+    # Replace `{{ proxy }}` with the IP address or range of your reverse proxy.
+    # This ensures that only requests from trusted proxies are allowed to use the `X-Forwarded-For` header.
 
 frontend:
   themes: !include_dir_merge_named themes
+  # Configures the frontend of Home Assistant to use custom themes.
+  # The `themes` directory should contain YAML files defining the themes.
+  # The `!include_dir_merge_named` directive merges all YAML files in the `themes` directory into a single dictionary.
 
 automation: !include automations.yaml
+# Includes the `automations.yaml` file for defining Home Assistant automations.
+# Automations allow you to define triggers, conditions, and actions to automate tasks in your smart home.
+
 script: !include scripts.yaml
+# Includes the `scripts.yaml` file for defining Home Assistant scripts.
+# Scripts are sequences of actions that can be triggered manually or by automations.
+
 scene: !include scenes.yaml
+# Includes the `scenes.yaml` file for defining Home Assistant scenes.
+# Scenes allow you to set multiple devices to a specific state with a single command.
+
+# Notes:
+# - The `trusted_proxies` setting is critical for security when using a reverse proxy. Only include trusted IPs or ranges.
+# - Always test changes to the configuration in a staging environment before applying them to production.
+# - Use the Home Assistant configuration checker (`hass --script check_config`) to validate the configuration before restarting Home Assistant.

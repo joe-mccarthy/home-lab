@@ -1,6 +1,18 @@
 ---
-- name: Deploy CioBan
-  hosts: manager[0]
-  become: true
+# This playbook is responsible for deploying the Cioban stack to the Docker Swarm cluster.
+# It targets the first manager node in the Swarm (`manager[0]`) and uses the `deploy` role to perform the deployment.
+# The `deploy` role ensures that Docker and docker-compose are installed, the required directory structure is created,
+# the stack is deployed, and any temporary files are cleaned up.
+
+- name: Deploy Cioban
+  hosts: manager[0]  # Target the first manager node in the `manager` group.
+  become: true  # Execute tasks with elevated privileges (sudo) to ensure proper permissions.
   roles:
-  - deploy
+  - deploy  # Use the `deploy` role to handle all tasks related to deploying the Cioban stack.
+
+# Notes:
+# - Ensure that the `manager` group is properly defined in the Ansible inventory file, with at least one manager node.
+# - The `deploy` role should include all necessary tasks to prepare the environment, deploy the stack, and clean up.
+# - This playbook assumes that the Docker Swarm cluster is already initialized and functional.
+# - Always test the deployment in a staging environment before applying it to production.
+# - Use `become: true` cautiously and ensure that the user running the playbook has the necessary sudo privileges.

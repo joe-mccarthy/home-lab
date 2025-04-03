@@ -1,25 +1,42 @@
 ---
+# This task file is responsible for preparing the Docker environment for the Portainer deployment.
+# It ensures that Docker and docker-compose are installed and running, removes any existing Portainer service,
+# and creates Docker secrets from the variables defined in the group variables file.
+
 - name: Ensure docker-compose is installed
   ansible.builtin.package:
-    name: docker-compose
-    state: present
+    name: docker-compose  # The package name for docker-compose.
+    state: present  # Ensure docker-compose is installed on the target system.
+  # This task ensures that docker-compose is available for managing Docker-based applications.
 
 - name: Ensure Docker service is running
   ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: true
+    name: docker  # The name of the Docker service.
+    state: started  # Ensure the Docker service is running.
+    enabled: true  # Ensure the Docker service starts on boot.
+  # This task ensures that the Docker daemon is active and ready to manage containers.
 
 - name: Remove service
   docker_swarm_service:
-    name: portainer_portainer
-    state: absent
-  ignore_errors: true
+    name: portainer_portainer  # The name of the Docker Swarm service to remove.
+    state: absent  # Ensure the service is removed.
+  ignore_errors: true  # Allow the playbook to continue even if this task fails.
+  # This task removes any existing instance of the Portainer service to avoid conflicts during deployment.
 
-- name: itterate over my_environment in group vars yml
+- name: Iterate over secrets defined in group variables
   docker_secret:
-    name: "{{ item.key }}"
-    data: "{{ item.value }}"
-    force: true
-  with_dict: "{{ secrets }}"
-  no_log: true
+    name: "{{ item.key }}"  # The name of the Docker secret, derived from the key in the `secrets` dictionary.
+    data: "{{ item.value }}"  # The value of the Docker secret, derived from the value in the `secrets` dictionary.
+    force: true  # Overwrite the secret if it already exists.
+  with_dict: "{{ secrets }}"  # Iterate over the `secrets` dictionary defined in the group variables file.
+  no_log: true  # Prevent sensitive data from being logged to ensure security.
+  # This task creates Docker secrets from the `secrets` dictionary defined in the group variables file.
+  # Docker secrets provide a secure way to manage sensitive data in containerized environments.
+
+# Notes:
+# - Ensure that the `secrets` dictionary is properly defined in the group variables file.
+#   Each key-value pair in the dictionary represents a Docker secret.
+# - The `no_log: true` option ensures that sensitive data (e.g., secret values) is not logged during playbook execution.
+# - Always test the playbook in a staging environment before applying it to production systems.
+# - Use caution when removing services to avoid unintended disruptions in production environments.
+# - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.

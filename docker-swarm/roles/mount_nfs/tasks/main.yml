@@ -1,28 +1,47 @@
 ---
-- name: install nfs server depenedences
+# This task file is responsible for setting up and mounting an NFS (Network File System) volume.
+# It installs the necessary NFS dependencies, configures the system to recognize NFS changes,
+# creates the required directory for mounting, and mounts the NFS volume.
+
+- name: install nfs server dependencies
   apt:
-    name: "{{ item }}"
-    state: present
+    name: "{{ item }}"  # Install the specified NFS-related packages.
+    state: present  # Ensure the packages are installed.
   with_items:
-  - nfs-kernel-server
-  - nfs-common
+    - nfs-kernel-server  # Provides the NFS server functionality.
+    - nfs-common  # Provides the NFS client utilities for mounting NFS shares.
+  # This task ensures that the required NFS packages are installed on the system.
 
 - name: Reload systemd to recognize NFS changes
   ansible.builtin.systemd:
-    daemon_reload: true
+    daemon_reload: true  # Reload the systemd manager configuration.
+  # This task ensures that systemd recognizes any changes made to the NFS configuration.
 
 - name: Create a directory if it does not exist
   ansible.builtin.file:
-    path: /mnt/nfs/docker
-    state: directory
-    mode: '7777'
-    owner: nobody
-    group: nogroup
+    path: /mnt/nfs/docker  # The path to the directory to be created.
+    state: directory  # Ensure the path is a directory.
+    mode: '7777'  # Set the directory permissions to allow full access (read, write, execute) for all users.
+    owner: nobody  # Set the directory owner to `nobody`.
+    group: nogroup  # Set the directory group to `nogroup`.
+  # This task ensures that the directory for mounting the NFS volume exists with the correct permissions.
 
 - name: Mount an NFS volume
   ansible.posix.mount:
-    src: "nfs.local:/exports/docker"
-    path: /mnt/nfs/docker
-    opts: rw,sync,hard
-    state: mounted
-    fstype: nfs
+    src: "nfs.local:/exports/docker"  # The NFS server and export path to mount.
+    path: /mnt/nfs/docker  # The local path where the NFS volume will be mounted.
+    opts: rw,sync,hard  # Mount options:
+    # - `rw`: Mount the volume with read and write permissions.
+    # - `sync`: Ensure all file system operations are synchronized.
+    # - `hard`: Retry indefinitely if the server becomes unavailable.
+    state: mounted  # Ensure the volume is mounted.
+    fstype: nfs  # Specify the file system type as NFS.
+  # This task mounts the NFS volume to the specified local directory.
+
+# Notes:
+# - Ensure that the NFS server (`nfs.local`) is properly configured and accessible from the target node.
+# - The `nfs.local:/exports/docker` path should match the export configuration on the NFS server.
+# - The `7777` permissions on the directory are very permissive and should be adjusted based on your security requirements.
+# - The `hard` mount option ensures that the system retries indefinitely if the NFS server becomes unavailable.
+#   Use `soft` instead if you want the system to timeout after a certain period.
+# - This playbook assumes that the target system is running a Debian-based distribution (e.g., Ubuntu).

@@ -1,5 +1,27 @@
 ---
+# This file contains group variables for the Traefik deployment.
+# It defines secrets required for Traefik's integration with Cloudflare for DNS-based challenges (e.g., Let's Encrypt).
+# The secrets are securely stored in Ansible Vault and referenced here for use in playbooks.
+
 secrets:
-  # will be created into docker secrets and used in traefik service
-  cf_token: "{{ vault_cf_token }}" # Cloudflare API token
-  cf_email: "{{ vault_cf_email }}" # Cloudflare email
+  # The `secrets` dictionary contains sensitive information that will be converted into Docker secrets
+  # and used by the Traefik service during deployment.
+
+  cf_token: "{{ vault_cf_token }}"
+  # Cloudflare API token used for authenticating with the Cloudflare API.
+  # This token is required for DNS-based challenges (e.g., Let's Encrypt) to manage DNS records.
+  # The value is securely stored in Ansible Vault and injected at runtime.
+
+  cf_email: "{{ vault_cf_email }}"
+  # Cloudflare account email associated with the API token.
+  # This is required for some Cloudflare integrations and is securely stored in Ansible Vault.
+
+# Notes:
+# - Ensure that the `vault_cf_token` and `vault_cf_email` variables are properly defined and encrypted in Ansible Vault.
+# - To edit the encrypted variables, use the following command:
+#   ansible-vault edit group_vars/all.yml
+# - These secrets will be converted into Docker secrets during the deployment process.
+#   Docker secrets provide a secure way to manage sensitive data in containerized environments.
+# - Always test changes in a staging environment before applying them to production systems.
+# - Use caution when granting permissions to the Cloudflare API token. It should have the minimum required permissions
+#   (e.g., DNS zone edit) to reduce security risks.

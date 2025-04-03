@@ -1,37 +1,37 @@
 services:
-  blog:
-    image: ghcr.io/joe-mccarthy/joe-mccarthy.github.io:latest
-    container_name: blog
+  blog: # Define the blog service
+    image: ghcr.io/joe-mccarthy/joe-mccarthy.github.io:latest # Docker image for the blog service
+    container_name: blog # Name of the container for easier identification
     networks:
-      proxy:
-      default:
-    deploy:
+      proxy: # Connect the service to the external proxy network
+        aliases:
+          - blog.{{ general.domain }} # Add a DNS alias for the service using the domain variable
+      default: # Connect to the default network as well (optional, depending on your setup)
+    deploy: # Deployment configuration for Docker Swarm
       update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
+        parallelism: 1 # Update one replica at a time to ensure stability
+        delay: 10s # Wait 10 seconds between updating replicas to avoid downtime
+        order: start-first # Start new containers before stopping old ones for seamless updates
       placement:
-        constraints: [node.role == worker]
-      mode: replicated
-      replicas: 2
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.blog.entrypoints=web"
-        - "traefik.http.routers.blog.rule=Host(`blog.{{ general.domain }}`)"
-        - "traefik.http.middlewares.blog-https-redirect.redirectscheme.scheme=https"
-        - "traefik.http.routers.blog.middlewares=blog-https-redirect"
-        - "traefik.http.routers.blog-secure.entrypoints=websecure"
-        - "traefik.http.routers.blog-secure.rule=Host(`blog.{{ general.domain }}`)"
-        - "traefik.http.routers.blog-secure.tls=true"
-        - "traefik.http.routers.blog-secure.service=blog"
-        - "traefik.http.routers.blog-secure.tls.certresolver=letsencrypt"
-        - "traefik.http.services.blog.loadbalancer.server.port=80"
-        - "traefik.http.services.blog.loadbalancer.passhostheader=true"
-        - "traefik.docker.network=proxy"
-        - "shepherd.autodeploy=true"
-        - "shepherd.auth.config=blog"
-        - "ai.ix.auto-update=true"
+        constraints: [node.role == worker] # Ensure the service only runs on worker nodes
+      mode: replicated # Use replicated mode to run multiple instances of the service
+      replicas: 2 # Run 2 replicas of the service for high availability
+      labels: # Traefik and custom labels for the service
+        - "traefik.enable=true" # Enable Traefik for this service
+        - "traefik.http.routers.blog.entrypoints=web" # Define the HTTP entry point for the router
+        - "traefik.http.routers.blog.rule=Host(`blog.{{ general.domain }}`)" # Define the routing rule based on the host
+        - "traefik.http.middlewares.blog-https-redirect.redirectscheme.scheme=https" # Redirect HTTP to HTTPS
+        - "traefik.http.routers.blog.middlewares=blog-https-redirect" # Apply the HTTPS redirect middleware
+        - "traefik.http.routers.blog-secure.entrypoints=websecure" # Define the HTTPS entry point for the secure router
+        - "traefik.http.routers.blog-secure.rule=Host(`blog.{{ general.domain }}`)" # Define the secure routing rule based on the host
+        - "traefik.http.routers.blog-secure.tls=true" # Enable TLS for the secure router
+        - "traefik.http.routers.blog-secure.service=blog" # Link the secure router to the blog service
+        - "traefik.http.routers.blog-secure.tls.certresolver=letsencrypt" # Use Let's Encrypt for TLS certificates
+        - "traefik.http.services.blog.loadbalancer.server.port=80" # Define the internal port for the service
+        - "traefik.http.services.blog.loadbalancer.passhostheader=true" # Pass the original host header to the service
+        - "traefik.docker.network=proxy" # Specify the Traefik network for the service
+        - "ai.ix.auto-update=true" # Enable auto-update for the service (used by cioban or similar tools)
 
 networks:
-  proxy:
-    external: true
+  proxy: # Define the external proxy network
+    external: true # Indicates that the network is managed outside this compose file

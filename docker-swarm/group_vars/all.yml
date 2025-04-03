@@ -1,4 +1,23 @@
 ---
-registry_user: "{{ vault_registry_user }}" # Registry user
-registry_password: "{{ vault_registry_password }}" # Registry password
-registry_url: "{{ vault_registry_url }}" # Registry URL
+# This file defines group variables for the Docker Swarm playbooks.
+# These variables are used to authenticate with a private Docker registry.
+# The credentials and registry URL are securely retrieved from an Ansible Vault to protect sensitive information.
+
+registry_user: "{{ vault_registry_user }}" # The username for the Docker registry.
+# This variable retrieves the username from the Ansible Vault.
+# Replace "vault_registry_user" with the actual username if not using a vault, but be cautious
+# about storing sensitive information in plain text.
+
+registry_password: "{{ vault_registry_password }}" # The password for the Docker registry.
+# This variable retrieves the password from the Ansible Vault.
+# Replace "vault_registry_password" with the actual password if not using a vault, but avoid
+# exposing sensitive credentials in plain text.
+
+registry_url: "{{ vault_registry_url }}" # The URL of the Docker registry.
+# This variable retrieves the registry URL from the Ansible Vault.
+# Replace "vault_registry_url" with the actual registry URL if not using a vault.
+# Example: "https://index.docker.io/v1/" for Docker Hub or a custom URL for private registries.
+
+# Security Note:
+# - Always use Ansible Vault to store sensitive information like usernames, passwords, and URLs.
+# - Avoid hardcoding sensitive credentials directly in this file to prevent unauthorized access.

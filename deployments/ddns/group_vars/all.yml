@@ -1,5 +1,25 @@
 ---
+# This file contains group variables for the DDNS (Dynamic DNS) deployment.
+# It defines secrets and configuration values required for updating stale DNS records.
+# The secrets are securely stored in Ansible Vault and referenced here for use in playbooks.
+
 secrets:
-  # api key used to update stale dns records
-  cf_token: "{{ vault_cf_token }}" # Cloudflare API token
-  dns_domains: "{{ vault_dns_domains }}" # List of domains to update
+  # The `secrets` dictionary contains sensitive information required for DNS updates.
+
+  cf_token: "{{ vault_cf_token }}"
+  # Cloudflare API token used to authenticate requests to the Cloudflare API.
+  # This token should have the necessary permissions to update DNS records for the specified domains.
+  # The value is securely stored in Ansible Vault and referenced here as `vault_cf_token`.
+
+  dns_domains: "{{ vault_dns_domains }}"
+  # A list of domains for which DNS records need to be updated.
+  # The value is securely stored in Ansible Vault and referenced here as `vault_dns_domains`.
+
+# Notes:
+# - Ensure that the `vault_cf_token` and `vault_dns_domains` variables are properly defined and encrypted in Ansible Vault.
+# - The Cloudflare API token (`cf_token`) should be scoped to the minimum permissions required for security purposes.
+# - The `dns_domains` variable should include all domains that require dynamic DNS updates.
+# - This file should not contain plaintext secrets. Always use Ansible Vault to encrypt sensitive data.
+# - To edit the encrypted variables, use the following command:
+#   ansible-vault edit group_vars/all.yml
+# - Ensure that the playbooks using these variables are tested in a staging environment before deploying to production.

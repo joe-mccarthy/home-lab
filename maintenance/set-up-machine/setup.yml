@@ -1,44 +1,64 @@
 ---
-- hosts: all # Run on all hosts listed in the inventory file
-  become: true # Run as root
+# This playbook is responsible for setting up machines in the cluster.
+# It performs tasks such as configuring SSH keys, updating the system, installing core packages,
+# and rebooting the machine if necessary.
+
+- hosts: all  # Run on all hosts listed in the inventory file.
+  become: true  # Run all tasks with elevated privileges (e.g., sudo).
   vars:
-    user_keys: "{{ lookup('env', 'USER') }}" # This is the user that will be added to the authorized keys
+    user_keys: "{{ lookup('env', 'USER') }}"  # Dynamically fetch the current user from the environment.
+    # The `user_keys` variable specifies the user for whom the SSH key will be added to the authorized keys.
 
   tasks:
-  - name: "Setting authorized key for user {{ user_keys }}"
-    ansible.posix.authorized_key:
-      user: "{{ user_keys }}" # This is the user that will be added to the authorized keys
-      state: present # This is the state of the key
-      key: "{{ lookup('file', lookup('env','HOME') +  public_key ) }}" # This is the path to the public key
+    # Task 1: Configure SSH authorized keys for the user
+    - name: "Setting authorized key for user {{ user_keys }}"
+      ansible.posix.authorized_key:
+        user: "{{ user_keys }}"  # The user for whom the SSH key will be added.
+        state: present  # Ensure the key is present in the authorized_keys file.
+        key: "{{ lookup('file', lookup('env','HOME') + public_key ) }}"  # Path to the public key file.
+      # This task ensures passwordless SSH access by adding the specified public key to the user's `~/.ssh/authorized_keys`.
+      # - The `key` parameter dynamically retrieves the public key file based on the `public_key` variable.
+      # - Ensure the `public_key` variable is correctly defined in the group variables file.
 
-  - name: Update Ubuntu # Check if apt packages are up to date
-    when: ansible_facts['os_family'] == 'Debian'
-    ansible.builtin.apt:
-      upgrade: dist
-      update_cache: true # update the cache of the apt packages
+    # Task 2: Update and upgrade Ubuntu packages
+    - name: Update Ubuntu
+      when: ansible_facts['os_family'] == 'Debian'  # Only run this task on Debian-based systems (e.g., Ubuntu).
+      ansible.builtin.apt:
+        upgrade: dist  # Perform a full distribution upgrade to ensure all packages are updated.
+        update_cache: true  # Refresh the package cache before upgrading.
+      # This task ensures that all packages on Debian-based systems are updated to their latest versions.
 
-  - name: Check if a reboot is required on Ubuntu # Check if a reboot is required
-    when: ansible_facts['os_family'] == 'Debian'
-    ansible.builtin.stat:
-      path: /var/run/reboot-required
-    register: ubuntu_reboot_required # Register the output of the command
+    # Task 3: Check if a reboot is required on Ubuntu
+    - name: Check if a reboot is required on Ubuntu
+      when: ansible_facts['os_family'] == 'Debian'  # Only run this task on Debian-based systems.
+      ansible.builtin.stat:
+        path: /var/run/reboot-required  # Check for the existence of the reboot-required file.
+      register: ubuntu_reboot_required  # Save the result of the check in a variable for later use.
+      # This task checks if the system requires a reboot after updates. The presence of the file
+      # `/var/run/reboot-required` indicates that a reboot is necessary.
 
-  - name: Reboot Ubuntu if required # Reboot the machine if a reboot is required
-    when: ubuntu_reboot_required.stat.exists | default(false)
-    ansible.builtin.reboot:
-      reboot_timeout: 600
+    # Task 4: Reboot the machine if required
+    - name: Reboot Ubuntu if required
+      when: ubuntu_reboot_required.stat.exists | default(false)  # Only reboot if the reboot-required file exists.
+      ansible.builtin.reboot:
+        reboot_timeout: 600  # Allow up to 600 seconds (10 minutes) for the system to reboot.
+      # This task reboots the system if a reboot is required. It ensures that the system is fully updated
+      # and any changes requiring a reboot are applied.
 
-  - name: Install Core Packages # Install list of core packages
-    ansible.builtin.apt:
-      name: "{{ item }}"
-      state: present
-    loop:
-    - htop # htop is a better version of top
-    - curl # curl is a command line tool for transferring data with URL syntax
-    - wget # wget is a free utility for non-interactive download of files from the web
-    - git # git is a free and open source distributed version control system
-    - unzip # unzip is a utility that helps you list, test and extract compressed ZIP archives
-    - zip # zip is a compression and file packaging utility
-    - lm-sensors # lm-sensors is a hardware health monitoring package for Linux
-    - net-tools # net-tools is a package that includes essential tools for network configuration
-    - dnsutils # dnsutils is a package that includes essential tools for DNS configuration
+    # Task 5: Install core packages
+    - name: Install Core Packages
+      ansible.builtin.apt:
+        name: "{{ item }}"  # Install each package in the list.
+        state: present  # Ensure the package is installed.
+      loop:
+        - htop  # A better version of the `top` command for monitoring system processes.
+        - curl  # A command-line tool for transferring data with URL syntax.
+        - wget  # A utility for non-interactive download of files from the web.
+        - git  # A distributed version control system for tracking changes in source code.
+        - unzip  # A utility to list, test, and extract compressed ZIP archives.
+        - zip  # A compression and file packaging utility.
+        - lm-sensors  # A hardware health monitoring package for Linux.
+        - net-tools  # A package that includes essential tools for network configuration.
+        - dnsutils  # A package that includes essential tools for DNS configuration.
+      # This task installs a list of essential packages required for system functionality and monitoring.
+      # - The `loop` directive iterates over the list of packages and installs each one.

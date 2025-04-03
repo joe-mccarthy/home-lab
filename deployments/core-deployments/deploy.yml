@@ -1,0 +1,30 @@
+---
+# This playbook is responsible for deploying the core services of the cluster.
+# These services are essential for the functionality, management, and security of the cluster.
+# Each service is defined in its own playbook, and this file imports them sequentially.
+
+# Import the Traefik deployment playbook
+- import_playbook: ../traefik/deploy.yml
+  # Traefik is a reverse proxy that handles:
+  # - Routing traffic to services based on domain names.
+  # - Issuing and managing HTTPS certificates via DNS challenges.
+  # - Acting as a gateway for external access to internal services.
+
+# Import the Portainer deployment playbook
+- import_playbook: ../portainer/deploy.yml
+  # Portainer provides a web-based UI for managing Docker and Docker Swarm.
+  # - It allows monitoring of the cluster's status and activity.
+  # - While Ansible manages deployments, Portainer offers a convenient interface for manual management.
+
+# Import the Dynamic DNS deployment playbook
+- import_playbook: ../ddns/deploy.yml
+  # Dynamic DNS ensures that the cluster's services are accessible via domain names.
+  # - It updates DNS records dynamically to reflect the public IP address of the internet gateway.
+  # - This playbook assumes the use of the Cloudflare API for DNS updates.
+
+# Import the Cioban deployment playbook
+- import_playbook: ../cioban/deploy.yml
+  # Cioban is responsible for automatically updating Docker services.
+  # - It monitors services for new Docker image versions.
+  # - When a new image is detected, it updates the service according to its deployment policies.
+  # - This ensures that services remain up-to-date with minimal manual intervention.

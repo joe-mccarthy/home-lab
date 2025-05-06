@@ -42,8 +42,8 @@ services:
       # Configures the HTTP entry point on port 80.
       - "--entrypoints.websecure.address=:443"
       # Configures the HTTPS entry point on port 443.
-      - "--entrypoints.ssh.address=:22"
-      # Configures the SSH entry point on port 22 for forwarding SSH traffic to services.
+      - "--entrypoints.ssh.address=:2222"
+      # Configures the SSH entry point on port 2222 for forwarding SSH traffic to services.
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       # Redirects HTTP traffic to HTTPS.
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
@@ -124,8 +124,8 @@ services:
       # Maps port 443 on the host to port 443 in the container for HTTPS traffic.
       - "8080:8080"
       # Maps port 8080 on the host to port 8080 in the container for the Traefik dashboard.
-      - "22:22"
-      # Maps port 22 on the host to port 22 in the container for SSH traffic.
+      - "2222:2222"
+      # Maps port 2222 on the host to port 2222 in the container for SSH traffic.
 
     environment:
       - CF_API_EMAIL_FILE=/run/secrets/cf_email

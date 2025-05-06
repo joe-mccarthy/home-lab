@@ -12,6 +12,12 @@ services:
       # Specifies the user ID under which the Gitea service will run. This improves security by avoiding root privileges.
       - USER_GID=1000
       # Specifies the group ID under which the Gitea service will run. Ensure this matches the NFS directory permissions.
+      - SSH_PORT=22
+      # Explicitly sets the SSH port inside the container to 22 to ensure Gitea's SSH service uses this port.
+      - SSH_DOMAIN=git.{{ general.domain }}
+      # Sets the SSH domain for repository URLs. This helps Gitea generate correct SSH URLs.
+      - SSH_LISTEN_PORT=22
+      # Configures the internal port that Gitea's SSH service listens on.
 
     restart: always
     # Ensures the container automatically restarts if it stops unexpectedly.
@@ -38,6 +44,7 @@ services:
       # The number of replicas (instances) of the service to run. In this case, only one instance is deployed.
 
       labels:
+        # HTTP/HTTPS routing
         - "traefik.enable=true"
         # Enables Traefik integration for this service.
         - "traefik.http.routers.git.entrypoints=web"
@@ -64,6 +71,16 @@ services:
         # Ensures that the original `Host` header is passed to the Gitea service.
         - "traefik.docker.network=proxy"
         # Specifies the Docker network (`proxy`) that Traefik should use to communicate with the service.
+        
+        # SSH routing configuration
+        - "traefik.tcp.routers.git-ssh.entrypoints=ssh"
+        # Defines the SSH entry point (port 2222) for the `git-ssh` router.
+        - "traefik.tcp.routers.git-ssh.rule=HostSNI(`*`)"
+        # Uses a catch-all rule for SSH traffic as SSH doesn't use SNI headers.
+        - "traefik.tcp.routers.git-ssh.service=git-ssh"
+        # Associates the `git-ssh` router with the `git-ssh` service.
+        - "traefik.tcp.services.git-ssh.loadbalancer.server.port=22"
+        # Specifies the internal port (22) of the Gitea service for SSH access.
 
 networks:
   proxy:

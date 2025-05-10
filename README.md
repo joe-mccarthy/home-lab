@@ -46,6 +46,10 @@ cluster:
     docker:
     manager:
 
+nfs_servers:
+  hosts:
+    nfs:
+
 docker:
     hosts:
       docker-[01:06]:

@@ -3,7 +3,7 @@
 # Swarm initialization, and network setup. It uses roles to modularize tasks for better reusability and maintainability.
 
 - name: Setup NFS
-  hosts: nfs  # Target the NFS server group defined in the inventory.
+  hosts: nfs_servers  # Target the NFS server group defined in the inventory.
   become: true  # Execute tasks with elevated privileges (sudo).
   roles:
   - setup_nfs_server  # Use the `setup_nfs_server` role to configure the NFS server.

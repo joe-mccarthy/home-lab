@@ -28,7 +28,7 @@
 
 - name: Mount an NFS volume
   ansible.posix.mount:
-    src: "nfs.local:/exports/docker"  # The NFS server and export path to mount.
+    src: "{{ nfs_server_host }}:/exports/docker"  # The NFS server and export path to mount.
     path: /mnt/nfs/docker  # The local path where the NFS volume will be mounted.
     opts: rw,sync,hard  # Mount options:
     # - `rw`: Mount the volume with read and write permissions.
@@ -36,7 +36,7 @@
     # - `hard`: Retry indefinitely if the server becomes unavailable.
     state: mounted  # Ensure the volume is mounted.
     fstype: nfs  # Specify the file system type as NFS.
-  # This task mounts the NFS volume to the specified local directory.
+  # This task mounts the NFS volume to the specified local directory using the hostname/IP from inventory.
 
 # Notes:
 # - Ensure that the NFS server (`nfs.local`) is properly configured and accessible from the target node.

@@ -22,7 +22,10 @@ registry_url: "{{ vault_registry_url }}" # The URL of the Docker registry.
 # This variable stores the hostname or IP address of the NFS server
 # It is dynamically set to the first host in the 'nfs_servers' group from the inventory
 # This allows the playbook to automatically use the correct NFS server without hardcoding IP addresses
-nfs_server_host: "{{ groups['nfs_servers'][0] }}"
+# Note: This dynamic resolution relies on the 'ansible_default_ipv4' variable being set on the NFS server host.
+#       Ensure that the NFS server host has a default IPv4 address configured and that this variable is available
+#       in the inventory. Ansible typically sets this variable automatically if the host has a default IPv4 address.
+nfs_server_host: "{{ hostvars[groups['nfs_servers'][0]].ansible_default_ipv4.address }}"
 
 # NFS access restriction configuration
 # This variable defines which hosts/networks are allowed to access the NFS exports

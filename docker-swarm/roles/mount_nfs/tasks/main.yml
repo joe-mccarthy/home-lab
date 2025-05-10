@@ -26,6 +26,13 @@
     group: nogroup  # Set the directory group to `nogroup`.
   # This task ensures that the directory for mounting the NFS volume exists with the correct permissions.
 
+- name: Display NFS server information
+  ansible.builtin.debug:
+    msg: "NFS Server: {{ nfs_server_host }}"
+    verbosity: 0  # Always show this message regardless of verbosity level
+  # This task displays the NFS server host information for verification and debugging purposes
+  # It helps ensure that the correct server is being used before attempting to mount
+
 - name: Mount an NFS volume
   ansible.posix.mount:
     src: "{{ nfs_server_host }}:/exports/docker"  # The NFS server and export path to mount.

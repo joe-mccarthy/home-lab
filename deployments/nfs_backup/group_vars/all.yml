@@ -1,0 +1,4 @@
+---
+
+file_encryption_key: "{{ vault_file_encryption_key }}"
+

@@ -14,12 +14,7 @@
   # For example: check system resources, verify Docker Swarm status, etc.
   
   roles:
-    # Role 1: Prepare and verify NFS storage
-    - check_nfs                      # This role ensures NFS directories exist
-                                     # Creates the required directories for rClone configuration
-                                     # Configured in ./roles/check_nfs/tasks/main.yml
-    
     # Role 2: Deploy the rClone application
-    - deploy_rclone                  # This role handles the actual deployment
+    - deploy_backup                  # This role handles the actual deployment
                                      # Includes Docker service setup and configuration
                                      # Configured in ./roles/deploy_rclone/tasks/main.yml

@@ -1,0 +1,4 @@
+---
+
+rclone_user: "{{ vault_rclone_user }}"
+rclone_password: "{{ vault_rclone_password }}"

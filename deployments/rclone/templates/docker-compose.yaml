@@ -1,0 +1,39 @@
+version: '3'
+services:
+  rclone:
+    image: rclone/rclone:latest
+    container_name: rclone
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    command: rcd --rc-web-gui --rc-addr 0.0.0.0:5572 --rc-web-fetch-url=https://api.github.com/repos/rclone/rclone-webui-react/releases/latest --rc-web-gui-update --rc-no-auth --rc-user {{ rclone_user }} --rc-pass {{ rclone_password }} -vv --checksum --transfers=4 --checkers=4 --contimeout=60s --timeout=300s --retries=3 --low-level-retries=10 --stats=1s --stats-file-name-length=0
+    volumes: 
+      - /mnt/nfs/docker/rclone/config:/config/rclone 
+    environment:
+      - PHP_TZ=Europe/London
+    networks:
+      proxy: 
+      default:
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.storage == true
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.rclone.entrypoints=web"
+        - "traefik.http.routers.rclone.rule=Host(`rclone.{{ general.domain }}`)"
+        - "traefik.http.middlewares.rclone-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.rclone.middlewares=rclone-https-redirect"
+        - "traefik.http.routers.rclone-secure.entrypoints=websecure"
+        - "traefik.http.routers.rclone-secure.rule=Host(`rclone.{{ general.domain }}`)"
+        - "traefik.http.routers.rclone-secure.tls=true"
+        - "traefik.http.routers.rclone-secure.service=rclone"
+        - "traefik.http.routers.rclone-secure.tls.certresolver=letsencrypt"
+        - "traefik.http.services.rclone.loadbalancer.server.port=5572"
+        - "traefik.http.services.rclone.loadbalancer.passhostheader=true"
+        - "traefik.docker.network=proxy"
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,16 @@
+---
+- name: Create a NFS directory if it does not exist
+  ansible.builtin.file:
+    path: /mnt/nfs/docker/rclone/config
+    state: directory
+    mode: '0777'
+    owner: nobody
+    group: nogroup
+
+- name: Setup rClone directory
+  ansible.builtin.file:
+    path: /home/docker-compose/rclone/config
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup

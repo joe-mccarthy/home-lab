@@ -24,26 +24,60 @@
     mode: '7777'  # Set the directory permissions to allow full access (read, write, execute) for all users.
     owner: nobody  # Set the directory owner to `nobody`.
     group: nogroup  # Set the directory group to `nogroup`.
-  # This task ensures that the directory for mounting the NFS volume exists with the correct permissions.
+  # This creates the mount point directory before attempting to mount the NFS share
+  # The 7777 permissions are intentionally permissive to avoid Docker container access issues
+  # Consider using more restrictive permissions (e.g., 0755) in high-security environments
 
-- name: Display NFS server information
-  ansible.builtin.debug:
-    msg: "NFS Server: {{ nfs_server_host }}"
-    verbosity: 0  # Always show this message regardless of verbosity level
-  # This task displays the NFS server host information for verification and debugging purposes
-  # It helps ensure that the correct server is being used before attempting to mount
+- name: Ensure NFS client services start on boot
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - rpcbind      # RPC port mapper required for NFS communication
+  # This task activates the necessary service for NFS client functionality
+  # rpcbind provides port mapping services essential for NFS operations
+  # The service is configured to start automatically after system reboots
+  # NFS client services in systemd distros are socket-activated and don't need explicit enabling
 
-- name: Mount an NFS volume
+- name: Ensure NFS mount is persistent in fstab
   ansible.posix.mount:
-    src: "{{ nfs_server_host }}:/exports/docker"  # The NFS server and export path to mount.
-    path: /mnt/nfs/docker  # The local path where the NFS volume will be mounted.
-    opts: rw,sync,hard  # Mount options:
-    # - `rw`: Mount the volume with read and write permissions.
-    # - `sync`: Ensure all file system operations are synchronized.
-    # - `hard`: Retry indefinitely if the server becomes unavailable.
-    state: mounted  # Ensure the volume is mounted.
-    fstype: nfs  # Specify the file system type as NFS.
-  # This task mounts the NFS volume to the specified local directory using the hostname/IP from inventory.
+    src: "{{ nfs_server_host }}:/exports/docker"  # Dynamic NFS server from inventory
+    path: /mnt/nfs/docker                         # Local mount point
+    opts: "rw,sync,hard,_netdev,noatime,noauto,x-systemd.automount,x-systemd.mount-timeout=600,timeo=100"
+    state: mounted                                # Both add to fstab and mount now
+    fstype: nfs                                   # Filesystem type
+  # Mount options optimized for reliability and performance:
+  # - rw: Read-write permissions for full access to the NFS share
+  # - sync: Synchronous I/O for data integrity (prevents data loss)
+  # - hard: Keep retrying NFS operations if server unavailable (prevents I/O errors)
+  # - _netdev: Indicates network filesystem (delays mount until networking is available)
+  # - noatime: Prevents access time updates (improves performance)
+  # - noauto: Skip during standard boot-time mounting
+  # - x-systemd.automount: Use systemd's automount facility (on-demand mounting)
+  # - x-systemd.mount-timeout=600: Allow 10 minutes for mount to complete
+  # - timeo=100: 10-second client-side timeout for NFS operations (100 deciseconds)
+  #
+  # The systemd automount option is particularly important for Docker Swarm
+  # as it ensures services dependent on this filesystem will wait for it
+
+- name: Reload fstab configuration
+  ansible.builtin.command:
+    cmd: mount -a
+  register: mount_result
+  changed_when: false
+  # Activates all mount points in fstab that don't have the 'noauto' option
+  # Used here primarily to test the mount configuration for immediate feedback
+  # The changed_when: false prevents unnecessary "changed" reports in Ansible output
+  # Does not affect the automount configuration which is handled by systemd
+
+- name: Reload systemd daemon configuration
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  # Forces systemd to reload all unit files
+  # Creates mount and automount units from the updated fstab
+  # Essential after modifying fstab entries with systemd mount options
+  # Ensures systemd has the latest mount configuration
 
 # Notes:
 # - Ensure that the NFS server (`nfs.local`) is properly configured and accessible from the target node.

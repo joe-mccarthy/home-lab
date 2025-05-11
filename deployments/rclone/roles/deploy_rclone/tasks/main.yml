@@ -1,41 +1,80 @@
 ---
+
+# This role is responsible for deploying the rClone service to the Docker Swarm cluster.
+# It ensures all prerequisites are installed, removes any existing service,
+# prepares the deployment configuration, and deploys the new stack.
+
+# Task 1: Install Docker Compose
+# Docker Compose is needed to parse and process the docker-compose.yaml file
 - name: Ensure docker-compose is installed
   ansible.builtin.package:
-    name: docker-compose
-    state: present
+    name: docker-compose      # Install the docker-compose package
+    state: present            # Ensure it's installed, but don't update if already present
+  # Docker Compose is required to process the YAML template
+  # even though we're deploying to Docker Swarm with stack deploy
 
+# Task 2: Verify Docker is Running
+# The Docker daemon must be active for any Docker operations
 - name: Ensure Docker service is running
   ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: true
+    name: docker              # The Docker service name
+    state: started            # Ensure the service is started
+    enabled: true             # Ensure the service starts on boot
+  # This ensures that the Docker daemon is running and ready to accept commands
+  # If Docker isn't running, subsequent tasks would fail
 
+# Task 3: Remove Existing Service
+# Clean up any previous deployment to avoid conflicts
 - name: Remove service
   docker_swarm_service:
-    name: rclone_rclone
-    state: absent
-  ignore_errors: true
+    name: rclone_rclone       # The name of the service in format: stack_service
+    state: absent             # Remove the service if it exists
+  ignore_errors: true         # Continue even if the service doesn't exist or removal fails
+  # This prevents conflicts with existing services and ensures a clean deployment
+  # ignore_errors is used because the service might not exist on first deployment
 
+# Task 4: Prepare Local Directory
+# Create the directory for storing Docker Compose configuration
 - name: Setup rclone directory
   ansible.builtin.file:
-    path: /home/docker-compose/rclone
-    state: directory
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    path: /home/docker-compose/rclone  # Local path for Docker Compose files
+    state: directory                   # Ensure it's a directory
+    mode: '0755'                       # Set appropriate permissions
+    owner: nobody                      # Set ownership to non-privileged user
+    group: nogroup                     # Set group to non-privileged group
+  # This directory will temporarily store the Docker Compose file
+  # It's separate from the NFS directory that persists configuration data
 
+# Task 5: Copy Docker Compose Template
+# Process and copy the template to the deployment directory
 - name: Copy compose from template to host
   ansible.builtin.template:
-    src: "templates/docker-compose.yaml"
-    dest: "/home/docker-compose/rclone/docker-compose.yaml"
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    src: "templates/docker-compose.yaml"             # Source template with variable placeholders
+    dest: "/home/docker-compose/rclone/docker-compose.yaml"  # Destination with variables resolved
+    mode: '0755'                                     # Set appropriate permissions
+    owner: nobody                                    # Set ownership to non-privileged user
+    group: nogroup                                   # Set group to non-privileged group
+  # This processes the Jinja2 template and substitutes any variables
+  # The resulting file is a ready-to-deploy Docker Compose file
 
+# Task 6: Deploy the rClone Stack
+# Launch the service on Docker Swarm using the prepared configuration
 - name: Deploy rclone stack
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/rclone/docker-compose.yaml rclone
+    # Command breakdown:
+    # - docker stack deploy: Swarm command to deploy a stack
+    # - -c /home/..: Specifies the compose file path
+    # - rclone: The name of the stack (services will be prefixed with this)
+  # This deploys the rClone service to the Swarm cluster
+  # The service will be named 'rclone_rclone' (stack_service)
 
+# Task 7: Cleanup Temporary Files
+# Remove the temporary deployment files after successful deployment
 - name: delete compose directory
   ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose
+    cmd: rm -rf /home/docker-compose   # Remove the temporary directory and all contents
+  # This cleans up after deployment to avoid leaving unnecessary files
+  # The actual rClone configuration persists in the NFS mount
+  # Warning: This removes ALL docker-compose directories, not just rClone
+  # Consider changing to target only /home/docker-compose/rclone for safer cleanup

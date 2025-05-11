@@ -1,39 +1,88 @@
-version: '3'
+# This template defines the rClone service deployment for Docker Swarm
+# It includes configuration for:
+# - Container settings and security options
+# - rClone command with web UI options
+# - Volume mapping for persistent configuration
+# - Network configuration with Traefik integration for HTTPS access
+
 services:
+  # Main rClone service definition
   rclone:
-    image: rclone/rclone:latest
-    container_name: rclone
+    image: rclone/rclone:latest  # Official rClone image, using latest tag
+    container_name: rclone       # Container name (only applies in non-swarm deployments)
+    
+    # Security settings
     security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
+      - no-new-privileges:true   # Prevent container from gaining additional privileges
+    
+    restart: unless-stopped      # Restart policy: always restart unless manually stopped
+    
+    # rClone command with extensive options
     command: rcd --rc-web-gui --rc-addr 0.0.0.0:5572 --rc-web-fetch-url=https://api.github.com/repos/rclone/rclone-webui-react/releases/latest --rc-web-gui-update --rc-no-auth --rc-user {{ rclone_user }} --rc-pass {{ rclone_password }} -vv --checksum --transfers=4 --checkers=4 --contimeout=60s --timeout=300s --retries=3 --low-level-retries=10 --stats=1s --stats-file-name-length=0
+    # Command breakdown:
+    # - rcd: Run rClone as an API server (daemon mode)
+    # - --rc-web-gui: Enable web GUI interface
+    # - --rc-addr 0.0.0.0:5572: Listen on all interfaces on port 5572
+    # - --rc-web-fetch-url: Where to fetch the latest web UI
+    # - --rc-web-gui-update: Update web UI automatically
+    # - --rc-user/--rc-pass: Authentication credentials from Ansible variables
+    # - -vv: Very verbose logging
+    # - --checksum: Use checksums for verification
+    # - --transfers=4: Number of concurrent file transfers
+    # - --checkers=4: Number of concurrent file checkers
+    # - --contimeout/--timeout: Connection timeouts
+    # - --retries/--low-level-retries: Retry configuration
+    # - --stats: Progress reporting configuration
+    
+    # Volume mapping for configuration persistence
     volumes: 
-      - /mnt/nfs/docker/rclone/config:/config/rclone 
+      - /mnt/nfs/docker/rclone/config:/config/rclone  # Map NFS directory to rClone config dir
+    
+    # Container environment variables
     environment:
-      - PHP_TZ=Europe/London
+      - PHP_TZ=Europe/London  # Timezone setting for PHP (affects logging timestamps)
+    
+    # Network configuration
     networks:
-      proxy: 
-      default:
+      proxy:   # External proxy network for Traefik integration
+      default: # Default network for container-to-container communication
+    
+    # Docker Swarm specific deployment settings
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: replicated    # Deployment mode (replicated or global)
+      replicas: 1         # Number of container instances to run
+      
+      # Placement constraints to control where the service runs
       placement:
         constraints:
-          - node.labels.storage == true
+          - node.labels.storage == true  # Only deploy on nodes labeled with storage=true
+      
+      # Traefik reverse proxy configuration through labels
       labels:
+        # Enable Traefik for this service
         - "traefik.enable=true"
-        - "traefik.http.routers.rclone.entrypoints=web"
-        - "traefik.http.routers.rclone.rule=Host(`rclone.{{ general.domain }}`)"
-        - "traefik.http.middlewares.rclone-https-redirect.redirectscheme.scheme=https"
-        - "traefik.http.routers.rclone.middlewares=rclone-https-redirect"
-        - "traefik.http.routers.rclone-secure.entrypoints=websecure"
-        - "traefik.http.routers.rclone-secure.rule=Host(`rclone.{{ general.domain }}`)"
-        - "traefik.http.routers.rclone-secure.tls=true"
-        - "traefik.http.routers.rclone-secure.service=rclone"
-        - "traefik.http.routers.rclone-secure.tls.certresolver=letsencrypt"
-        - "traefik.http.services.rclone.loadbalancer.server.port=5572"
-        - "traefik.http.services.rclone.loadbalancer.passhostheader=true"
-        - "traefik.docker.network=proxy"
+        
+        # HTTP router configuration (port 80)
+        - "traefik.http.routers.rclone.entrypoints=web"                          # Use the web entrypoint
+        - "traefik.http.routers.rclone.rule=Host(`rclone.{{ general.domain }}`)" # Domain name rule
+        - "traefik.http.middlewares.rclone-https-redirect.redirectscheme.scheme=https" # Redirect to HTTPS
+        - "traefik.http.routers.rclone.middlewares=rclone-https-redirect"        # Apply redirect middleware
+        
+        # HTTPS router configuration (port 443)
+        - "traefik.http.routers.rclone-secure.entrypoints=websecure"                          # Use websecure entrypoint
+        - "traefik.http.routers.rclone-secure.rule=Host(`rclone.{{ general.domain }}`)"       # Domain name rule
+        - "traefik.http.routers.rclone-secure.tls=true"                                       # Enable TLS
+        - "traefik.http.routers.rclone-secure.service=rclone"                                 # Service name
+        - "traefik.http.routers.rclone-secure.tls.certresolver=letsencrypt"                   # Use Let's Encrypt
+        
+        # Service configuration
+        - "traefik.http.services.rclone.loadbalancer.server.port=5572"           # Forward to container port
+        - "traefik.http.services.rclone.loadbalancer.passhostheader=true"        # Pass Host header
+        - "traefik.docker.network=proxy"                                         # Use proxy network
+
+# Network definitions
 networks:
+  # External proxy network must be created separately before deployment
+  # Typically created with: docker network create --driver overlay proxy
   proxy:
-    external: true
+    external: true  # Indicates this network is defined outside this compose file

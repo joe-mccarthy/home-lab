@@ -1,7 +1,42 @@
 ---
+# This playbook orchestrates the deployment of restic backup services to a Docker Swarm cluster.
+# The deployment includes three services:
+#   1. backup - Creates regular backups of the NFS shared data
+#   2. prune - Manages backup retention and removes old backups according to policy
+#   3. check - Verifies backup integrity by scanning the repository
+#
+# The playbook targets only the first Swarm manager node to ensure that deployment
+# commands are executed exactly once, preventing duplicate service deployments.
+
 - name: Deploy NFS Backup Jobs
-  hosts: manager[0]
-  become: true
+  hosts: manager[0]  # Target only the first manager node in the Swarm cluster
+                     # Using [0] ensures the playbook runs on exactly one manager, even if
+                     # multiple manager nodes exist in the inventory
+  become: true       # Execute tasks with elevated privileges (sudo)
+                     # Required for Docker operations and filesystem access
+  
+  # Pre-deployment checks could be added here
+  # Examples:
+  #   - Check if backup target directories exist
+  #   - Verify Docker Swarm is operational
+  #   - Validate storage capacity for backups
   
   roles:
-    - deploy_backup
+    - deploy_backup  # The main role that handles all deployment tasks
+                     # This role is defined in ./roles/deploy_backup
+                     # See ./roles/deploy_backup/tasks/main.yml for implementation details
+
+# ==============================================================================
+# DEPLOYMENT PROCESS:
+# 1. Install required dependencies (docker-compose)
+# 2. Ensure Docker service is running
+# 3. Remove any existing backup services to avoid conflicts
+# 4. Prepare local directory structure for deployment
+# 5. Deploy the stack using docker stack deploy
+# 6. Clean up temporary files
+#
+# MAINTENANCE NOTES:
+# - The backup encryption key is stored in Ansible Vault (referenced in group_vars/all.yml)
+# - Backup retention policies are defined in the docker-compose template
+# - Services are configured to run on nodes with the "storage" label
+# ==============================================================================

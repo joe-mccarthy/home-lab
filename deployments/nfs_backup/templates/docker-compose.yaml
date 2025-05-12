@@ -1,78 +1,157 @@
+# =============================================================================
+# RESTIC BACKUP SERVICES CONFIGURATION
+# =============================================================================
+#
+# This Docker Compose file defines three services for a comprehensive backup solution:
+# 1. backup - Creates and manages backups of the NFS shared data
+# 2. prune - Applies retention policies and removes old backups
+# 3. check - Verifies the integrity of the backup repository
+
 services:
+  # =============================================================================
+  # BACKUP SERVICE
+  # =============================================================================
+  # This service creates regular backups of the NFS shared directory
   backup:
-    image: mazzolino/restic
-    container_name: restic
-    hostname: nfs-backup
+    image: mazzolino/restic      # Official restic image packaged as a Docker container
+    container_name: restic       # Container name for easier identification
+    hostname: nfs-backup         # Hostname inside the container
     environment:
-      RUN_ON_STARTUP: "true" 
-      BACKUP_CRON: "45 0/6 * * *"
+      # Run a backup when the container starts for immediate protection
+      RUN_ON_STARTUP: "true"
+      
+      # Schedule for regular backups: 45 minutes past every 6th hour (00:45, 06:45, 12:45, 18:45)
+      # Cron format: minute hour day month day-of-week
+      BACKUP_CRON: "45 0/6 * * *" 
+      
+      # Location of the backup repository inside the container
       RESTIC_REPOSITORY: /restic
+      
+      # Password for encrypting/decrypting the backup repository
+      # Retrieved from Ansible Vault via variable substitution
       RESTIC_PASSWORD: "{{ file_encryption_key }}"
-      RESTIC_BACKUP_SOURCES: /mnt/volumes
-      RESTIC_COMPRESSION: auto 
+      
+      # Source directory to backup (the NFS share)
+      RESTIC_BACKUP_SOURCES: /exports/docker
+      
+      # Compression level for backups:
+      # - off: No compression
+      # - auto: Decide based on file type
+      # - max: Maximum compression (slower but saves space)
+      RESTIC_COMPRESSION: max
+      
+      # Additional arguments for the backup command
       RESTIC_BACKUP_ARGS: >-
-        --tag nfs-backup
-        --verbose
+        --tag nfs-backup         
+        --verbose                
+      
+      # Set timezone for accurate logging timestamps
       TZ: Europe/London
+    
+    # Mount host directories into the container
     volumes:
-      - /backups:/restic 
-      - /backups/tmp-for-restore:/tmp-for-restore 
-      - /exports/docker:/mnt/volumes:ro
+      - /backups:/restic                         # Where to store backup repository
+      - /backups/tmp-for-restore:/tmp-for-restore # Location for restoring files if needed
+      - /exports/docker:/exports/docker:ro        # Source data to backup (read-only)
+    
+    # Security hardening
     security_opt:
-      - no-new-privileges:true
+      - no-new-privileges:true                   # Prevents privilege escalation
+    
+    # Docker Swarm deployment configuration
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: replicated                           # Run as a replicated service
+      replicas: 1                                # Only one instance needed
       placement:
         constraints:
-          - node.labels.storage == true
+          - node.labels.storage == true          # Run on nodes with storage label
 
+  # =============================================================================
+  # PRUNE SERVICE
+  # =============================================================================
+  # This service manages backup retention policies and removes old snapshots
   prune:
-    image: mazzolino/restic
-    container_name: restic-prune
-    hostname: nfs-backup
+    image: mazzolino/restic                      # Same image as backup service
+    container_name: restic-prune                 # Distinct container name
+    hostname: nfs-backup                         # Same hostname for consistency
     environment:
+      # Don't run pruning on container start, follow schedule only
       RUN_ON_STARTUP: "false"
+      
+      # Skip repository initialization since backup service handles it
       SKIP_INIT: "true"
+      
+      # Retention policy configuration: 
       RESTIC_FORGET_ARGS: >- 
-        --keep-last 10
-        --keep-daily 7
-        --keep-weekly 5
-        --keep-monthly 12
+        --keep-last 4           # Keep 4 most recent backups regardless of age
+        --keep-daily 31         # Keep one backup per day for the last 31 days
+        --keep-monthly 12       # Keep one backup per month for the last 12 months
+        --keep-yearly 1         # Keep one backup per year for long-term retention
+      
+      # Run 15 minutes after backup (allowing backup to complete first)
       PRUNE_CRON: "15 0/6 * * *"
+      
+      # Same repository and credentials as backup service
       RESTIC_REPOSITORY: /restic
       RESTIC_PASSWORD: "{{ file_encryption_key }}"
-      TZ: Europe/London
+      RESTIC_COMPRESSION: max   # Use same compression settings
+      TZ: Europe/London         # Consistent timezone setting
+    
+    # Security hardening
     security_opt:
       - no-new-privileges:true
+    
+    # Mount host directories into the container
     volumes:
-      - /backups:/restic 
+      - /backups:/restic                         # Where to store backup repository
+    
+    # Docker Swarm deployment configuration
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: replicated                           # Run as a replicated service
+      replicas: 1                                # Only one instance needed
       placement:
         constraints:
-          - node.labels.storage == true
+          - node.labels.storage == true          # Run on nodes with storage label
 
+  # =============================================================================
+  # CHECK SERVICE
+  # =============================================================================
+  # This service verifies the integrity of the backup repository
   check:
-    image: mazzolino/restic
-    container_name: restic-check
-    hostname: nfs-backup
+    image: mazzolino/restic                      # Same image as backup service
+    container_name: restic-check                 # Distinct container name
+    hostname: nfs-backup                         # Same hostname for consistency
     environment:
+      # Skip repository initialization since backup service handles it
       SKIP_INIT: "true"
+      
+      # Don't run checks on container start, follow schedule only
       RUN_ON_STARTUP: "false"
+      
+      # Schedule for regular integrity checks: 15 minutes past every 6th hour (01:15, 07:15, 13:15, 19:15)
+      # Cron format: minute hour day month day-of-week
       CHECK_CRON: "15 1-23/6 * * *"
-      RESTIC_CHECK_ARGS: --read-data-subset=10%
+      
+      # Arguments for the check command
+      RESTIC_CHECK_ARGS: --read-data-subset=10%  # Verify 10% of data for faster checks
+      
+      # Same repository and credentials as backup service
       RESTIC_REPOSITORY: /restic
       RESTIC_PASSWORD: "{{ file_encryption_key }}"
-      TZ: Europe/London
+      TZ: Europe/London         # Consistent timezone setting
+    
+    # Security hardening
     security_opt:
       - no-new-privileges:true
+    
+    # Mount host directories into the container
     volumes:
-      - /backups:/restic 
+      - /backups:/restic                         # Where to store backup repository
+    
+    # Docker Swarm deployment configuration
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: replicated                           # Run as a replicated service
+      replicas: 1                                # Only one instance needed
       placement:
         constraints:
-          - node.labels.storage == true
+          - node.labels.storage == true          # Run on nodes with storage label

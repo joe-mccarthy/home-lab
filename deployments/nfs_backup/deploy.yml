@@ -1,20 +1,7 @@
 ---
-# This playbook orchestrates the deployment of rClone to a Docker Swarm cluster.
-# rClone is a command-line program to manage files on cloud storage providers,
-# and this deployment includes a web UI for easier management.
-
-- name: Deploy rClone                # Task name describing the deployment action
-  hosts: manager[0]                  # Target the first Docker Swarm manager node
-                                     # Using [0] ensures the playbook runs only on one manager
-                                     # even if multiple managers exist in the inventory
-  become: true                       # Run tasks with elevated privileges (sudo)
-                                     # Required for Docker operations and file management
-
-  # Pre-deployment checks could be added here
-  # For example: check system resources, verify Docker Swarm status, etc.
+- name: Deploy NFS Backup Jobs
+  hosts: manager[0]
+  become: true
   
   roles:
-    # Role 2: Deploy the rClone application
-    - deploy_backup                  # This role handles the actual deployment
-                                     # Includes Docker service setup and configuration
-                                     # Configured in ./roles/deploy_rclone/tasks/main.yml
+    - deploy_backup

@@ -21,14 +21,6 @@ services:
       - "--global.sendanonymoususage=false"
       # Disables sending anonymous usage data to Traefik.
 
-      # Logging configuration
-      - "--log.level=DEBUG"
-      # Sets the log level to `DEBUG` for detailed logs. Change to `INFO` or `ERROR` in production.
-      - "--log.filePath=/var/log/traefik/traefik.log"
-      # Specifies the file path for Traefik logs.
-      - "--accesslog.filePath=/var/log/traefik/access.log"
-      # Specifies the file path for access logs.
-
       # API and dashboard
       - "--api.insecure=true"
       # Enables the Traefik API and dashboard without authentication. Use cautiously in production.
@@ -138,8 +130,6 @@ services:
       # Mounts the host's local time configuration as read-only to synchronize the container's time with the host.
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mounts the Docker socket as read-only to allow Traefik to interact with the Docker API.
-      - /mnt/nfs/docker/traefik/logs:/var/log/traefik
-      # Mounts the NFS directory for Traefik logs.
       - /mnt/nfs/docker/traefik:/letsencrypt
       # Mounts the NFS directory for storing Let's Encrypt certificates and keys.
 

@@ -65,6 +65,9 @@ services:
       placement:
         constraints:
           - node.labels.storage == true          # Run on nodes with storage label
+      labels:
+        traefik.enable: 'false'
+        # Disables Traefik integration for this service. Set to `true` if Traefik should manage routing for this service.
 
   # =============================================================================
   # PRUNE SERVICE
@@ -112,6 +115,9 @@ services:
       placement:
         constraints:
           - node.labels.storage == true          # Run on nodes with storage label
+      labels:
+        traefik.enable: 'false'
+        # Disables Traefik integration for this service. Set to `true` if Traefik should manage routing for this service.
 
   # =============================================================================
   # CHECK SERVICE
@@ -155,3 +161,6 @@ services:
       placement:
         constraints:
           - node.labels.storage == true          # Run on nodes with storage label
+      labels:
+        traefik.enable: 'false'
+        # Disables Traefik integration for this service. Set to `true` if Traefik should manage routing for this service.

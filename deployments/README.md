@@ -41,12 +41,17 @@ This directory includes deployments for a variety of services, ranging from pers
 - **Use Case**: Perfect for managing and automating smart home devices.
 - **Dependencies**: Requires Traefik for proxying and certificate management.
 
-### 7. [Portainer](portainer/README.md)
+### 7. [NFS Backup](nfs_backup/README.md)
+- **Description**: Provides automated backup and retention management for NFS shared volumes using restic. Includes services for backup creation, pruning, and integrity verification.
+- **Use Case**: Essential for protecting Docker Swarm data stored on shared volumes.
+- **Dependencies**: Requires NFS volumes mounted at specific locations and local storage for backup repository.
+
+### 8. [Portainer](portainer/README.md)
 - **Description**: Provides a web-based interface for managing Docker and Docker Swarm. While deployments are managed by Ansible, Portainer offers a convenient UI for monitoring and manual management.
 - **Use Case**: Useful for visualizing and managing the cluster's status and activity.
 - **Dependencies**: Requires Traefik for proxying and certificate management.
 
-### 8. [Traefik](traefik/README.md)
+### 9. [Traefik](traefik/README.md)
 - **Description**: Acts as a reverse proxy for other services, enabling name resolution instead of relying on IP addresses and ports. It also integrates with DNS providers to issue valid HTTPS certificates.
 - **Use Case**: A critical component for managing traffic and securing connections in the cluster.
 - **Dependencies**: None, but it is recommended to deploy Traefik first.

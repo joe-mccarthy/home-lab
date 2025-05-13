@@ -42,9 +42,13 @@ This directory includes deployments for a variety of services, ranging from pers
 - **Dependencies**: Requires Traefik for proxying and certificate management.
 
 ### 7. [NFS Backup](nfs_backup/README.md)
-- **Description**: Provides automated backup and retention management for NFS shared volumes using restic. Includes services for backup creation, pruning, and integrity verification.
-- **Use Case**: Essential for protecting Docker Swarm data stored on shared volumes.
-- **Dependencies**: Requires NFS volumes mounted at specific locations and local storage for backup repository.
+- **Description**: Provides enterprise-grade automated backups for Docker Swarm NFS shared volumes using Restic with S3 storage backend. Implements a comprehensive backup strategy with three coordinated services:
+  - **backup**: Creates hourly encrypted incremental backups
+  - **prune**: Manages retention policies (keeping 24 latest, 7 daily, 4 weekly, and 4 monthly backups)
+  - **check**: Performs regular integrity verification of the backup repository
+- **Use Case**: Critical data protection for containerized applications with secure off-site storage
+- **Security**: All backups are strongly encrypted and services operate with least-privilege principles
+- **Dependencies**: Requires NFS volumes mounted at `/exports/docker` and S3-compatible storage credentials
 
 ### 8. [Portainer](portainer/README.md)
 - **Description**: Provides a web-based interface for managing Docker and Docker Swarm. While deployments are managed by Ansible, Portainer offers a convenient UI for monitoring and manual management.

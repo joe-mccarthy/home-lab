@@ -16,5 +16,10 @@
 # - backup service: To encrypt data during backup operations
 # - prune service: To access the repository for cleanup operations
 # - check service: To verify repository integrity
-file_encryption_key: "{{ vault_file_encryption_key }}"
+nfs_encryption_key: "{{ vault_nfs_encryption_key }}"
+nfs_s3_bucket: "{{ vault_nfs_s3_bucket }}"
+nfs_s3_region: "{{ vault_nfs_s3_region }}"
+nfs_s3_key_id: "{{ vault_nfs_s3_key_id }}"
+nfs_s3_access_key: "{{ vault_nfs_s3_access_key }}"
+
 

@@ -1,67 +1,96 @@
 # NFS Backup Solution
 
-A comprehensive automated backup solution for Docker Swarm NFS shared volumes using restic.
+A comprehensive S3-backed encrypted backup solution for Docker Swarm NFS shared volumes using Restic.
 
 ## Overview
 
-This project provides an automated backup system for NFS shared volumes used in a Docker Swarm environment. It uses restic, a modern, efficient backup tool with strong encryption, deduplication, and compression features.
+This project implements an enterprise-grade backup system for NFS shared volumes in a Docker Swarm environment. It leverages Restic, a modern backup tool that provides strong encryption, efficient deduplication, and configurable compression.
 
-The solution deploys three coordinated services:
-1. **backup** - Creates regular incremental backups of the NFS shared volumes
-2. **prune** - Manages backup retention according to defined policies
-3. **check** - Verifies backup repository integrity
+The solution consists of three specialized services:
+1. **backup** - Creates automated hourly incremental backups of the NFS shared data
+2. **prune** - Applies retention policies to optimize storage usage and costs
+3. **check** - Performs regular integrity verification of the backup repository
 
 ## Architecture
 
-The system is designed to run on a Docker Swarm cluster with designated storage nodes, backing up critical NFS-shared data that's used by various services.
+The system runs as a stack on Docker Swarm with the following components:
+- **Container images**: Uses `mazzolino/restic` for all services
+- **Storage**: Backs up to S3-compatible object storage for durability
+- **Orchestration**: Deployed via Ansible for consistent configuration
+- **Security**: All data encrypted both in transit and at rest
 
 ## Prerequisites
 
 - Docker Swarm cluster
-- Node(s) labeled with `storage=true`
+- Node(s) with the `storage=true` label
 - NFS shared volume mounted at `/exports/docker`
-- Local backup storage at `/backups`
 - Restore directory at `/restore`
-- Ansible for deployment
+- S3-compatible storage with proper credentials
+- Ansible for deployment automation
 
 ## Configuration
 
+### Environment Variables
+
+All configuration is managed through Ansible variables with sensitive data stored in Ansible Vault:
+
+- **S3 Configuration**:
+  - `nfs_s3_bucket`: S3 bucket URL
+  - `nfs_s3_region`: AWS/S3 region
+  - `nfs_s3_key_id`: S3 access key ID
+  - `nfs_s3_access_key`: S3 secret access key
+
+- **Encryption**:
+  - `nfs_encryption_key`: Password for encrypting all backup data
+
 ### Backup Schedule
 
-- **Backup**: Runs every 2 hours at 45 minutes past the hour (`45 1/2 * * *`)
-  - Example: 01:45, 03:45, 05:45, 07:45, etc.
-- **Prune**: Runs 15 minutes past every even hour (`15 0/2 * * *`) 
-  - Example: 00:15, 02:15, 04:15, 06:15, etc.
-- **Check**: Runs on the same schedule as backup service (`15 1/2 * * *`)
-  - Example: 01:15, 03:15, 05:15, 07:15, etc.
+- **Backup**: Runs hourly at minute 0 (`0 0/1 * * *`)
+  - Example: 00:00, 01:00, 02:00, 03:00, etc.
+- **Prune**: Runs daily at 3:00 AM (`0 3 * * *`)
+  - Consolidates and removes backups according to retention policy
+- **Check**: Runs Monday, Wednesday, and Friday at 8:00 AM (`0 8 * * 1,3,5`)
+  - Verifies 10% of data for quick validation while minimizing resource usage
 
 ### Retention Policy
 
-The default retention policy keeps:
-- Last 12 snapshots (recent work protection)
+The default retention policy preserves:
+- Last 24 snapshots (recent history protection)
 - Daily snapshots for 7 days (weekly history)
 - Weekly snapshots for 4 weeks (monthly history)
-- Monthly snapshots for 6 months (half-year history)
+- Monthly snapshots for 4 months (quarterly history)
 
-These settings are grouped by host for more logical organization.
+All snapshots are grouped by host for easier management and organization.
 
 ### Compression
 
-Backups use maximum compression (`RESTIC_COMPRESSION: max`) to reduce storage requirements. This provides better space efficiency at the cost of slightly increased CPU usage during backup operations.
+Backups use maximum compression (`RESTIC_COMPRESSION: max`) to optimize storage usage and reduce data transfer costs when backing up to S3. This setting prioritizes storage efficiency over CPU utilization.
 
-### Encryption
+### Security
 
-Backups are encrypted using a password stored in Ansible Vault. The key is referenced as `file_encryption_key` in `group_vars/all.yml`.
+- All backups are encrypted using a key stored in Ansible Vault
+- Data is read in read-only mode to prevent backup operations from modifying source data
+- Services run with `no-new-privileges` security option to prevent privilege escalation
+- S3 credentials use least privilege IAM permissions (ListBucket, PutObject, GetObject, DeleteObject)
 
-**IMPORTANT:** Store this encryption key securely outside the system. If the key is lost, backups cannot be restored.
+**CRITICAL SECURITY WARNING:** Store the encryption key securely outside the system. If this key is lost, backups CANNOT be restored under any circumstances.
 
 ## Deployment
 
-Deploy the backup system using Ansible:
+Deploy using Ansible:
 
 ```bash
+# Regular deployment
 ansible-playbook -i inventory/hosts deploy.yml
+
+# With verbose output
+ansible-playbook -i inventory/hosts deploy.yml -v
+
+# To view changes without applying
+ansible-playbook -i inventory/hosts deploy.yml --check
 ```
+
+The playbook targets only the first Swarm manager node to prevent duplicate deployment commands.
 
 ## Manual Operations
 
@@ -74,74 +103,92 @@ docker exec restic restic snapshots
 ### Manual Backup
 
 ```bash
-docker exec restic restic backup /exports/docker
+docker exec restic restic backup /exports/docker --tag manual-backup
 ```
 
 ### Restoring Files
 
-To restore a specific file or directory:
+To restore data:
 
 ```bash
-# Find the snapshot ID
+# List available snapshots
 docker exec restic restic snapshots
 
-# Restore to the tmp-for-restore directory
-docker exec restic restic restore [SNAPSHOT_ID] --include="/path/to/restore" --target="/tmp-for-restore"
+# Restore specific path from a snapshot
+docker exec restic restic restore <snapshot-id> --include="/path/to/restore" --target="/restore"
+
+# Restore entire snapshot
+docker exec restic restic restore <snapshot-id> --target="/restore"
 ```
 
-The restored files will be available in `/backups/tmp-for-restore` on the host.
+### Browsing Backups
 
-### Mounting a Backup
-
-To browse a backup snapshot:
+To explore a backup snapshot without restoring:
 
 ```bash
-docker exec -it restic restic mount [SNAPSHOT_ID] /mnt
+docker exec -it restic restic mount <snapshot-id> /mnt
+# Use a second shell to explore mounted files at /mnt
+# Press Ctrl+C in the first shell when done
 ```
 
-### Checking Repository Integrity
+### Repository Maintenance
 
 ```bash
+# Run integrity check
 docker exec restic restic check
+
+# Force repository cleanup
+docker exec restic restic prune
+
+# Rebuild repository index (if corrupted)
+docker exec restic restic rebuild-index
 ```
 
-## Monitoring
+## Monitoring and Troubleshooting
 
-Check the status of backup services:
+### Status Checks
 
 ```bash
+# View service status
 docker service ls | grep restic
+
+# Check container logs for issues
+docker service logs nfs_backup_backup
+docker service logs nfs_backup_prune
+docker service logs nfs_backup_check
 ```
 
-View logs from backup service:
+### Common Issues and Solutions
 
-```bash
-docker service logs nfs_backup_restic_backup
-```
+1. **Connection errors to S3**:
+   - Verify S3 credentials in Ansible Vault
+   - Check network connectivity to S3 endpoint
+   - Ensure IAM permissions are configured correctly
 
-## Troubleshooting
+2. **Backup failures**:
+   - Check if source directories exist and are accessible
+   - Verify sufficient disk space for temporary files
+   - Look for permissions issues in container logs
 
-### Common Issues
+3. **Repository locks**:
+   - If a backup operation was interrupted: `docker exec restic restic unlock`
 
-1. **Service won't start**: Check if the backup directory exists and has proper permissions
-2. **Backup fails**: Verify that the source directory is properly mounted
-3. **Out of space**: Check available space in `/backups`
+4. **"Invalid repo" errors**:
+   - May indicate repository corruption or encryption key mismatch
+   - Verify correct encryption key is being used
 
-### Restic Repository Repair
+## Resource Considerations
 
-If the repository becomes corrupted:
+- **Storage**: Plan S3 storage based on data size, change rate, and retention period
+- **Network**: Initial backups transfer all data; subsequent backups only transfer changes
+- **CPU/Memory**: Compression level affects resource usage during backup operations
 
-```bash
-docker exec -it restic restic rebuild-index
-```
+## Disaster Recovery Procedure
 
-## Security Considerations
+1. Deploy a fresh instance of the backup stack
+2. Configure with the same S3 credentials and encryption key
+3. Use restore commands to recover data
 
-- Encryption key is stored in Ansible Vault
-- Services run with `no-new-privileges` security option
-- Source volumes are mounted read-only for backup
-- All services use non-privileged users
+## License and Contribution
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is maintained as part of the home-lab infrastructure. Contributions via pull requests are welcome.

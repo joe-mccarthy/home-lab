@@ -21,25 +21,33 @@ The system is designed to run on a Docker Swarm cluster with designated storage 
 - Node(s) labeled with `storage=true`
 - NFS shared volume mounted at `/exports/docker`
 - Local backup storage at `/backups`
+- Restore directory at `/restore`
 - Ansible for deployment
 
 ## Configuration
 
 ### Backup Schedule
 
-- **Backup**: Runs every 6 hours at 45 minutes past the hour (`45 0/6 * * *`)
-- **Prune**: Runs 15 minutes after each backup (`15 0/6 * * *`)
-- **Check**: Runs 15 minutes past each non-backup hour (`15 1-23/6 * * *`)
+- **Backup**: Runs every 2 hours at 45 minutes past the hour (`45 1/2 * * *`)
+  - Example: 01:45, 03:45, 05:45, 07:45, etc.
+- **Prune**: Runs 15 minutes past every even hour (`15 0/2 * * *`) 
+  - Example: 00:15, 02:15, 04:15, 06:15, etc.
+- **Check**: Runs on the same schedule as backup service (`15 1/2 * * *`)
+  - Example: 01:15, 03:15, 05:15, 07:15, etc.
 
 ### Retention Policy
 
 The default retention policy keeps:
-- Last 4 snapshots
-- Daily snapshots for 31 days
-- Monthly snapshots for 12 months
-- Yearly snapshots for 1 year
+- Last 12 snapshots (recent work protection)
+- Daily snapshots for 7 days (weekly history)
+- Weekly snapshots for 4 weeks (monthly history)
+- Monthly snapshots for 6 months (half-year history)
 
-Modify this in `templates/docker-compose.yaml` under the `prune` service.
+These settings are grouped by host for more logical organization.
+
+### Compression
+
+Backups use maximum compression (`RESTIC_COMPRESSION: max`) to reduce storage requirements. This provides better space efficiency at the cost of slightly increased CPU usage during backup operations.
 
 ### Encryption
 

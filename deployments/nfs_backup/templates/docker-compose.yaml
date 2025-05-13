@@ -50,8 +50,8 @@ services:
     
     # Mount host directories into the container
     volumes:
-      - /backups:/restic                         # Where to store backup repository
-      - /backups/tmp-for-restore:/tmp-for-restore # Location for restoring files if needed
+      - /backups:/restic                          # Where to store backup repository
+      - /restore:/restore                         # Location for restoring files if needed
       - /exports/docker:/exports/docker:ro        # Source data to backup (read-only)
     
     # Security hardening

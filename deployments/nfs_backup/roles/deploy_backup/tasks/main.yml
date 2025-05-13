@@ -1,0 +1,79 @@
+---
+# These tasks deploy and configure restic backup services on Docker Swarm
+# The deployment includes backup, prune, and check services that work together
+# to create a complete backup solution for NFS-shared data
+
+# Install required dependencies for deployment
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose     # Install Docker Compose package
+    state: present           # Ensure it's installed but don't upgrade if present
+  # Docker Compose is needed for parsing the stack template file
+  # Even though we deploy to Swarm, docker-compose package helps process the YAML
+
+# Verify Docker service status before proceeding
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker             # Target the Docker daemon service
+    state: started           # Make sure Docker is actively running
+    enabled: true            # Ensure Docker starts on system boot
+  # This check prevents deployment failures due to Docker being stopped
+  # All subsequent Docker operations depend on this service being available
+
+# Clean up any existing services before redeployment
+# This prevents conflicts and ensures clean state for new services
+- name: Remove backup service
+  docker_swarm_service:
+    name: nfs_backup_restic_backup  # Service name in format: stack_service
+    state: absent                   # Remove the service if it exists
+  ignore_errors: true               # Continue even if service doesn't exist
+  # The main backup service that creates periodic backups of the NFS share
+  # Removing it ensures we don't have duplicate services or configuration conflicts
+
+- name: Remove prune service
+  docker_swarm_service:
+    name: nfs_backup_restic_prune   # Service name in format: stack_service
+    state: absent                   # Remove the service if it exists
+  ignore_errors: true               # Continue even if service doesn't exist
+  # The prune service that handles backup retention policy enforcement
+  # This service removes old backups according to defined retention policies
+
+- name: Remove check service
+  docker_swarm_service:
+    name: nfs_backup_restic_check   # Service name in format: stack_service
+    state: absent                   # Remove the service if it exists
+  ignore_errors: true               # Continue even if service doesn't exist
+  # The check service that verifies backup repository integrity
+  # Regular checks help ensure backups can be restored when needed
+
+# Prepare local directory structure for deployment files
+- name: Setup restic directory
+  ansible.builtin.file:
+    path: /home/docker-compose/restic  # Directory for deployment configuration
+    state: directory                   # Ensure this is a directory
+    mode: '0755'                       # Secure but usable permissions
+    owner: nobody                      # Non-privileged user ownership
+    group: nogroup                     # Non-privileged group ownership
+  # This temporary directory will store the processed compose file
+  # Using nobody:nogroup increases security by minimizing privileges
+
+# Process and copy the template to the deployment directory
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "templates/docker-compose.yaml"  # Source template with variables
+    dest: "/home/docker-compose/restic/docker-compose.yaml"  # Processed output
+    mode: '0755'                          # Secure but usable permissions 
+    owner: nobody                         # Non-privileged user ownership
+    group: nogroup                        # Non-privileged group ownership
+  # This processes the Jinja2 template, resolving variables like encryption keys
+  # The resulting file is a complete Docker Compose file ready for deployment
+
+# Deploy the stack to Docker Swarm
+- name: Deploy restic stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/restic/docker-compose.yaml nfs_backup_restic
+
+# Clean up temporary deployment files
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose

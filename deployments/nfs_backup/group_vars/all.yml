@@ -1,0 +1,20 @@
+---
+# Encryption key for backup files
+# ------------------------------
+# This variable stores the encryption password used to secure the restic backup repository
+# It is retrieved from Ansible Vault using the vault_file_encryption_key variable
+# The encryption key is critical for both creating backups and for restoration operations
+# Without this key, backup data cannot be decrypted or accessed
+#
+# IMPORTANT SECURITY NOTES:
+# 1. Never store the actual encryption key in plain text
+# 2. Ensure the vault file containing this key is properly secured
+# 3. Document the key in a secure password manager or key management system
+# 4. Loss of this key will result in permanent inability to restore backups
+#
+# This key is used by all three services:
+# - backup service: To encrypt data during backup operations
+# - prune service: To access the repository for cleanup operations
+# - check service: To verify repository integrity
+file_encryption_key: "{{ vault_file_encryption_key }}"
+

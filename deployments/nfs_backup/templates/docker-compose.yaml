@@ -20,9 +20,9 @@ services:
       # Run a backup when the container starts for immediate protection
       RUN_ON_STARTUP: "true"
       
-      # Schedule for regular backups: 45 minutes past every 6th hour (00:45, 06:45, 12:45, 18:45)
+      # Schedule for regular backups: 45 minutes past every 2nd hour (01:45, 03:45, 05:45, ...)
       # Cron format: minute hour day month day-of-week
-      BACKUP_CRON: "45 0/6 * * *" 
+      BACKUP_CRON: "45 1/2 * * *" 
       
       # Location of the backup repository inside the container
       RESTIC_REPOSITORY: /restic
@@ -86,7 +86,7 @@ services:
       
       # Retention policy configuration: 
       RESTIC_FORGET_ARGS: >- 
-        --keep-last 4           
+        --keep-last 12           
         --keep-daily 7         
         --keep-weekly 4
         --keep-monthly 6
@@ -94,7 +94,7 @@ services:
         --group-by host
 
       # Run 15 minutes after backup (allowing backup to complete first)
-      PRUNE_CRON: "15 0/6 * * *"
+      PRUNE_CRON: "15 0/2 * * *"
       
       # Same repository and credentials as backup service
       RESTIC_REPOSITORY: /restic
@@ -138,7 +138,7 @@ services:
       
       # Schedule for regular integrity checks: 15 minutes past every 6th hour (01:15, 07:15, 13:15, 19:15)
       # Cron format: minute hour day month day-of-week
-      CHECK_CRON: "15 1-23/6 * * *"
+      CHECK_CRON: "15 1/2 * * *"
       
       # Arguments for the check command
       RESTIC_CHECK_ARGS: --read-data-subset=10%  # Verify 10% of data for faster checks

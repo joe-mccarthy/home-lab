@@ -1,64 +1,70 @@
 ---
-# This playbook is responsible for setting up machines in the cluster.
-# It performs tasks such as configuring SSH keys, updating the system, installing core packages,
-# and rebooting the machine if necessary.
+# This playbook configures new or existing machines in the home lab cluster.
+# It handles SSH key management, system updates, essential package installation, 
+# and performs necessary system maintenance tasks.
 
-- hosts: all  # Run on all hosts listed in the inventory file.
-  become: true  # Run all tasks with elevated privileges (e.g., sudo).
+- hosts: all  # Target all hosts defined in the inventory
+  become: true  # Execute tasks with elevated privileges (sudo)
   vars:
-    user_keys: "{{ lookup('env', 'USER') }}"  # Dynamically fetch the current user from the environment.
-    # The `user_keys` variable specifies the user for whom the SSH key will be added to the authorized keys.
+    user_keys: "{{ lookup('env', 'USER') }}"  # Get current username from environment
+    # This variable determines which user account will receive the SSH authorized key
 
   tasks:
-    # Task 1: Configure SSH authorized keys for the user
+    # Task 1: Configure SSH key-based authentication
     - name: "Setting authorized key for user {{ user_keys }}"
       ansible.posix.authorized_key:
-        user: "{{ user_keys }}"  # The user for whom the SSH key will be added.
-        state: present  # Ensure the key is present in the authorized_keys file.
-        key: "{{ lookup('file', lookup('env','HOME') + public_key ) }}"  # Path to the public key file.
-      # This task ensures passwordless SSH access by adding the specified public key to the user's `~/.ssh/authorized_keys`.
-      # - The `key` parameter dynamically retrieves the public key file based on the `public_key` variable.
-      # - Ensure the `public_key` variable is correctly defined in the group variables file.
+        user: "{{ user_keys }}"  # Target user account
+        state: present  # Ensure key exists in authorized_keys
+        key: "{{ lookup('file', lookup('env','HOME') + public_key ) }}"  # Read public key from file
+      # This enables password-less SSH access to the target machine
+      # Note: The public_key variable should be defined in group_vars or command line
 
-    # Task 2: Update and upgrade Ubuntu packages
-    - name: Update Ubuntu
-      when: ansible_facts['os_family'] == 'Debian'  # Only run this task on Debian-based systems (e.g., Ubuntu).
+    # Task 2: Update all system packages
+    - name: Update system packages
+      when: ansible_facts['os_family'] == 'Debian'  # Only for Debian/Ubuntu systems
       ansible.builtin.apt:
-        upgrade: dist  # Perform a full distribution upgrade to ensure all packages are updated.
-        update_cache: true  # Refresh the package cache before upgrading.
-      # This task ensures that all packages on Debian-based systems are updated to their latest versions.
+        upgrade: dist  # Full distribution upgrade (equivalent to apt dist-upgrade)
+        update_cache: true  # Update package index before upgrading (equivalent to apt update)
+      # This ensures all packages are updated to their latest versions, including security patches
 
-    # Task 3: Check if a reboot is required on Ubuntu
-    - name: Check if a reboot is required on Ubuntu
-      when: ansible_facts['os_family'] == 'Debian'  # Only run this task on Debian-based systems.
+    # Task 3: Detect if system requires reboot
+    - name: Check if system requires reboot
+      when: ansible_facts['os_family'] == 'Debian'
       ansible.builtin.stat:
-        path: /var/run/reboot-required  # Check for the existence of the reboot-required file.
-      register: ubuntu_reboot_required  # Save the result of the check in a variable for later use.
-      # This task checks if the system requires a reboot after updates. The presence of the file
-      # `/var/run/reboot-required` indicates that a reboot is necessary.
+        path: /var/run/reboot-required  # File created by package manager when reboot needed
+      register: ubuntu_reboot_required  # Store result for conditional use in next task
+      # Many kernel updates and critical system packages require a reboot to take effect
 
-    # Task 4: Reboot the machine if required
-    - name: Reboot Ubuntu if required
-      when: ubuntu_reboot_required.stat.exists | default(false)  # Only reboot if the reboot-required file exists.
+    # Task 4: Perform system reboot if needed
+    - name: Reboot system if required
+      when: ubuntu_reboot_required.stat.exists | default(false)  # Only reboot when file exists
       ansible.builtin.reboot:
-        reboot_timeout: 600  # Allow up to 600 seconds (10 minutes) for the system to reboot.
-      # This task reboots the system if a reboot is required. It ensures that the system is fully updated
-      # and any changes requiring a reboot are applied.
+        reboot_timeout: 600  # Wait up to 10 minutes for system to come back online
+      # This task ensures system changes are properly applied and avoids unexpected downtime
+      # by performing controlled reboots only when necessary
 
-    # Task 5: Install core packages
-    - name: Install Core Packages
+    # Task 5: Install essential system utilities
+    - name: Install core packages
       ansible.builtin.apt:
-        name: "{{ item }}"  # Install each package in the list.
-        state: present  # Ensure the package is installed.
+        name: "{{ item }}"  # Install packages one by one
+        state: present  # Ensure packages are installed
       loop:
-        - htop  # A better version of the `top` command for monitoring system processes.
-        - curl  # A command-line tool for transferring data with URL syntax.
-        - wget  # A utility for non-interactive download of files from the web.
-        - git  # A distributed version control system for tracking changes in source code.
-        - unzip  # A utility to list, test, and extract compressed ZIP archives.
-        - zip  # A compression and file packaging utility.
-        - lm-sensors  # A hardware health monitoring package for Linux.
-        - net-tools  # A package that includes essential tools for network configuration.
-        - dnsutils  # A package that includes essential tools for DNS configuration.
-      # This task installs a list of essential packages required for system functionality and monitoring.
-      # - The `loop` directive iterates over the list of packages and installs each one.
+        - htop          # Interactive process viewer and system monitor
+        - curl          # Command-line tool for data transfer with URL syntax
+        - wget          # Non-interactive network downloader
+        - git           # Distributed version control system
+        - unzip         # Extract ZIP archives
+        - zip           # Create ZIP archives
+        - lm-sensors    # Hardware health monitoring utilities
+        - net-tools     # Network configuration tools (ifconfig, netstat, etc.)
+        - dnsutils      # DNS utilities (dig, nslookup, etc.)
+        - nfs-common    # NFS client utilities for mounting network shares
+      # These packages provide essential functionality for system administration,
+      # monitoring, network diagnostics, and integration with the home lab environment
+
+    # Task 6: Refresh systemd configuration
+    - name: Reload systemd configuration
+      ansible.builtin.systemd:
+        daemon_reload: true  # Reload unit files and systemd configuration
+      # This ensures any systemd service changes are recognized by the system
+      # Important after package installations that add new system services

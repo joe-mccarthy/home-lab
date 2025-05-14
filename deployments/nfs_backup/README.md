@@ -47,9 +47,9 @@ All configuration is managed through Ansible variables with sensitive data store
 
 - **Backup**: Runs hourly at minute 0 (`0 0/1 * * *`)
   - Example: 00:00, 01:00, 02:00, 03:00, etc.
-- **Prune**: Runs daily at 3:00 AM (`0 3 * * *`)
+- **Prune**: Runs daily at 3:30 AM (`30 3 * * *`)
   - Consolidates and removes backups according to retention policy
-- **Check**: Runs Monday, Wednesday, and Friday at 8:00 AM (`0 8 * * 1,3,5`)
+- **Check**: Runs Monday, Wednesday, and Friday at 8:30 AM (`30 8 * * 1,3,5`)
   - Verifies 10% of data for quick validation while minimizing resource usage
 
 ### Retention Policy

@@ -16,6 +16,11 @@ jobs:
     name: Add issue to project
     # Defines the job to add issues or pull requests to the specified GitHub project.
 
+    permissions:
+      contents: read
+      repository-projects: write
+    # Limits the permissions of the GITHUB_TOKEN to only what is necessary for this job.
+
     runs-on: ubuntu-latest
     # Specifies the environment where the job will run. In this case, it uses the latest Ubuntu runner.
 

@@ -28,3 +28,11 @@
   # - It monitors services for new Docker image versions.
   # - When a new image is detected, it updates the service according to its deployment policies.
   # - This ensures that services remain up-to-date with minimal manual intervention.
+
+# Import the NFS Backup deployment playbook
+- import_playbook: ../nfs-backup/deploy.yml
+  # NFS Backup is responsible for backing up critical NFS shares used by the cluster.
+  # - It schedules regular backups of important data from services like Home Assistant.
+  # - Supports incremental backups to optimize storage usage.
+  # - Provides data redundancy and disaster recovery capabilities.
+  # - Ensures data persistence across container and host failures.

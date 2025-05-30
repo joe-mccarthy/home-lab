@@ -1,0 +1,9 @@
+---
+- name: Deploy Immich stack to Docker Swarm
+  hosts: manager[0]  
+  become: true  
+  roles:
+    - check_nfs  
+    - deploy
+
+

@@ -1,0 +1,14 @@
+---
+- name: Create required NFS directories if they do not exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+    owner: nobody
+    group: nogroup
+  loop:
+    - /mnt/nfs/docker/immich
+    - /mnt/nfs/docker/immich/backups
+    - /mnt/nfs/docker/immich/upload
+    - /mnt/nfs/docker/immich/ml
+    - /mnt/nfs/docker/immich/database

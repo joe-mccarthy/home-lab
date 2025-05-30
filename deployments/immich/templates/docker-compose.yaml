@@ -1,0 +1,109 @@
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:v1.134.0
+    volumes:
+      - /mnt/nfs/docker/immich/upload:/usr/src/app/upload
+      - /mnt/nfs/docker/immich/backups:/usr/src/app/upload/backups
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - proxy
+      - default
+   
+    environment:
+      DB_USERNAME: "{{ database_user }}"
+      DB_PASSWORD: "{{ database_password }}"
+      POSTGRES_DB: immich
+      DB_HOSTNAME: immich-database
+      REDIS_HOSTNAME: immich-redis
+    restart: always
+    healthcheck:
+      disable: false
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+          - "traefik.enable=true"
+          # Enables Traefik integration for this service.
+          - "traefik.http.routers.immich.entrypoints=web"
+          # Defines the entry point for HTTP traffic (port 80) for the `immich` router.
+          - "traefik.http.routers.immich.rule=Host(`immich.{{ general.domain }}`)"
+          # Specifies the routing rule for HTTP traffic. Requests to `immich.<domain>` are routed to this service.
+          - "traefik.http.middlewares.immich-https-redirect.redirectscheme.scheme=https"
+          # Redirects HTTP traffic to HTTPS for secure communication.
+          - "traefik.http.routers.immich.middlewares=immich-https-redirect"
+          # Applies the HTTPS redirection middleware to the `immich` router.
+          - "traefik.http.routers.immich-secure.entrypoints=websecure"
+          # Defines the entry point for HTTPS traffic (port 443) for the `immich-secure` router.
+          - "traefik.http.routers.immich-secure.rule=Host(`immich.{{ general.domain }}`)"
+          # Specifies the routing rule for HTTPS traffic. Requests to `immich.<domain>` are routed to this service.
+          - "traefik.http.routers.immich-secure.tls=true"
+          # Enables TLS (HTTPS) for the `immich-secure` router.
+          - "traefik.http.routers.immich-secure.service=immich"
+          # Associates the `immich-secure` router with the `immich` service.
+          - "traefik.http.routers.immich-secure.tls.certresolver=letsencrypt"
+          # Configures Traefik to use the Let's Encrypt certificate resolver for automatic SSL certificate management.
+          - "traefik.http.services.immich.loadbalancer.server.port=2283"
+          # Specifies the internal port (2283) of the immich service to which Traefik should route traffic.
+          - "traefik.docker.network=proxy"
+          # Specifies the Docker network (`proxy`) that Traefik should use to communicate with the service.
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:v1.134.0
+    volumes:
+      - /mnt/nfs/docker/immich/ml:/cache
+    restart: always
+    networks:
+      - default
+    healthcheck:
+      disable: false
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+
+  immich-redis:
+    container_name: immich_redis
+    image: docker.io/valkey/valkey:8-bookworm@sha256:ff21bc0f8194dc9c105b769aeabf9585fea6a8ed649c0781caeac5cb3c247884
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: always
+    networks:
+      - default
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+
+  immich-database:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0@sha256:fa4f6e0971f454cd95fec5a9aaed2ed93d8f46725cc6bc61e0698e97dba96da1
+    networks:
+      - default
+    environment:
+      POSTGRES_PASSWORD: "{{ database_password }}"
+      POSTGRES_USER: "{{ database_user }}"
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - /mnt/nfs/docker/immich/database:/var/lib/postgresql/data
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+    healthcheck:
+      test: pg_isready -U postgres || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  proxy:
+    external: true
+  default:
+    driver: overlay

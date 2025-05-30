@@ -1,0 +1,49 @@
+---
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Stop specified Docker services
+  docker_swarm_service:
+    name: "{{ item }}"
+    state: absent             
+  loop:
+    - immich_immich-database
+    - immich_immich-machine-learning
+    - immich_immich-redis
+    - immich_immich-server
+  ignore_errors: true
+
+- name: Setup immich directory
+  ansible.builtin.file:
+    path: /home/docker-compose/immich
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "templates/docker-compose.yaml"
+    dest: "/home/docker-compose/immich/docker-compose.yaml"
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+
+- name: Deploy Immich stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/immich/docker-compose.yaml immich
+  register: swarm_check
+  changed_when: false
+
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose
+

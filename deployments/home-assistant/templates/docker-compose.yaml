@@ -43,12 +43,6 @@ services:
       replicas: 1
       # The number of replicas (instances) of the service to run. In this case, only one instance is deployed.
 
-      placement:
-        constraints:
-          - node.labels.zigbee == true
-          # Ensures the service is deployed only on nodes with the `zigbee` label.
-          # This is useful for targeting specific nodes with the required hardware.
-
       labels:
         - "traefik.enable=true"
         # Enables Traefik integration for this service.

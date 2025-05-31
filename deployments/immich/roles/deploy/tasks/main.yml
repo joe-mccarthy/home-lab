@@ -1,25 +1,74 @@
 ---
+# Immich Docker Swarm Deployment Tasks
+# This task file handles the complete deployment process for the Immich application stack.
+# It ensures prerequisites are met, cleans up existing services, and deploys the new stack.
+
 - name: Ensure docker-compose is installed
+  # Installs the docker-compose package which is required for processing the compose template.
+  # Even though we deploy to Docker Swarm, docker-compose helps parse and validate the YAML.
+  # This ensures the deployment environment has all necessary tools available.
+  
   ansible.builtin.package:
     name: docker-compose
+    # The package name for docker-compose in the system package manager.
+    # On most distributions this is available in the default repositories.
+    
     state: present
+    # Ensures docker-compose is installed but doesn't force upgrades.
+    # This maintains stability while ensuring the required tool is available.
 
 - name: Ensure Docker service is running
+  # Verifies that the Docker daemon is active before attempting any Docker operations.
+  # This prevents deployment failures due to Docker being stopped or disabled.
+  # Also ensures Docker will start automatically on system boot.
+  
   ansible.builtin.service:
     name: docker
+    # The systemd service name for the Docker daemon.
+    # This is consistent across most modern Linux distributions.
+    
     state: started
+    # Ensures the Docker service is currently running.
+    # Will start the service if it's currently stopped.
+    
     enabled: true
+    # Configures Docker to start automatically on system boot.
+    # Provides resilience against system restarts.
 
 - name: Stop specified Docker services
+  # Removes existing Immich services before redeployment to ensure clean state.
+  # This prevents conflicts between old and new service configurations.
+  # Service names follow Docker Swarm naming convention: stack_service.
+  
   docker_swarm_service:
     name: "{{ item }}"
-    state: absent             
+    # The full service name as it appears in Docker Swarm.
+    # Names are prefixed with the stack name 'immich_' followed by the service name.
+    
+    state: absent
+    # Ensures the service is completely removed from the swarm.
+    # This includes stopping containers and removing service definitions.
+    
   loop:
     - immich_immich-database
+    # PostgreSQL database service that stores all application data.
+    # Must be stopped before redeployment to prevent data corruption.
+    
     - immich_immich-machine-learning
+    # AI/ML service for face recognition and object detection features.
+    # Can be safely stopped as it doesn't maintain persistent state.
+    
     - immich_immich-redis
+    # Redis cache service for session storage and application caching.
+    # Stopping this will clear all cached data but won't affect persistent data.
+    
     - immich_immich-server
+    # Main application server that handles web interface and API requests.
+    # Must be stopped last to ensure dependent services are cleaned up first.
+    
   ignore_errors: true
+  # Continues deployment even if some services don't exist or fail to stop.
+  # This is necessary for initial deployments where services haven't been created yet.
 
 - name: Setup immich directory
   ansible.builtin.file:
@@ -30,20 +79,76 @@
     group: nogroup
 
 - name: Copy compose from template to host
+  # Processes the Jinja2 template and copies the resulting Docker Compose file to the host.
+  # This step resolves all Ansible variables and creates a deployable compose file.
+  # The template includes database credentials and domain configuration.
+  
   ansible.builtin.template:
     src: "templates/docker-compose.yaml"
+    # Source template file with Ansible variables and Jinja2 templating.
+    # Contains placeholders for database credentials and domain names.
+    
     dest: "/home/docker-compose/immich/docker-compose.yaml"
+    # Destination path for the processed compose file on the target host.
+    # This temporary location is used for deployment and then cleaned up.
+    
     mode: '0755'
+    # Sets file permissions to allow read/write for owner and read/execute for others.
+    # Ensures the file can be read by Docker but maintains reasonable security.
+    
     owner: nobody
+    # Sets file ownership to the unprivileged 'nobody' user.
+    # Reduces security risk by avoiding root ownership of temporary files.
+    
     group: nogroup
+    # Sets file group to the unprivileged 'nogroup' group.
+    # Maintains consistency with the ownership model used throughout the deployment.
 
 - name: Deploy Immich stack
+  # Executes the Docker stack deployment using the processed compose file.
+  # This creates all services defined in the compose file on the Docker Swarm cluster.
+  # Services will be distributed across available swarm nodes based on constraints.
+  
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/immich/docker-compose.yaml immich
+    # Command to deploy the stack to Docker Swarm.
+    # -c specifies the compose file path
+    # 'immich' is the stack name that prefixes all service names
+    
   register: swarm_check
+  # Stores the command output in a variable for potential debugging.
+  # Can be useful for troubleshooting deployment issues.
+  
   changed_when: false
+  # Prevents this task from showing as 'changed' in Ansible output.
+  # Stack deployment is considered an operational task rather than a configuration change.
 
 - name: delete compose directory
+  # Removes the temporary directory containing the processed compose file.
+  # This cleanup step prevents accumulation of temporary files on the host.
+  # Also removes any sensitive information that might be in the processed template.
+  
   ansible.builtin.command:
     cmd: rm -rf /home/docker-compose
+    # Recursively removes the entire temporary directory and its contents.
+    # This ensures complete cleanup regardless of directory structure.
+
+# Deployment Flow:
+# 1. Verify prerequisites (docker-compose package and Docker service)
+# 2. Stop existing services to ensure clean deployment
+# 3. Process template file with current variables
+# 4. Deploy new stack to Docker Swarm
+# 5. Clean up temporary files
+
+# Post-Deployment:
+# - Services will be available according to their health check definitions
+# - Traefik will automatically discover and route traffic to the services
+# - Data persistence is maintained through NFS-mounted volumes
+# - Services can be monitored through Docker Swarm commands or Portainer
+
+# Troubleshooting:
+# - Check Docker service status if deployment fails
+# - Verify NFS mounts are accessible before deployment
+# - Use 'docker service logs' to troubleshoot individual service issues
+# - Ensure vault variables are properly decrypted and accessible
 

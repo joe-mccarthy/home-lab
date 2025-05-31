@@ -60,6 +60,18 @@ This directory includes deployments for a variety of services, ranging from pers
 - **Use Case**: A critical component for managing traffic and securing connections in the cluster.
 - **Dependencies**: None, but it is recommended to deploy Traefik first.
 
+### 10. [Immich](immich/README.md)
+- **Description**: Immich is a high-performance self-hosted photo and video management solution that serves as a complete alternative to Google Photos. Features include:
+  - Web interface and mobile apps for photo browsing and automatic backup
+  - AI-powered features including face recognition and object detection
+  - Timeline view and album organization
+  - External sharing capabilities
+- **Services**:
+  - **immich-server**: Main application with web interface and API
+  - **immich-database**: PostgreSQL with vector extensions for AI features
+  - **immich-redis**: Cache and session storage for performance
+  - **immich-machine-learning**: AI processing for smart features
+- **Use Case**: Ideal for users looking to manage and organize their photo and video collections with advanced AI capabilities.
 ## Prerequisites
 
 Before deploying any services, ensure the following:

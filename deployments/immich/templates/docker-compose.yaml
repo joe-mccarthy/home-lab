@@ -28,6 +28,10 @@ services:
       - default
       # Connects to the default overlay network for internal service communication.
       # Allows communication with database, Redis, and machine learning services.
+    
+    depends_on:
+      - immich-redis
+      - immich-database
 
     environment:
       DB_USERNAME: "{{ database_user }}"

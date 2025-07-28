@@ -4,6 +4,7 @@
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/joe-mccarthy/home-lab/latest?style=for-the-badge)
 ![GitHub License](https://img.shields.io/github/license/joe-mccarthy/home-lab?style=for-the-badge)
 
+
 The purpose of this repository is to create and manage a simple [home lab](https://linuxhandbook.com/homelab/) built around clusters of [Raspberry Pi's](https://www.raspberrypi.com/) using [Docker Swarm](https://docs.docker.com/engine/swarm/) for container deployment and management. The primary tool for managing the home lab is [Ansible](https://docs.ansible.com/ansible/latest/index.html). 
 
 This repository is designed to help you learn, test, and experiment with deploying and managing services in a clustered environment. It provides a structured approach to setting up a home lab, automating deployments, and maintaining the cluster.

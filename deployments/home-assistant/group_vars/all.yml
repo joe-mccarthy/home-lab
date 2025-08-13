@@ -1,17 +1,86 @@
 ---
-# This file contains group variables for the Home Assistant deployment.
-# It defines configuration values and secrets required for the deployment.
-# The secrets are securely stored in Ansible Vault and referenced here for use in playbooks.
+# ============================================================================
+# Home Assistant Deployment Configuration
+# ============================================================================
+# This file contains group variables for the Home Assistant deployment playbook.
+# All sensitive values are stored in Ansible Vault for security and referenced
+# here as vault variables. This ensures secrets are encrypted at rest and only
+# decrypted during playbook execution.
+#
+# File Purpose:
+# - Define deployment-specific configuration variables
+# - Reference encrypted secrets from Ansible Vault
+# - Provide a centralized configuration for the Home Assistant service
+# ============================================================================
 
+# ============================================================================
+# Reverse Proxy Configuration
+# ============================================================================
 proxy: "{{ vault_proxy }}"
-# The `proxy` variable specifies the proxy configuration for Home Assistant.
-# This value is securely stored in Ansible Vault and injected at runtime.
-# It is used to configure the reverse proxy (e.g., Traefik or Nginx) to accept and route connections to Home Assistant.
+# The reverse proxy configuration for Home Assistant external access.
+# This typically contains the external domain/URL that users will access
+# to reach the Home Assistant web interface (e.g., "https://homeassistant.yourdomain.com").
+# 
+# Purpose:
+# - Enables external access to Home Assistant through a reverse proxy
+# - Configures SSL termination and routing rules
+# - Supports integration with Traefik, Nginx Proxy Manager, or similar solutions
+#
+# Expected format: Full URL including protocol (https://subdomain.domain.com)
 
-# Notes:
-# - Ensure that the `vault_proxy` variable is properly defined and encrypted in Ansible Vault.
-# - To edit the encrypted variables, use the following command:
-#   ansible-vault edit group_vars/all.yml
-# - The proxy configuration should align with the reverse proxy setup in your environment.
-# - Always test changes in a staging environment before applying them to production systems.
-# - Use Ansible Vault to securely manage sensitive data and avoid storing plaintext secrets in this file.
+# ============================================================================
+# IoT and Smart Home Integration
+# ============================================================================
+mqtt_server: "{{ vault_mqtt_server }}"
+# MQTT broker server address for Home Assistant device communication.
+# Home Assistant uses MQTT for communicating with IoT devices, sensors,
+# and smart home equipment that support the MQTT protocol.
+#
+# Purpose:
+# - Enables device discovery and communication
+# - Supports Zigbee2MQTT, ESPHome, and other MQTT-based integrations
+# - Provides reliable messaging for home automation workflows
+#
+# Expected format: IP address or hostname (e.g., "192.168.1.100" or "mqtt.local")
+
+zigbee_serial_port: "{{ vault_zigbee_serial_port }}"
+# USB serial port path for the Zigbee coordinator device.
+# This is the physical USB port where the Zigbee coordinator (USB dongle)
+# is connected to enable Zigbee device communication.
+#
+# Purpose:
+# - Connects Home Assistant to Zigbee devices via coordinator hardware
+# - Enables pairing and control of Zigbee smart devices
+# - Supports Zigbee2MQTT or ZHA (Zigbee Home Automation) integration
+#
+# Expected format: Device path (e.g., "/dev/ttyUSB0", "/dev/ttyACM0")
+
+# ============================================================================
+# Security and Maintenance Notes
+# ============================================================================
+# IMPORTANT SECURITY PRACTICES:
+#
+# 1. Vault Management:
+#    - All sensitive values (URLs, IPs, device paths) are encrypted in Ansible Vault
+#    - To edit encrypted variables: ansible-vault edit group_vars/all.yml
+#    - Use strong vault passwords and store them securely
+#
+# 2. Environment Isolation:
+#    - Test all configuration changes in a staging environment first
+#    - Never commit unencrypted secrets to version control
+#    - Regularly rotate vault passwords and sensitive credentials
+#
+# 3. Network Security:
+#    - Ensure proxy configuration uses HTTPS with valid certificates
+#    - Restrict MQTT broker access to authorized devices only
+#    - Use firewall rules to limit Home Assistant access to necessary ports
+#
+# 4. Hardware Security:
+#    - Verify Zigbee coordinator device paths before deployment
+#    - Use udev rules for consistent USB device naming
+#    - Monitor for USB device disconnections or path changes
+#
+# 5. Backup Strategy:
+#    - Regular backups of Home Assistant configuration
+#    - Include Ansible Vault files in backup procedures
+#    - Test restore procedures periodically

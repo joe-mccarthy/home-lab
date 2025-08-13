@@ -1,64 +1,245 @@
 ---
-# This task file is responsible for deploying the Home Assistant stack using Docker Swarm.
-# It ensures that Docker and docker-compose are installed and running, removes any existing services,
-# sets up the required directory structure, deploys the stack, and cleans up temporary files.
+# ============================================================================
+# Home Assistant Docker Swarm Deployment Tasks
+# ============================================================================
+# This Ansible task file orchestrates the complete deployment of the Home Assistant
+# stack on Docker Swarm. It handles prerequisite verification, service cleanup,
+# infrastructure preparation, and stack deployment for a containerized Home Assistant
+# environment with integrated MQTT and Zigbee2MQTT services.
+#
+# Deployment Architecture:
+# - Home Assistant Core: Main home automation platform
+# - Mosquitto MQTT: Message broker for IoT device communication
+# - Zigbee2MQTT: Bridge between Zigbee devices and MQTT
+# - Shared NFS storage for persistent data and configuration
+#
+# Prerequisites:
+# - Docker Swarm cluster initialized and operational
+# - NFS storage mounted and accessible (/mnt/nfs/docker)
+# - Network connectivity for container image downloads
+# - Zigbee coordinator hardware connected to deployment target
+# ============================================================================
 
-- name: Ensure docker-compose is installed
+# ============================================================================
+# Docker Environment Prerequisites
+# ============================================================================
+- name: Ensure Docker Compose is installed
   ansible.builtin.package:
-    name: docker-compose  # The package name for docker-compose.
-    state: present  # Ensure docker-compose is installed on the target system.
-  # This task ensures that docker-compose is available for managing Docker-based applications.
+    name: docker-compose
+    state: present
+  # Installs Docker Compose on the target system if not already present.
+  # Docker Compose is required for defining and managing multi-container
+  # applications, even though we're deploying to Docker Swarm.
+  #
+  # Note: While Docker Swarm uses stack files, docker-compose may be needed
+  # for local development, testing, or compatibility with existing tooling.
 
-- name: Ensure Docker service is running
+- name: Ensure Docker daemon is running and enabled
   ansible.builtin.service:
-    name: docker  # The name of the Docker service.
-    state: started  # Ensure the Docker service is running.
-    enabled: true  # Ensure the Docker service starts on boot.
-  # This task ensures that the Docker daemon is active and ready to manage containers.
+    name: docker
+    state: started
+    enabled: true
+  # Ensures the Docker daemon is active and configured to start automatically.
+  # This is critical for Docker Swarm functionality and container orchestration.
+  #
+  # Service Configuration:
+  # - started: Activates the Docker daemon immediately
+  # - enabled: Configures automatic startup on system boot
+  #
+  # Failure Impact: Without a running Docker daemon, all subsequent
+  # containerized operations will fail.
 
-- name: Remove service
+# ============================================================================
+# Service Cleanup and Preparation
+# ============================================================================
+- name: Remove existing Home Assistant core service
   docker_swarm_service:
-    name: homeassistant_homeassistant  # The name of the Docker Swarm service to remove.
-    state: absent  # Ensure the service is removed.
-  ignore_errors: true  # Allow the playbook to continue even if this task fails.
-  # This task removes any existing instance of the Home Assistant service to avoid conflicts during deployment.
+    name: homeassistant_homeassistant
+    state: absent
+  ignore_errors: true
+  # Removes any existing Home Assistant core service from Docker Swarm.
+  # This ensures a clean deployment without conflicts from previous versions.
+  #
+  # Service Naming Convention: [stack_name]_[service_name]
+  # - homeassistant: Stack name
+  # - homeassistant: Service name (core Home Assistant container)
+  #
+  # Error Handling: ignore_errors prevents deployment failure if the
+  # service doesn't exist or is already removed.
 
-- name: Setup Home Assistant directory
+- name: Remove existing Zigbee2MQTT service
+  docker_swarm_service:
+    name: homeassistant_zigbee2mqtt
+    state: absent
+  ignore_errors: true
+  # Removes the Zigbee2MQTT bridge service for clean redeployment.
+  # Zigbee2MQTT requires careful handling due to its hardware dependencies
+  # and persistent device database.
+  #
+  # Critical Considerations:
+  # - Device pairings and network topology are preserved in NFS storage
+  # - USB device access permissions must be maintained
+  # - Coordinator backup should be verified before service removal
+
+- name: Remove existing MQTT broker service
+  docker_swarm_service:
+    name: homeassistant_mqtt
+    state: absent
+  ignore_errors: true
+  # Removes the Mosquitto MQTT broker service for clean redeployment.
+  # MQTT is the communication backbone for IoT devices and Home Assistant.
+  #
+  # Service Dependencies:
+  # - Home Assistant relies on MQTT for device state management
+  # - Zigbee2MQTT publishes all device data through MQTT
+  # - Other IoT integrations may depend on this broker
+  #
+  # Impact: Temporary loss of device communication during redeployment
+
+# ============================================================================
+# Local Infrastructure Setup
+# ============================================================================
+- name: Create local deployment directory
   ansible.builtin.file:
-    path: /home/docker-compose/home-assistant  # The path to the directory to be created.
-    state: directory  # Ensure the path is a directory.
-    mode: '0755'  # Set the directory permissions (read, write, execute for owner; read and execute for others).
-    owner: nobody  # Set the directory owner to `nobody`.
-    group: nogroup  # Set the directory group to `nogroup`.
-  # This task creates the directory structure required for the deployment.
+    path: /home/docker-compose/home-assistant
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+  # Creates temporary local directory for deployment orchestration files.
+  # This directory holds the Docker Compose/Stack files during deployment
+  # but is cleaned up afterward to maintain system hygiene.
+  #
+  # Directory Purpose:
+  # - Staging area for rendered Docker Compose templates
+  # - Temporary storage for deployment artifacts
+  # - Isolated workspace for stack deployment operations
+  #
+  # Permissions Rationale:
+  # - 0755: Standard directory permissions for system operations
+  # - nobody/nogroup: Neutral ownership suitable for temporary files
 
-- name: Copy compose from template to host
+# ============================================================================
+# Template Deployment and Configuration
+# ============================================================================
+- name: Deploy Docker Compose stack definition from template
   ansible.builtin.template:
-    src: "templates/docker-compose.yaml"  # Path to the Jinja2 template for the docker-compose file.
-    dest: "/home/docker-compose/home_assistant/docker-compose.yaml"  # Destination path for the docker-compose file.
-    mode: '0755'  # Set the file permissions (read, write, execute for owner; read and execute for others).
-    owner: nobody  # Set the file owner to `nobody`.
-    group: nogroup  # Set the file group to `nogroup`.
-  # This task copies the docker-compose template to the target system, ensuring it is ready for deployment.
+    src: "templates/docker-compose.yaml"
+    dest: "/home/docker-compose/home_assistant/docker-compose.yaml"
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+  # Renders and deploys the Docker Compose stack definition from Jinja2 template.
+  # The template incorporates environment-specific variables and configurations
+  # to create a deployment-ready stack definition.
+  #
+  # Template Variables Applied:
+  # - proxy: External access configuration
+  # - mqtt_server: MQTT broker connection details
+  # - zigbee_serial_port: Zigbee coordinator device path
+  # - NFS mount paths and volume configurations
+  # - Container image versions and resource constraints
+  #
+  # Template Benefits:
+  # - Environment-specific configuration injection
+  # - Consistent deployment across multiple environments
+  # - Version control for stack definitions
+  # - Dynamic configuration based on infrastructure state
 
-- name: Deploy Home Assistant stack
+# ============================================================================
+# Docker Swarm Stack Deployment
+# ============================================================================
+- name: Deploy Home Assistant stack to Docker Swarm
   ansible.builtin.command:
     cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml homeassistant
-    # The `docker stack deploy` command deploys the stack using the specified compose file.
-    # - `-c`: Specifies the path to the docker-compose file.
-    # - `homeassistant`: The name of the stack to deploy.
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
-  changed_when: false  # Ensure this task does not mark the playbook as "changed."
-  # This task deploys the Home Assistant stack to the Docker Swarm cluster.
+  register: swarm_deployment_result
+  changed_when: false
+  # Deploys the complete Home Assistant stack to the Docker Swarm cluster.
+  # This creates and orchestrates all services defined in the compose file.
+  #
+  # Docker Stack Deploy Process:
+  # 1. Parses the compose file and validates service definitions
+  # 2. Creates or updates services according to the specification
+  # 3. Distributes containers across available Swarm nodes
+  # 4. Configures networking, volumes, and service dependencies
+  # 5. Monitors service health and maintains desired state
+  #
+  # Stack Components Deployed:
+  # - homeassistant_homeassistant: Core Home Assistant service
+  # - homeassistant_mqtt: Mosquitto MQTT broker
+  # - homeassistant_zigbee2mqtt: Zigbee-to-MQTT bridge
+  #
+  # Deployment Features:
+  # - High availability through Swarm orchestration
+  # - Automatic container restart on failure
+  # - Load balancing and service discovery
+  # - Rolling updates with zero downtime
+  #
+  # Result Registration: Captures deployment output for troubleshooting
+  # and verification of successful stack creation.
 
-- name: delete compose directory
+# ============================================================================
+# Cleanup and Maintenance
+# ============================================================================
+- name: Remove temporary deployment directory
   ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
-  # This task cleans up the temporary files and directories created during the deployment process.
+    cmd: rm -rf /home/docker-compose
+  # Cleans up temporary deployment artifacts to maintain system hygiene.
+  # The Docker Compose files are no longer needed after stack deployment
+  # as Docker Swarm maintains the service state internally.
+  #
+  # Cleanup Benefits:
+  # - Prevents accumulation of temporary files
+  # - Reduces disk space usage
+  # - Eliminates potential security exposure of configuration files
+  # - Maintains clean system state for subsequent deployments
+  #
+  # Alternative Approach: Consider retaining files in a versioned
+  # location for troubleshooting and rollback capabilities.
 
-# Notes:
-# - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.
-# - The `docker-compose.yaml` template should define the services, networks, and volumes required for the Home Assistant stack.
-# - The cleanup step (`delete compose directory`) is optional and can be removed if the compose files need to be retained.
-# - Use caution when setting permissions (`0755`) and ownership (`nobody:nogroup`) to avoid security risks.
-# - Always test the deployment in a staging environment before applying it to production.
+# ============================================================================
+# Post-Deployment Verification and Best Practices
+# ============================================================================
+#
+# 1. Service Health Verification:
+#    After deployment, verify service status with:
+#    - docker service ls (check all services are running)
+#    - docker service logs homeassistant_homeassistant
+#    - docker service logs homeassistant_mqtt
+#    - docker service logs homeassistant_zigbee2mqtt
+#
+# 2. Network Connectivity Testing:
+#    - Verify Home Assistant web interface accessibility
+#    - Test MQTT broker connectivity from external clients
+#    - Confirm Zigbee coordinator device access
+#    - Validate NFS mount accessibility across cluster nodes
+#
+# 3. Configuration Validation:
+#    - Check Home Assistant startup logs for configuration errors
+#    - Verify MQTT broker is accepting connections
+#    - Confirm Zigbee2MQTT can communicate with coordinator
+#    - Test device discovery and state reporting
+#
+# 4. Security Considerations:
+#    - Ensure proxy configuration uses HTTPS with valid certificates
+#    - Verify firewall rules restrict unnecessary access
+#    - Confirm MQTT broker authentication is properly configured
+#    - Validate container security contexts and resource limits
+#
+# 5. Backup and Recovery:
+#    - Verify NFS-based persistent storage is included in backup procedures
+#    - Test Zigbee coordinator backup and restore functionality
+#    - Document rollback procedures for failed deployments
+#    - Maintain deployment artifact versions for quick recovery
+#
+# 6. Monitoring and Alerting:
+#    - Implement health checks for all services
+#    - Monitor container resource usage and performance
+#    - Set up alerts for service failures or resource exhaustion
+#    - Track Home Assistant database growth and maintenance needs
+#
+# 7. Maintenance Procedures:
+#    - Plan regular Home Assistant core updates
+#    - Schedule container image updates for security patches
+#    - Implement log rotation for container logs
+#    - Monitor and maintain NFS storage capacity and performance

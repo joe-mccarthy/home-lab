@@ -1,78 +1,384 @@
+# ============================================================================
+# Home Assistant Docker Swarm Stack Configuration
+# ============================================================================
+# This Docker Compose file defines a complete Home Assistant smart home stack
+# for deployment on Docker Swarm. The stack includes Home Assistant Core,
+# Zigbee2MQTT for Zigbee device integration, and Mosquitto MQTT broker for
+# IoT device communication.
+#
+# Stack Architecture:
+# - Home Assistant Core: Main automation platform with web interface
+# - Zigbee2MQTT: Bridge between Zigbee devices and MQTT protocol
+# - Mosquitto MQTT: Message broker for device communication
+# - Traefik Integration: Reverse proxy with automatic SSL certificates
+# - NFS Storage: Persistent storage for configurations and data
+#
+# Network Design:
+# - proxy: External network for Traefik reverse proxy communication
+# - default: Internal network for service-to-service communication
+#
+# Security Features:
+# - Automatic HTTPS redirection and SSL certificate management
+# - Isolated network segments for external and internal traffic
+# - Persistent storage on NFS for data protection
+# ============================================================================
+
 services:
+  # ==========================================================================
+  # Home Assistant Core Service
+  # ==========================================================================
+  # The primary Home Assistant service providing the automation platform,
+  # web interface, and integration management for smart home devices.
+  # ==========================================================================
   homeassistant:
     container_name: homeassistant
-    # Sets the container name to `homeassistant` for easier identification and management.
+    # Container naming for easier identification in Docker commands and logs.
+    # Consistent naming helps with troubleshooting and service management.
 
     image: "ghcr.io/home-assistant/home-assistant:stable"
-    # Specifies the Docker image for Home Assistant, pulled from the GitHub Container Registry.
-    # Replace `stable` with a specific version tag for better stability and to avoid unexpected updates.
+    # Official Home Assistant container image from GitHub Container Registry.
+    # 
+    # Version Strategy:
+    # - 'stable': Latest stable release (automatic updates)
+    # - 'YYYY.MM.X': Specific version for production consistency
+    # - 'beta': Beta releases for testing new features
+    #
+    # Security Note: Pin to specific versions in production to prevent
+    # unexpected behavior from automatic updates.
 
     restart: unless-stopped
-    # Ensures the container automatically restarts unless it is explicitly stopped.
-    # This is useful for maintaining high availability of the Home Assistant service.
+    # Container restart policy ensures high availability.
+    # The service automatically restarts after system reboots or crashes,
+    # but allows manual stops for maintenance without automatic restart.
 
     privileged: true
-    # Grants the container elevated privileges. This is required for certain hardware integrations (e.g., USB devices).
-    # Use caution with this setting, as it increases the container's access to the host system.
+    # Elevated container privileges required for hardware device access.
+    # 
+    # Required For:
+    # - USB device access (Zigbee/Z-Wave coordinators)
+    # - Bluetooth hardware integration
+    # - Network interface management
+    # - System-level integrations
+    #
+    # Security Consideration: This increases attack surface but is necessary
+    # for many Home Assistant integrations. Consider security hardening.
 
     networks:
       proxy:
-      # Connects the Home Assistant service to the `proxy` network, which is managed externally.
-      # This allows integration with Traefik for reverse proxy and routing.
+        # External network connection for Traefik reverse proxy integration.
+        # Enables external access through domain-based routing with SSL.
       default:
-      # Connects the service to the default network for internal communication with other containers.
+        # Default network for internal service communication with MQTT and
+        # Zigbee2MQTT services within the stack.
 
     volumes:
       - /mnt/nfs/docker/home_assistant:/config
-      # Mounts the NFS directory to the `/config` directory inside the container.
-      # This is where Home Assistant stores its configuration, logs, and data.
+      # Primary configuration and data storage on NFS.
+      # 
+      # Contains:
+      # - configuration.yaml: Main Home Assistant configuration
+      # - automations.yaml: Automation definitions
+      # - scenes.yaml: Scene configurations
+      # - scripts.yaml: Script definitions
+      # - .storage/: Internal Home Assistant database and settings
+      # - custom_components/: Third-party integrations
+      # - www/: Custom web resources
+      #
+      # Backup Importance: This volume contains all Home Assistant state
+      # and configuration data. Regular backups are essential.
+
       - /etc/localtime:/etc/localtime:ro
-      # Mounts the host's local time configuration as read-only to synchronize the container's time with the host.
+      # Host timezone synchronization for accurate time-based automations.
+      # Read-only mount prevents container from modifying host time settings.
+      # Critical for scheduling, logging, and time-based triggers.
+
       - /run/dbus:/run/dbus:ro
-      # Mounts the host's D-Bus socket as read-only to enable integrations that require D-Bus (e.g., Bluetooth).
+      # D-Bus system communication for Bluetooth and system integrations.
+      # Required for:
+      # - Bluetooth device discovery and communication
+      # - System service interactions
+      # - Hardware abstraction layer access
+      # Read-only mount maintains security while enabling functionality.
 
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
-      # Passes the Zigbee or Z-Wave USB device from the host to the container.
-      # Replace `/dev/ttyUSB0` with the appropriate device path for your hardware.
+      # USB device passthrough for direct hardware access.
+      # 
+      # Common Device Types:
+      # - /dev/ttyUSB0, /dev/ttyUSB1: USB-to-serial adapters
+      # - /dev/ttyACM0: Arduino-compatible devices
+      # - /dev/serial/by-id/*: Persistent device identification
+      #
+      # Hardware Note: Use udev rules for consistent device naming
+      # across reboots and hardware changes.
 
     deploy:
       mode: replicated
-      # Deployment mode for the service. `replicated` ensures a specific number of replicas are running.
+      # Swarm deployment mode ensuring specified number of service instances.
+      # Alternative: 'global' mode runs one instance per Swarm node.
 
       replicas: 1
-      # The number of replicas (instances) of the service to run. In this case, only one instance is deployed.
+      # Single instance deployment for Home Assistant.
+      # Home Assistant doesn't support clustering, so only one instance
+      # should run to prevent database conflicts and state inconsistencies.
 
       labels:
+        # Traefik configuration labels for reverse proxy integration
         - "traefik.enable=true"
-        # Enables Traefik integration for this service.
-        - "traefik.http.routers.homeassistant.entrypoints=web"
-        # Defines the entry point for HTTP traffic (port 80) for the `homeassistant` router.
-        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.{{ general.domain }}`)"
-        # Specifies the routing rule for HTTP traffic. Requests to `homeassistant.<domain>` are routed to this service.
-        - "traefik.http.middlewares.homeassistant-https-redirect.redirectscheme.scheme=https"
-        # Redirects HTTP traffic to HTTPS for secure communication.
-        - "traefik.http.routers.homeassistant.middlewares=homeassistant-https-redirect"
-        # Applies the HTTPS redirection middleware to the `homeassistant` router.
-        - "traefik.http.routers.homeassistant-secure.entrypoints=websecure"
-        # Defines the entry point for HTTPS traffic (port 443) for the `homeassistant-secure` router.
-        - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.{{ general.domain }}`)"
-        # Specifies the routing rule for HTTPS traffic. Requests to `homeassistant.<domain>` are routed to this service.
-        - "traefik.http.routers.homeassistant-secure.tls=true"
-        # Enables TLS (HTTPS) for the `homeassistant-secure` router.
-        - "traefik.http.routers.homeassistant-secure.service=homeassistant"
-        # Associates the `homeassistant-secure` router with the `homeassistant` service.
-        - "traefik.http.routers.homeassistant-secure.tls.certresolver=letsencrypt"
-        # Configures Traefik to use the Let's Encrypt certificate resolver for automatic SSL certificate management.
-        - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
-        # Specifies the internal port (8123) of the Home Assistant service to which Traefik should route traffic.
-        - "traefik.http.services.homeassistant.loadbalancer.passhostheader=true"
-        # Ensures that the original `Host` header is passed to the Home Assistant service.
-        - "traefik.docker.network=proxy"
-        # Specifies the Docker network (`proxy`) that Traefik should use to communicate with the service.
+        # Enables Traefik discovery and routing for this service.
 
+        # HTTP to HTTPS redirection configuration
+        - "traefik.http.routers.homeassistant.entrypoints=web"
+        # HTTP entry point (port 80) for initial requests.
+        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.{{ general.domain }}`)"
+        # Domain-based routing rule. Template variable populated during deployment.
+        - "traefik.http.middlewares.homeassistant-https-redirect.redirectscheme.scheme=https"
+        # Middleware to redirect HTTP traffic to HTTPS automatically.
+        - "traefik.http.routers.homeassistant.middlewares=homeassistant-https-redirect"
+        # Applies HTTPS redirection to HTTP router.
+
+        # HTTPS (secure) router configuration
+        - "traefik.http.routers.homeassistant-secure.entrypoints=websecure"
+        # HTTPS entry point (port 443) for secure connections.
+        - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.{{ general.domain }}`)"
+        # Domain-based routing for HTTPS traffic.
+        - "traefik.http.routers.homeassistant-secure.tls=true"
+        # Enables TLS/SSL encryption for secure communications.
+        - "traefik.http.routers.homeassistant-secure.service=homeassistant"
+        # Associates secure router with the Home Assistant service.
+        - "traefik.http.routers.homeassistant-secure.tls.certresolver=letsencrypt"
+        # Automatic SSL certificate generation using Let's Encrypt.
+
+        # Load balancer and service configuration
+        - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+        # Internal port for Home Assistant web interface.
+        - "traefik.http.services.homeassistant.loadbalancer.passhostheader=true"
+        # Preserves original Host header for proper Home Assistant routing.
+        - "traefik.docker.network=proxy"
+        # Specifies network for Traefik communication with this service.
+
+  # ==========================================================================
+  # Zigbee2MQTT Bridge Service
+  # ==========================================================================
+  # Bridges Zigbee protocol devices to MQTT, enabling Home Assistant
+  # integration with Zigbee smart home devices without proprietary hubs.
+  # ==========================================================================
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    # Container identifier for service management and logging.
+
+    image: koenkk/zigbee2mqtt
+    # Official Zigbee2MQTT container image.
+    # 
+    # Version Considerations:
+    # - latest: Most recent features but potential instability
+    # - Specific tags: Better for production consistency
+    # - Update frequency: Regular updates for device support
+
+    restart: unless-stopped
+    # Automatic restart policy for service availability.
+    # Critical for maintaining Zigbee network coordinator connection.
+
+    volumes:
+      - /mnt/nfs/docker/home_assistant/zigbee2mqtt/data:/app/data
+      # Persistent storage for Zigbee2MQTT configuration and device database.
+      #
+      # Critical Data:
+      # - configuration.yaml: Service configuration
+      # - coordinator_backup.json: Zigbee network backup
+      # - database.db: Device database and network topology
+      # - devices.yaml: Device-specific configurations
+      # - groups.yaml: Zigbee group definitions
+      #
+      # Recovery Note: coordinator_backup.json is essential for network
+      # recovery if coordinator hardware fails.
+
+      - /run/udev:/run/udev:ro
+      # udev system information for USB device management.
+      # Enables proper device detection and handling when USB coordinator
+      # is connected or reconnected.
+
+    ports:
+      - 9876:8080
+      # Zigbee2MQTT web frontend port mapping.
+      # External port 9876 maps to internal port 8080 for web interface access.
+      # The web interface provides device management, network topology, and
+      # pairing capabilities.
+
+    networks:
+      proxy:
+        # External network for Traefik reverse proxy access.
+      default:
+        # Internal network for MQTT broker communication.
+
+    environment:
+      - TZ=Europe/London
+      # Timezone configuration for accurate device scheduling and logging.
+      # Should match Home Assistant timezone for consistency.
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      # Single instance deployment required for Zigbee coordinator management.
+      # Multiple instances would conflict for USB coordinator access.
+
+      labels:
+        # Traefik reverse proxy configuration for web interface
+        - "traefik.enable=true"
+        # Enables Traefik routing for Zigbee2MQTT web interface.
+
+        # HTTP configuration and HTTPS redirection
+        - "traefik.http.routers.zigbee2mqtt.entrypoints=web"
+        - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.{{ general.domain }}`)"
+        - "traefik.http.middlewares.zigbee2mqtt-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.zigbee2mqtt.middlewares=zigbee2mqtt-https-redirect"
+
+        # HTTPS configuration with automatic SSL
+        - "traefik.http.routers.zigbee2mqtt-secure.entrypoints=websecure"
+        - "traefik.http.routers.zigbee2mqtt-secure.rule=Host(`zigbee2mqtt.{{ general.domain }}`)"
+        - "traefik.http.routers.zigbee2mqtt-secure.tls=true"
+        - "traefik.http.routers.zigbee2mqtt-secure.service=zigbee2mqtt"
+        - "traefik.http.routers.zigbee2mqtt-secure.tls.certresolver=letsencrypt"
+
+        # Service configuration
+        - "traefik.http.services.zigbee2mqtt.loadbalancer.server.port=8080"
+        - "traefik.http.services.zigbee2mqtt.loadbalancer.passhostheader=true"
+        - "traefik.docker.network=proxy"
+
+  # ==========================================================================
+  # Mosquitto MQTT Broker Service
+  # ==========================================================================
+  # MQTT message broker providing reliable communication infrastructure
+  # for IoT devices, Home Assistant, and Zigbee2MQTT integration.
+  # ==========================================================================
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    # Official Eclipse Mosquitto MQTT broker image.
+    # Version 2.0+ includes enhanced security features and performance
+    # improvements over 1.x versions.
+
+    restart: unless-stopped
+    # Automatic restart ensures MQTT communication availability.
+    # Critical service as it's the communication backbone for IoT devices.
+
+    volumes:
+      - "/mnt/nfs/docker/home_assistant/mosquitto:/mosquitto"
+      # Persistent storage for MQTT broker configuration and data.
+      #
+      # Directory Structure:
+      # - config/: Broker configuration files
+      # - data/: Persistent message storage
+      # - log/: Broker operation logs
+      #
+      # Configuration Files:
+      # - mosquitto.conf: Main broker configuration
+      # - pwfile: User authentication (if enabled)
+      # - aclfile: Access control lists (if enabled)
+
+    ports:
+      - "1883:1883"
+      # Standard MQTT protocol port for unencrypted communication.
+      # Used by internal services and local IoT devices.
+      
+      - "9001:9001"
+      # WebSocket port for MQTT over WebSocket connections.
+      # Enables web-based MQTT clients and browser integrations.
+
+    command: "mosquitto -c /mosquitto-no-auth.conf"
+    # Custom configuration file for development/testing environments.
+    # 
+    # Security Note: 'no-auth' configuration disables authentication.
+    # For production environments, consider:
+    # - Enabling user authentication
+    # - Implementing access control lists (ACLs)
+    # - Using TLS encryption for sensitive data
+    # - Restricting network access to authorized clients
+
+    networks:
+      proxy:
+        # Connected to proxy network but Traefik is disabled (see labels).
+        # Maintains network connectivity for potential future web interface.
+      default:
+        # Primary network for MQTT client communication within the stack.
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      # Single broker instance for message consistency.
+      # MQTT clustering requires additional configuration and is typically
+      # not needed for home automation scenarios.
+
+      labels:
+        - "traefik.enable=false"
+        # Disables Traefik routing for MQTT broker.
+        # MQTT uses binary protocol over TCP, not HTTP, so reverse proxy
+        # is not applicable. Direct port access is used instead.
+
+# ============================================================================
+# Network Configuration
+# ============================================================================
 networks:
   proxy:
     external: true
-    # Declares the `proxy` network as external, meaning it is managed outside this compose file.
-    # Ensure the `proxy` network is already created and managed by Traefik or another service.
+    # External network managed by Traefik reverse proxy.
+    # 
+    # Network Purpose:
+    # - Enables external access to services through domain routing
+    # - Provides SSL termination and certificate management
+    # - Isolates external traffic from internal service communication
+    #
+    # Prerequisites:
+    # - Network must be created before stack deployment
+    # - Traefik must be running and connected to this network
+    # - DNS records must point to Traefik ingress points
+    #
+    # Creation Command: docker network create --driver overlay proxy
+
+# ============================================================================
+# Deployment Notes and Best Practices
+# ============================================================================
+#
+# 1. Hardware Requirements:
+#    - Zigbee USB coordinator (e.g., CC2531, ConBee II, Sonoff Zigbee 3.0)
+#    - Sufficient RAM for Home Assistant database growth
+#    - Reliable network connectivity for NFS storage
+#    - UPS or reliable power for coordinator and NFS storage
+#
+# 2. Network Configuration:
+#    - Ensure proxy network exists before deployment
+#    - Configure DNS records for subdomains
+#    - Verify firewall rules allow necessary ports
+#    - Test NFS connectivity from all Swarm nodes
+#
+# 3. Security Considerations:
+#    - Enable MQTT authentication in production
+#    - Implement network segmentation for IoT devices
+#    - Regular security updates for container images
+#    - Monitor for unauthorized device connections
+#    - Backup encryption for sensitive automation data
+#
+# 4. Backup Strategy:
+#    - Regular NFS storage backups including all service data
+#    - Zigbee coordinator backup before major changes
+#    - Configuration version control for disaster recovery
+#    - Test restore procedures in non-production environment
+#
+# 5. Monitoring and Maintenance:
+#    - Monitor container health and resource usage
+#    - Track Home Assistant database growth
+#    - Regular updates for security patches
+#    - Device connectivity health checks
+#    - Log rotation and retention policies
+#
+# 6. Scaling Considerations:
+#    - Home Assistant doesn't support horizontal scaling
+#    - MQTT broker can be clustered if needed
+#    - Consider load balancing for high-traffic scenarios
+#    - Monitor NFS performance under load
+#
+# 7. Troubleshooting:
+#    - Check service logs: docker service logs [service_name]
+#    - Verify network connectivity between services
+#    - Confirm USB device permissions and paths
+#    - Test MQTT connectivity with external clients
+#    - Validate SSL certificate generation and renewal

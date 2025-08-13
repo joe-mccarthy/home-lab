@@ -1,0 +1,130 @@
+# ============================================================================
+# Zigbee2MQTT Configuration File
+# ============================================================================
+# This configuration file defines the settings for Zigbee2MQTT, which acts as
+# a bridge between Zigbee devices and MQTT. It enables Home Assistant to
+# communicate with Zigbee devices through MQTT messages.
+#
+# Documentation: https://www.zigbee2mqtt.io/guide/configuration/
+# ============================================================================
+
+# ============================================================================
+# Home Assistant Integration
+# ============================================================================
+homeassistant: true
+# Enables automatic discovery of Zigbee devices in Home Assistant.
+# When set to true, Zigbee2MQTT will automatically publish device
+# configurations to MQTT topics that Home Assistant can discover.
+# This eliminates the need for manual device configuration in Home Assistant.
+
+# ============================================================================
+# Network Security and Device Management
+# ============================================================================
+permit_join: false
+# Controls whether new Zigbee devices can join the network.
+# - true: Allows new devices to pair with the coordinator
+# - false: Prevents new devices from joining (recommended for security)
+# 
+# Security Note: Only enable temporarily when adding new devices.
+# Leaving this enabled permanently creates a security risk as unauthorized
+# devices could potentially join your network.
+
+# ============================================================================
+# MQTT Broker Configuration
+# ============================================================================
+mqtt:
+    base_topic: zigbee2mqtt
+    # The root MQTT topic under which all Zigbee2MQTT messages are published.
+    # Device states and commands will be published under this topic structure:
+    # - zigbee2mqtt/[device_name]/state (device status)
+    # - zigbee2mqtt/[device_name]/set (device commands)
+    # - zigbee2mqtt/bridge/state (bridge status)
+    
+    server: {{ mqtt_server }}
+    # MQTT broker server address (templated from Ansible variables).
+    # This should point to your MQTT broker (e.g., Mosquitto).
+    # The value is populated from the mqtt_server variable in group_vars.
+
+# ============================================================================
+# Zigbee Coordinator Hardware Configuration
+# ============================================================================
+serial:
+    port: {{ zigbee_serial_port }}
+    # USB serial port where the Zigbee coordinator is connected.
+    # Common values: /dev/ttyUSB0, /dev/ttyACM0, /dev/serial/by-id/...
+    # The value is templated from Ansible variables for deployment flexibility.
+    
+    baudrate: 115200
+    # Communication speed between Zigbee2MQTT and the coordinator.
+    # 115200 is the standard baudrate for most Zigbee coordinators.
+    # Do not change unless specifically required by your hardware.
+    
+    adapter: zstack
+    # Zigbee coordinator adapter type. Common options:
+    # - zstack: For Texas Instruments CC2531, CC2538, CC26X2, CC1352 chips
+    # - deconz: For Dresden Elektronik ConBee/RaspBee coordinators
+    # - zigate: For ZiGate coordinators
+    # - ember: For Silicon Labs EmberZNet coordinators
+    
+    disable_led: false
+    # Controls the coordinator's status LED (if available).
+    # - false: LED shows coordinator status (recommended for debugging)
+    # - true: Disables LED to reduce power consumption or light pollution
+    
+    advanced:
+        transmit_power: 20
+        # RF transmission power in dBm (0-20 for most coordinators).
+        # Higher values increase range but may cause interference.
+        # - 20: Maximum power, longest range
+        # - 5: Medium power, balanced range/interference
+        # - 0: Minimum power, shortest range
+        # 
+        # Note: Actual maximum depends on coordinator hardware and regulations.
+
+# ============================================================================
+# Web Interface Configuration
+# ============================================================================
+frontend:
+    enabled: true
+    # Enables the Zigbee2MQTT web interface for device management.
+    # The web UI provides:
+    # - Device status and control
+    # - Network topology visualization
+    # - Device pairing interface
+    # - Configuration management
+    
+    port: 8080
+    # Port number for the web interface.
+    # Access via: http://[container-ip]:8080
+    # In Docker deployments, this port should be mapped in docker-compose.yml
+
+# ============================================================================
+# Configuration Notes and Best Practices
+# ============================================================================
+# 
+# 1. Device Pairing:
+#    - Set permit_join: true temporarily when adding devices
+#    - Use the web interface or MQTT commands to enable pairing
+#    - Always disable permit_join after pairing for security
+#
+# 2. Network Optimization:
+#    - Place coordinator away from WiFi routers (3+ meters)
+#    - Use USB extension cable to reduce interference
+#    - Ensure sufficient Zigbee router devices for network mesh
+#
+# 3. Troubleshooting:
+#    - Check serial port permissions (udev rules)
+#    - Verify MQTT broker connectivity
+#    - Monitor Zigbee2MQTT logs for device communication issues
+#    - Use network map to identify weak signal areas
+#
+# 4. Security Considerations:
+#    - Change default network key in production
+#    - Regularly update Zigbee2MQTT version
+#    - Monitor for unknown devices joining the network
+#    - Restrict MQTT broker access to authorized clients only
+#
+# 5. Backup and Recovery:
+#    - Backup coordinator.db file regularly
+#    - Export device configurations before major changes
+#    - Document device locations and naming conventions

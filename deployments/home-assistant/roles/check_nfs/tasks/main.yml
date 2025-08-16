@@ -131,7 +131,7 @@
   ansible.builtin.template:
     src: "templates/configuration.yaml"
     dest: "/mnt/nfs/docker/home_assistant/configuration.yaml"
-    force: true
+    force: false
   # Deploys the main Home Assistant configuration from Jinja2 template.
   # This file contains core Home Assistant settings, integrations, and
   # references to other configuration files.
@@ -149,7 +149,7 @@
   ansible.builtin.template:
     src: "templates/zigbee/configuration.yaml"
     dest: "/mnt/nfs/docker/home_assistant/zigbee2mqtt/data/configuration.yaml"
-    force: true
+    force: false
   # Deploys Zigbee2MQTT configuration from template with environment-specific
   # settings such as MQTT broker address and Zigbee coordinator device path.
   #

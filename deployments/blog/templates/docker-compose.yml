@@ -1,6 +1,6 @@
 services:
   blog: # Define the blog service
-    image: ghcr.io/joe-mccarthy/joe-mccarthy.github.io:latest # Docker image for the blog service
+    image: {{ blog_image }} # Docker image for the blog
     container_name: blog # Name of the container for easier identification
     networks:
       proxy: # Connect the service to the external proxy network
@@ -13,7 +13,7 @@ services:
       placement:
         constraints: [node.role == worker] # Ensure the service only runs on worker nodes
       mode: replicated # Use replicated mode to run multiple instances of the service
-      replicas: 2 # Run 1 replica of the service
+      replicas: 1 # Run 1 replica of the service
       labels: # Traefik and custom labels for the service
         - "traefik.enable=true" # Enable Traefik for this service
         - "traefik.http.routers.blog.entrypoints=web" # Define the HTTP entry point for the router

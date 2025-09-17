@@ -3,7 +3,7 @@ services:
     container_name: immich_server
     # Sets the container name to `immich_server` for easier identification and management.
 
-    image: ghcr.io/immich-app/immich-server:v1.134.0
+    image: ghcr.io/immich-app/immich-server:v1.142.1
     # Specifies the Docker image for Immich server from GitHub Container Registry.
     # Version v1.134.0 is pinned for stability and reproducible deployments.
 

@@ -3,9 +3,9 @@ services:
     container_name: immich_server
     # Sets the container name to `immich_server` for easier identification and management.
 
-    image: ghcr.io/immich-app/immich-server:v1.142.1
+    image: ghcr.io/immich-app/immich-server:v2.1.0
     # Specifies the Docker image for Immich server from GitHub Container Registry.
-    # Version v1.134.0 is pinned for stability and reproducible deployments.
+    # Version v2.1.0 is pinned for stability and reproducible deployments.
 
     volumes:
       - /mnt/nfs/docker/immich/upload:/usr/src/app/upload
@@ -125,7 +125,7 @@ services:
     # Sets the container name for the machine learning service.
     # Handles AI features like face recognition, object detection, and image classification.
 
-    image: ghcr.io/immich-app/immich-machine-learning:v1.134.0
+    image: ghcr.io/immich-app/immich-machine-learning:v2.1.0
     # Specifies the machine learning Docker image from GitHub Container Registry.
     # Contains TensorFlow models and processing capabilities for AI features.
 

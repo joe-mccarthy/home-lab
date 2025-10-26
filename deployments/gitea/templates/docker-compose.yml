@@ -18,6 +18,8 @@ services:
       # Sets the SSH domain for repository URLs. This helps Gitea generate correct SSH URLs.
       - SSH_LISTEN_PORT=2222
       # Configures the internal port that Gitea's SSH service listens on.
+      - GITEA__server__OFFLINE_MODE=false
+      # Disables offline mode to allow Gitea to access external resources, such as updates and integrations.
 
     restart: always
     # Ensures the container automatically restarts if it stops unexpectedly.

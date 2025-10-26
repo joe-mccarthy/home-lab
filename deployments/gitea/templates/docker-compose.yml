@@ -1,8 +1,8 @@
 services:
   server:
-    image: docker.gitea.com/gitea:1.23.5
+    image: docker.gitea.com/gitea:1.24.7
     # The Docker image for the Gitea service, pulled from the Gitea Docker registry.
-    # Replace `1.23.5` with a specific version tag to ensure stability and avoid unexpected updates.
+    # Replace `1.24.7` with a specific version tag to ensure stability and avoid unexpected updates.
 
     container_name: gitea
     # Sets the container name to `gitea` for easier identification and management.

@@ -1,0 +1,68 @@
+---
+# This task file is responsible for deploying Gitea runners (act_runner) using Docker Swarm.
+# It ensures that Docker and docker-compose are installed and running, removes any existing services,
+# sets up the required directory structure, deploys the runner stack, and cleans up temporary files.
+
+- name: Ensure docker-compose is installed
+  ansible.builtin.package:
+    name: docker-compose  # The package name for docker-compose.
+    state: present  # Ensure docker-compose is installed on the target system.
+  # This task ensures that docker-compose is available for managing Docker-based applications.
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker  # The name of the Docker service.
+    state: started  # Ensure the Docker service is running.
+    enabled: true  # Ensure the Docker service starts on boot.
+  # This task ensures that the Docker daemon is active and ready to manage containers.
+
+- name: Remove existing Gitea runner services
+  docker_swarm_service:
+    name: gitea_runner  # The name of the Docker Swarm service to remove (stack_name + service_name).
+    state: absent  # Ensure the service is removed.
+  ignore_errors: true  # Allow the playbook to continue even if this task fails.
+  # This task removes any existing instance of the Gitea runner service to avoid conflicts during deployment.
+
+- name: Setup Gitea runner directory
+  ansible.builtin.file:
+    path: /home/docker-compose/gitea-runner # The path to the directory to be created.
+    state: directory  # Ensure the path is a directory.
+    mode: '0755'  # Set the directory permissions (read, write, execute for owner; read and execute for others).
+    owner: nobody  # Set the directory owner to `nobody`.
+    group: nogroup  # Set the directory group to `nogroup`.
+  # This task creates the directory structure required for the Gitea runner deployment.
+
+- name: Copy compose from template to host
+  ansible.builtin.template:
+    src: "templates/runners/docker-compose.yml"  # Path to the Jinja2 template for the docker-compose file.
+    dest: "/home/docker-compose/gitea-runner/docker-compose.yaml"  # Destination path for the docker-compose file.
+    mode: '0755'  # Set the file permissions (read, write, execute for owner; read and execute for others).
+    owner: nobody  # Set the file owner to `nobody`.
+    group: nogroup  # Set the file group to `nogroup`.
+  # This task copies the docker-compose template to the target system, ensuring it is ready for runner deployment.
+
+- name: Deploy Gitea Runner stack
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/gitea-runner/docker-compose.yaml gitea
+    # The `docker stack deploy` command deploys the runner stack using the specified compose file.
+    # - `-c`: Specifies the path to the docker-compose file.
+    # - `gitea_runner`: The name of the stack to deploy (contains the Gitea runners).
+  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+  changed_when: false  # Ensure this task does not mark the playbook as "changed."
+  # This task deploys the Gitea runner stack to the Docker Swarm cluster.
+
+- name: delete compose directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+  # This task cleans up the temporary files and directories created during the deployment process.
+
+# Notes:
+# - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.
+# - The `docker-compose.yml` template should define the Gitea act_runner service with proper environment variables.
+# - The runner requires GITEA_INSTANCE_URL and GITEA_RUNNER_REGISTRATION_TOKEN to be configured in group_vars.
+# - The registration token should be encrypted in vault_gitea.runner_token and referenced in group_vars/all.yml.
+# - The cleanup step (`delete compose directory`) is optional and can be removed if the compose files need to be retained.
+# - Use caution when setting permissions (`0755`) and ownership (`nobody:nogroup`) to avoid security risks.
+# - The runner connects to the main Gitea instance to provide CI/CD capabilities for repositories.
+# - Each runner instance will be deployed globally across all swarm nodes with unique hostnames.
+# - Always test the deployment in a staging environment before applying it to production.

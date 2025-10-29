@@ -1,0 +1,7 @@
+---
+
+- name: Deploy Gitea Runners
+  hosts: manager[0]  # Target the first manager node in the `manager` group.
+  become: true  # Execute tasks with elevated privileges (sudo) to ensure proper permissions.
+  roles:
+    - runner_deploy  # Handles the deployment of Gitea runners (act_runner) for CI/CD capabilities.

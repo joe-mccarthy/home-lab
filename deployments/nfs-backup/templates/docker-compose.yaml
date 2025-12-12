@@ -85,8 +85,6 @@ services:
       RESTIC_FORGET_ARGS: >- 
         --keep-last 24                              
         --keep-daily 7                              
-        --keep-weekly 4                             
-        --keep-monthly 3                            
         --verbose                                   
         --group-by host                             
 

@@ -6,10 +6,6 @@ Before deploying other services within this repository or creating your own, it 
 
 [Traefik](https://traefik.io/) is responsible for acting as a reverse proxy for other services, enabling name resolution instead of relying on IP addresses and ports. Additionally, it integrates with DNS providers to perform challenges and issue valid certificates for HTTPS connections. For more details, refer to the [Traefik deployment README](../traefik/README.md).
 
-## Portainer
-
-[Portainer](https://www.portainer.io/) provides a user-friendly interface for managing Docker instances and Docker Swarm clusters. While the services in this repository are managed by Ansible, Portainer offers a convenient UI to monitor the cluster's status and activity. For more details, refer to the [Portainer deployment README](../portainer/README.md).
-
 ## Dynamic DNS
 
 Dynamic DNS ensures that services hosted on the home lab cluster are accessible by updating DNS records to reflect the public IP address of your internet gateway. This service uses the Cloudflare API (assuming Cloudflare is your DNS provider) to update domain name entries dynamically. For more details, refer to the [Dynamic DNS deployment README](../ddns/README.md).

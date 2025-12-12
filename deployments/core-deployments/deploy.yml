@@ -10,12 +10,6 @@
   # - Issuing and managing HTTPS certificates via DNS challenges.
   # - Acting as a gateway for external access to internal services.
 
-# Import the Portainer deployment playbook
-- import_playbook: ../portainer/deploy.yml
-  # Portainer provides a web-based UI for managing Docker and Docker Swarm.
-  # - It allows monitoring of the cluster's status and activity.
-  # - While Ansible manages deployments, Portainer offers a convenient interface for manual management.
-
 # Import the Dynamic DNS deployment playbook
 - import_playbook: ../ddns/deploy.yml
   # Dynamic DNS ensures that the cluster's services are accessible via domain names.

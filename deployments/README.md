@@ -22,7 +22,7 @@ This directory includes deployments for a variety of services, ranging from pers
 - **Dependencies**: Requires access to the Docker socket and Traefik for proxying.
 
 ### 3. [Core Deployments](core-deployments/README.md)
-- **Description**: A collection of essential services required for the rest of the deployments to function properly. This includes Traefik, Portainer, and Dynamic DNS.
+- **Description**: A collection of essential services required for the rest of the deployments to function properly. This includes Traefik and Dynamic DNS.
 - **Use Case**: Deploy this playbook first to set up the foundational services for the cluster.
 - **Dependencies**: None, but it is recommended to run this playbook before deploying other services.
 

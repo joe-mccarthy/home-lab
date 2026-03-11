@@ -1,17 +1,22 @@
 services:
-  broker:
+
+  paperless-broker:
     image: docker.io/library/redis:8
+    container_name: paperless-redis
     restart: unless-stopped
+    ports:
+      - "6379:6379"
     volumes:
       - redisdata:/data
 
-  webserver:
+  paperless:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
+    container_name: paperless
     depends_on:
-      - broker
-      - gotenberg
-      - tika
+      - paperless-broker
+      - paperless-gotenberg
+      - paperless-tika
     ports:
       - "8000:8000"
     volumes:
@@ -20,22 +25,28 @@ services:
       - export:/usr/src/paperless/export
       - consume:/usr/src/paperless/consume
     environment:
-      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_REDIS: redis://paperless-broker:6379
       PAPERLESS_TIKA_ENABLED: 1
-      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
-      PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:9998
 
-  gotenberg:
+  paperless-gotenberg:
     image: docker.io/gotenberg/gotenberg:8.27
     restart: unless-stopped
+    container_name: paperless-gotenberg
+    ports:
+      - "3000:3000"
     command:
       - "gotenberg"
       - "--chromium-disable-javascript=true"
       - "--chromium-allow-list=file:///tmp/.*"
 
-  tika:
+  paperless-tika:
     image: docker.io/apache/tika:latest
+    container_name: paperless-tika
     restart: unless-stopped
+    ports:
+      - "9998:9998"
 
 volumes:
   redisdata:

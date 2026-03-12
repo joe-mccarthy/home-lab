@@ -1,0 +1,15 @@
+---
+paperless:
+  environment:
+    paperless:
+      tika-enabled:
+  volumes:
+    paperless:
+    tika:
+    broker:
+    gotenberg:
+  ports:
+    paperless:
+    tika:
+    broker:
+    gotenberg:

@@ -28,6 +28,9 @@ services:
       # Enables the Traefik dashboard.
       - "--api.debug=true"
       # Enables debug mode for the API.
+      
+      - "--log.level=DEBUG"
+      - "--log.filePath=/logs/traefik.log" 
 
       # Entry points
       - "--entrypoints.web.address=:80"
@@ -132,6 +135,7 @@ services:
       # Mounts the Docker socket as read-only to allow Traefik to interact with the Docker API.
       - /mnt/nfs/docker/traefik:/letsencrypt
       # Mounts the NFS directory for storing Let's Encrypt certificates and keys.
+      - /mnt/nfs/docker/traefik/logs:/logs/
 
 networks:
   proxy:

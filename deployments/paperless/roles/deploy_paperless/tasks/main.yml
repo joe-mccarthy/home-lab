@@ -1,0 +1,49 @@
+---
+
+- name: Ensure Docker Compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker daemon is running and enabled
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Create local deployment directory
+  ansible.builtin.file:
+    path: /home/docker-compose/paperless
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+
+- name: Deploy Docker Compose stack definition from template
+  ansible.builtin.template:
+    src: "templates/docker-compose.yaml"
+    dest: "/home/docker-compose/paperless/docker-compose.yaml"
+    mode: '0755'
+    owner: nobody
+    group: nogroup
+
+- name: Remove existing Paperless services
+  docker_swarm_service:
+    name: paperless_{{ item }}
+    state: absent
+  ignore_errors: true
+  loop:
+    - paperless
+    - paperless-broker
+    - paperless-tika
+    - paperless-gotenberg
+
+- name: Deploy Paperless stack to Docker Swarm
+  ansible.builtin.command:
+    cmd: docker stack deploy -c /home/docker-compose/paperless/docker-compose.yaml paperless
+  register: swarm_deployment_result
+  changed_when: false
+
+- name: Remove temporary deployment directory
+  ansible.builtin.command:
+    cmd: rm -rf /home/docker-compose

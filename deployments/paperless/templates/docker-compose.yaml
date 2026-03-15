@@ -4,10 +4,17 @@ services:
     image: docker.io/library/redis:8
     container_name: paperless-redis
     restart: unless-stopped
+    networks:
+      - paperless
     ports:
-      - "6379:6379"
+      - "{{ paperless.ports.broker }}:6379"
     volumes:
       - redisdata:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
 
   paperless:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
@@ -18,24 +25,53 @@ services:
       - paperless-gotenberg
       - paperless-tika
     ports:
-      - "8000:8000"
+      - "{{ paperless.ports.paperless }}:8000"
+    networks:
+      - proxy
+      - paperless
     volumes:
       - data:/usr/src/paperless/data
       - media:/usr/src/paperless/media
       - export:/usr/src/paperless/export
       - consume:/usr/src/paperless/consume
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels: 
+        - "traefik.enable=true"
+        - "traefik.http.routers.paperless.entrypoints=web"
+        - "traefik.http.routers.paperless.rule=Host(`paperless.{{ general.domain }}`)"
+        - "traefik.http.middlewares.paperless-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.paperless.middlewares=paperless-https-redirect"
+        - "traefik.http.routers.paperless-secure.entrypoints=websecure"
+        - "traefik.http.routers.paperless-secure.rule=Host(`paperless.{{ general.domain }}`)"
+        - "traefik.http.routers.paperless-secure.tls=true"
+        - "traefik.http.routers.paperless-secure.service=paperless"
+        - "traefik.http.routers.paperless-secure.tls.certresolver=letsencrypt"
+        - "traefik.http.services.paperless.loadbalancer.server.port={{ paperless.ports.paperless }}"
+        - "traefik.docker.network=proxy"
     environment:
-      PAPERLESS_REDIS: redis://paperless-broker:6379
+      PAPERLESS_CONFIGURATION_PATH: ./paperless.conf
+      PAPERLESS_REDIS: redis://paperless-broker:{{ paperless.ports.broker }}
+      PAPERLESS_URL: https://paperless.{{ general.domain }}
       PAPERLESS_TIKA_ENABLED: 1
-      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:3000
-      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:9998
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:{{ paperless.ports.gotenberg }}
+      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:{{ paperless.ports.tika }}
+      PAPERLESS_ALLOWED_HOSTS: paperless.{{ general.domain }},{{ general.domain }},.{{ general.domain }}
 
   paperless-gotenberg:
     image: docker.io/gotenberg/gotenberg:8.27
     restart: unless-stopped
     container_name: paperless-gotenberg
     ports:
-      - "3000:3000"
+      - "{{ paperless.ports.gotenberg }}:3000"
+    networks:
+      - paperless
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
     command:
       - "gotenberg"
       - "--chromium-disable-javascript=true"
@@ -45,8 +81,15 @@ services:
     image: docker.io/apache/tika:latest
     container_name: paperless-tika
     restart: unless-stopped
+    networks:
+      - paperless
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
     ports:
-      - "9998:9998"
+      - "{{ paperless.ports.tika }}:9998"
 
 volumes:
   redisdata:
@@ -54,32 +97,39 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/joseph/paperless-test/redis
+      device: {{ paperless.volumes.broker }}
 
   data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/joseph/paperless-test/data
+      device: {{ paperless.volumes.paperless.data }}
 
   media:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/joseph/paperless-test/media
+      device: {{ paperless.volumes.paperless.media }}
 
   export:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/joseph/paperless-test/export
+      device: {{ paperless.volumes.paperless.export }}
 
   consume:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/joseph/paperless-test/consume
+      device: {{ paperless.volumes.paperless.consume }}
+      
+networks:
+  proxy:
+    external: true
+  paperless:
+    driver: overlay
+    internal: true

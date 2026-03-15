@@ -1,0 +1,25 @@
+---
+
+- name: Create Root Paperless Directory
+  ansible.builtin.file:
+    path: /mnt/nfs/docker/paperless
+    state: directory
+    mode: 0777
+    owner: nobody
+    group: nogroup
+
+- name: Create Paperless Directories
+  file:
+    path: "/mnt/nfs/docker/paperless/{{ item }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: 0777
+  loop:
+    - media
+    - data
+    - consume
+    - export
+    - broker
+
+

@@ -1,15 +1,14 @@
 ---
 paperless:
-  environment:
-    paperless:
-      tika-enabled:
   volumes:
     paperless:
-    tika:
-    broker:
-    gotenberg:
+      media: "{{ vault_paperless.volumes.paperless.media }}"
+      data: "{{ vault_paperless.volumes.paperless.data }}"
+      consume: "{{ vault_paperless.volumes.paperless.consume }}"
+      export: "{{ vault_paperless.volumes.paperless.export }}"
+    broker: "{{ vault_paperless.volumes.broker }}"
   ports:
-    paperless:
-    tika:
-    broker:
-    gotenberg:
+    paperless: "{{ vault_paperless.ports.paperless }}"
+    tika: "{{ vault_paperless.ports.tika }}"
+    broker: "{{ vault_paperless.ports.broker }}"
+    gotenberg: "{{ vault_paperless.ports.gotenberg }}"

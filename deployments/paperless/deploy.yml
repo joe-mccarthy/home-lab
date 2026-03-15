@@ -1,6 +1,23 @@
+# Playbook: Deploy Paperless
+#
+# This playbook deploys the Paperless stack onto a Docker Swarm manager node.
+# It is intended to be executed from the Ansible control machine and targets the
+# first manager (`manager[0]`) in the inventory.
+#
+# High-level flow:
+#   1) Ensure NFS storage paths exist and are writable (via the `check_nfs` role).
+#   2) Render the Paperless docker-compose file and deploy it as a Docker stack
+#      (via the `deploy_paperless` role).
+#
+# Notes:
+#   - This playbook does NOT initialize or manage the swarm itself. It assumes a
+#     running swarm with at least one manager already available.
+#   - `become: true` is required because Docker operations and directory creation
+#     often require elevated privileges on the host.
+
 - name: Deploy Paperless
-  hosts: manager[0]  
-  become: true 
+  hosts: manager[0]
+  become: true
   roles:
-    - check_nfs 
-    - deploy_paperless 
+    - check_nfs
+    - deploy_paperless

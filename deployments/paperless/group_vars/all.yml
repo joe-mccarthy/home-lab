@@ -1,4 +1,12 @@
 ---
+# Group variables used by the Paperless deployment playbooks.
+#
+# These values primarily source sensitive information from an Ansible Vault
+# variable file (`vault_paperless`). This keeps secrets out of version control.
+#
+# The naming here matches the variables expected by the role that renders
+# `docker-compose.yaml` (so the Play uses them directly).
+
 paperless:
   volumes:
     paperless:

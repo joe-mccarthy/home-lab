@@ -111,7 +111,7 @@ Ensure adequate NFS storage for:
 
 ```bash
 # Navigate to the immich deployment directory
-cd /home/joseph/projects/home-lab/deployments/immich
+cd /home/joseph/projects/homelab-private/deployments/immich
 
 # Deploy the entire stack
 ansible-playbook -i ../../inventory deploy.yml --ask-vault-pass

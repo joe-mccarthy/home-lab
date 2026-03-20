@@ -191,4 +191,4 @@ docker service logs nfs_backup_check
 
 ## License and Contribution
 
-This project is maintained as part of the home-lab infrastructure. Contributions via pull requests are welcome.
+This project is maintained as part of the homelab-private infrastructure. Contributions via pull requests are welcome.

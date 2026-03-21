@@ -1,5 +1,7 @@
 # Deployments
 
+[![ansible-lint](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml/badge.svg?style=flat-square)](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml) [![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-Reverse%20Proxy-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/)
+
 The `deployments` directory contains playbooks and associated files for deploying various services within the home lab cluster. Each deployment is designed to be standalone, meaning they can be deployed independently of one another. However, it is assumed that [Traefik](traefik/README.md) has been or will be deployed, as all deployments rely on Traefik for proxying and certificate management.
 
 ## Overview
@@ -41,7 +43,7 @@ This directory includes deployments for a variety of services, ranging from pers
 - **Use Case**: Perfect for managing and automating smart home devices.
 - **Dependencies**: Requires Traefik for proxying and certificate management.
 
-### 7. [NFS Backup](nfs_backup/README.md)
+### 7. [NFS Backup](nfs-backup/README.md)
 - **Description**: Provides enterprise-grade automated backups for Docker Swarm NFS shared volumes using Restic with S3 storage backend. Implements a comprehensive backup strategy with three coordinated services:
   - **backup**: Creates hourly encrypted incremental backups
   - **prune**: Manages retention policies (keeping 24 latest, 7 daily, 4 weekly, and 4 monthly backups)
@@ -72,6 +74,7 @@ This directory includes deployments for a variety of services, ranging from pers
   - **immich-redis**: Cache and session storage for performance
   - **immich-machine-learning**: AI processing for smart features
 - **Use Case**: Ideal for users looking to manage and organize their photo and video collections with advanced AI capabilities.
+
 ## Prerequisites
 
 Before deploying any services, ensure the following:
@@ -93,5 +96,5 @@ Before deploying any services, ensure the following:
 To deploy a service, navigate to its directory and run the associated playbook. For example, to deploy the personal blog:
 
 ```bash
-ansible-playbook blog/deploy.yml 
+ansible-playbook blog/deploy.yml
 ```

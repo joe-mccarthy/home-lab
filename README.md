@@ -1,13 +1,16 @@
 # Home Lab
-![Issues and PRs](https://img.shields.io/github/issues/joe-mccarthy/homelab?style=flat-square)
-![Release](https://img.shields.io/github/v/release/joe-mccarthy/homelab?style=flat-square)
-![Last commit](https://img.shields.io/github/last-commit/joe-mccarthy/homelab?style=flat-square)
-![License](https://img.shields.io/github/license/joe-mccarthy/homelab?style=flat-square)
+[![Issues and PRs](https://img.shields.io/github/issues/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/issues)
+[![Release](https://img.shields.io/github/v/release/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/releases)
+[![Last commit](https://img.shields.io/github/last-commit/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/commits/main)
+[![License](https://img.shields.io/github/license/joe-mccarthy/homelab?style=flat-square)](LICENSE)
+[![ansible-lint](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml/badge.svg?style=flat-square)](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml)
 
 
 The purpose of this repository is to create and manage a simple [home lab](https://linuxhandbook.com/homelab/) built around clusters of [Raspberry Pi's](https://www.raspberrypi.com/) using [Docker Swarm](https://docs.docker.com/engine/swarm/) for container deployment and management. The primary tool for managing the home lab is [Ansible](https://docs.ansible.com/ansible/latest/index.html). 
 
 This repository is designed to help you learn, test, and experiment with deploying and managing services in a clustered environment. It provides a structured approach to setting up a home lab, automating deployments, and maintaining the cluster.
+
+For a service-by-service deployment catalog, see [deployments/README.md](deployments/README.md).
 
 > **⚠️ Warning**  
 > All examples within this repository are for testing, learning, and development purposes and should not be used for production environments.
@@ -124,6 +127,7 @@ Assuming that you've created an inventory file like stated above, along with act
 
 4. **Deploy Core Services**:
    - Deploy essential services like Traefik, Portainer, and Dynamic DNS using the [core-deployments](deployments/core-deployments/README.md) playbook.
+  - Use the [deployments catalog](deployments/README.md) for the full list of available services and per-service documentation.
 
 ---
 

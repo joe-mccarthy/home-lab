@@ -1,5 +1,7 @@
 # Traefik Deployment
 
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Ingress-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Let's Encrypt](https://img.shields.io/badge/Let%27s%20Encrypt-TLS-003A70?logo=letsencrypt&logoColor=white&style=flat-square)](https://letsencrypt.org/docs/) [![Cloudflare](https://img.shields.io/badge/Cloudflare-DNS%20Challenge-F38020?logo=cloudflare&logoColor=white&style=flat-square)](https://developers.cloudflare.com/dns/)
+
 This project provides an automated solution for deploying and managing **Traefik** in a Docker Swarm environment using Ansible. Traefik is a modern reverse proxy and load balancer that simplifies the management of microservices by dynamically routing traffic to services based on their configuration.
 
 ## Overview

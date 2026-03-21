@@ -1,6 +1,8 @@
 # Personal Blog
 
-This deployment sets up two instances of my personal blog. The blog is written using Hugo and a custom theme. Previously, it was deployed to GitHub Pages. However, this example demonstrates pulling an image from a private Docker registry and deploying it in a Docker Swarm environment.
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Routing-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![GHCR](https://img.shields.io/badge/GHCR-Private%20Image-181717?logo=github&logoColor=white&style=flat-square)](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+
+This deployment sets up two instances of a personal blog. The blog is written using Hugo and a custom theme. It was previously deployed to GitHub Pages. This example demonstrates pulling an image from a private Docker registry and deploying it in a Docker Swarm environment.
 
 ## Overview
 
@@ -32,7 +34,7 @@ This deployment uses a Docker image hosted as a private package within GitHub. T
 The playbook performs the following tasks:
 1. Ensures Docker is installed and running on the target node.
 2. Removes any previously running instances of the blog service to avoid conflicts.
-3. Copies the Docker Compose file to the `manager-01` node.
+3. Copies the Docker Compose file to a selected manager node.
 4. Deploys the blog service using Docker Swarm.
 
 ## Configuration
@@ -101,7 +103,7 @@ To deploy the blog service, run the following command:
 ansible-playbook deploy.yml
 ```
 
-- This command will deploy the blog service to the `manager-01` node in the Docker Swarm cluster.
+- This command deploys the blog service from one selected manager in the `manager` group.
 
 ## Troubleshooting
 
@@ -128,6 +130,8 @@ ansible-playbook deploy.yml
 - [Docker Swarm Overview](https://docs.docker.com/engine/swarm/)
 - [Traefik Documentation](https://doc.traefik.io/traefik/)
 - [Ansible Documentation](https://docs.ansible.com/)
+
+
 
 
 

@@ -1,12 +1,14 @@
 # Gitea Deployment
 
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) ![CI/CD](https://img.shields.io/badge/CI%2FCD-Runners-2DA44E?style=flat-square)
+
 This project provides an automated solution for deploying and managing a **Gitea** instance and its associated **CI/CD runners** using Ansible. Gitea is a lightweight, self-hosted Git service that allows teams to manage repositories, collaborate on code, and track issues. The deployment includes both the main Gitea server and optional runners for automated CI/CD workflows.
 
 ## Overview
 
 The deployment uses Ansible playbooks and roles to automate the setup and configuration of:
 1. **Gitea Server** (`deploy.yml`) - The main Git service in a Docker Swarm environment
-2. **Gitea Runners** (`deploy-workers.yml`) - CI/CD workers using act_runner for automated workflows
+2. **Gitea Runners** (`deploy-runners.yml`) - CI/CD workers using act_runner for automated workflows
 
 Both deployments include tasks for preparing the environment, managing persistent storage, and integrating with reverse proxies for secure access.
 
@@ -29,7 +31,7 @@ This deploys the main Gitea service with web interface and Git functionality.
 
 ### Gitea CI/CD Runners
 ```bash
-ansible-playbook -i inventory deploy-workers.yml
+ansible-playbook -i inventory deploy-runners.yml
 ```
 This deploys Gitea runners (act_runner) that connect to your Gitea instance to provide CI/CD capabilities.
 
@@ -47,7 +49,7 @@ To deploy Gitea, you need:
 ### Main Gitea Server
 The main deployment process involves preparing the environment, ensuring the required directory structure exists, checking NFS connectivity, and deploying the Gitea server stack using Docker Swarm.
 
-### Gitea Runners  
+### Gitea Runners
 The runner deployment process sets up act_runner instances that connect to your Gitea server to provide CI/CD capabilities. Each runner is deployed globally across the swarm nodes and requires proper registration tokens.
 
 The Ansible playbooks automate these tasks, ensuring consistency and reliability across both deployments.
@@ -65,7 +67,7 @@ Configuration is managed through `group_vars/all.yml` which should contain encry
 
 The deployment emphasizes security by:
 - Encrypting sensitive data like registration tokens using Ansible Vault
-- Restricting permissions on configuration files  
+- Restricting permissions on configuration files
 - Integrating with reverse proxies for secure HTTPS access
 - Using proper Docker security practices for both server and runner deployments
 

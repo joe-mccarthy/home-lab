@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   agent:
-    image: portainer/agent:latest
+    image: "portainer/agent:{{ portainer.versions.agent }}"
     # Specifies the Docker image for the Portainer agent, pulled from Docker Hub.
     # The agent is responsible for managing communication between Portainer and the Docker Swarm nodes.
 
@@ -33,9 +33,9 @@ services:
     container_name: portainer
     # Sets the container name to `portainer` for easier identification and management.
 
-    image: portainer/portainer-ce:latest
+    image: "portainer/portainer-ce:{{ portainer.versions.server }}"
     # Specifies the Docker image for Portainer Community Edition, pulled from Docker Hub.
-    # Replace `latest` with a specific version tag for better stability and to avoid unexpected updates.
+    # Version is pinned to a stable release for reproducible deployments.
 
     command:
       - '--admin-password-file=/run/secrets/portainer_admin_password'

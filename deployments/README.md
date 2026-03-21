@@ -1,5 +1,7 @@
 # Deployments
 
+[![ansible-lint](https://img.shields.io/github/actions/workflow/status/joe-mccarthy/homelab/ansible-linter.yml?style=flat-square&label=ansible%20lint)](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml) [![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-Reverse%20Proxy-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/)
+
 The `deployments` directory contains playbooks and associated files for deploying various services within the home lab cluster. Each deployment is designed to be standalone, meaning they can be deployed independently of one another. However, it is assumed that [Traefik](traefik/README.md) has been or will be deployed, as all deployments rely on Traefik for proxying and certificate management.
 
 ## Overview
@@ -41,7 +43,7 @@ This directory includes deployments for a variety of services, ranging from pers
 - **Use Case**: Perfect for managing and automating smart home devices.
 - **Dependencies**: Requires Traefik for proxying and certificate management.
 
-### 7. [NFS Backup](nfs_backup/README.md)
+### 7. [NFS Backup](nfs-backup/README.md)
 - **Description**: Provides enterprise-grade automated backups for Docker Swarm NFS shared volumes using Restic with S3 storage backend. Implements a comprehensive backup strategy with three coordinated services:
   - **backup**: Creates hourly encrypted incremental backups
   - **prune**: Manages retention policies (keeping 24 latest, 7 daily, 4 weekly, and 4 monthly backups)
@@ -72,6 +74,29 @@ This directory includes deployments for a variety of services, ranging from pers
   - **immich-redis**: Cache and session storage for performance
   - **immich-machine-learning**: AI processing for smart features
 - **Use Case**: Ideal for users looking to manage and organize their photo and video collections with advanced AI capabilities.
+
+## Service Versions
+
+| Service | Component | Version |
+|---------|-----------|:-------:|
+| [Cioban](cioban/README.md) | cioban | `0.17.14` |
+| [DDNS](ddns/README.md) | cloudflare-ddns | `1.15.1` |
+| [Gitea](gitea/README.md) | server | `1.25.5` |
+| [Gitea](gitea/README.md) | act_runner | `0.2.12` |
+| [Home Assistant](home-assistant/README.md) | home-assistant | `2026.3.3` |
+| [Home Assistant](home-assistant/README.md) | zigbee2mqtt | `2.9.1` |
+| [Home Assistant](home-assistant/README.md) | mosquitto | `2.1-alpine` |
+| [Immich](immich/README.md) | immich-server | `v2.6.1` |
+| [Immich](immich/README.md) | immich-machine-learning | `v2.6.1` |
+| [NFS Backup](nfs-backup/README.md) | restic | `1.8.2` |
+| [Paperless](paperless/README.md) | paperless-ngx | `2.20.13` |
+| [Paperless](paperless/README.md) | redis | `8.6.1` |
+| [Paperless](paperless/README.md) | gotenberg | `8.28.0` |
+| [Paperless](paperless/README.md) | tika | `3.2.3.0` |
+| [Portainer](portainer/README.md) | portainer-ce | `2.39.1` |
+| [Portainer](portainer/README.md) | portainer-agent | `2.39.1` |
+| [Traefik](traefik/README.md) | traefik | `3.6.11` |
+
 ## Prerequisites
 
 Before deploying any services, ensure the following:
@@ -93,5 +118,5 @@ Before deploying any services, ensure the following:
 To deploy a service, navigate to its directory and run the associated playbook. For example, to deploy the personal blog:
 
 ```bash
-ansible-playbook blog/deploy.yml 
+ansible-playbook blog/deploy.yml
 ```

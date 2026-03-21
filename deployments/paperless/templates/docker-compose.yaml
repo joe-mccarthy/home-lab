@@ -38,7 +38,7 @@ services:
   # The service is reachable via the DNS name `paperless-broker` on the overlay
   # network, and the app uses this name in the `PAPERLESS_REDIS` env var.
   paperless-broker:
-    image: docker.io/library/redis:8
+    image: "docker.io/library/redis:{{ paperless.versions.broker }}"
     container_name: paperless-redis  # helpful for debugging on individual nodes
     restart: unless-stopped
     networks:
@@ -57,7 +57,7 @@ services:
   # Paperless application service.
   # This is the main web UI/API and uses Redis, Tika, and Gotenberg for processing.
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    image: "ghcr.io/paperless-ngx/paperless-ngx:{{ paperless.versions.app }}"
     restart: unless-stopped
     container_name: paperless  # optional; can be removed if it causes scheduling restrictions
     depends_on:
@@ -114,7 +114,7 @@ services:
   # It's typically only called from within the Paperless container (via the
   # internal overlay network) and does not need to be exposed through Traefik.
   paperless-gotenberg:
-    image: docker.io/gotenberg/gotenberg:8.27
+    image: "docker.io/gotenberg/gotenberg:{{ paperless.versions.gotenberg }}"
     restart: unless-stopped
     container_name: paperless-gotenberg
     ports:
@@ -135,7 +135,7 @@ services:
   # Tika is used for document parsing/metadata extraction.
   # It is not exposed via Traefik; Paperless talks to it over the overlay network.
   paperless-tika:
-    image: docker.io/apache/tika:latest
+    image: "docker.io/apache/tika:{{ paperless.versions.tika }}"
     container_name: paperless-tika
     restart: unless-stopped
     networks:

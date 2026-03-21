@@ -37,11 +37,11 @@ services:
     # Container naming for easier identification in Docker commands and logs.
     # Consistent naming helps with troubleshooting and service management.
 
-    image: "ghcr.io/home-assistant/home-assistant:stable"
+    image: "ghcr.io/home-assistant/home-assistant:{{ home_assistant.versions.homeassistant }}"
     # Official Home Assistant container image from GitHub Container Registry.
     # 
     # Version Strategy:
-    # - 'stable': Latest stable release (automatic updates)
+    # - 'stable': Floating stable release (automatic updates)
     # - 'YYYY.MM.X': Specific version for production consistency
     # - 'beta': Beta releases for testing new features
     #
@@ -169,7 +169,7 @@ services:
     container_name: zigbee2mqtt
     # Container identifier for service management and logging.
 
-    image: koenkk/zigbee2mqtt
+    image: "koenkk/zigbee2mqtt:{{ home_assistant.versions.zigbee2mqtt }}"
     # Official Zigbee2MQTT container image.
     # 
     # Version Considerations:
@@ -254,7 +254,7 @@ services:
   # for IoT devices, Home Assistant, and Zigbee2MQTT integration.
   # ==========================================================================
   mqtt:
-    image: eclipse-mosquitto:2.0
+    image: "eclipse-mosquitto:{{ home_assistant.versions.mqtt }}"
     # Official Eclipse Mosquitto MQTT broker image.
     # Version 2.0+ includes enhanced security features and performance
     # improvements over 1.x versions.

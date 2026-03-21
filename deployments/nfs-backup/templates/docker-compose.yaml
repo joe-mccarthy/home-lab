@@ -15,7 +15,7 @@ services:
   # =============================================================================
   # Core service responsible for creating encrypted backups of the NFS data
   backup:
-    image: mazzolino/restic      # Restic backup tool containerized image
+    image: "mazzolino/restic:{{ nfs_backup.version }}"      # Restic backup tool containerized image
     container_name: restic       # Explicit container name for easier management
     hostname: nfs-backup         # Internal hostname identifier
     environment:
@@ -27,13 +27,13 @@ services:
       BACKUP_CRON: "0 0/1 * * *" 
       
       # Repository configuration
-      RESTIC_REPOSITORY: "{{ nfs_s3_bucket }}"      # S3 bucket URL from Ansible variable
-      AWS_DEFAULT_REGION: "{{ nfs_s3_region }}"     # AWS region for S3 bucket
-      AWS_ACCESS_KEY_ID: "{{ nfs_s3_key_id }}"      # S3 access credentials
-      AWS_SECRET_ACCESS_KEY: "{{ nfs_s3_access_key }}"
+      RESTIC_REPOSITORY: "{{ nfs_backup.s3.bucket }}"      # S3 bucket URL from Ansible variable
+      AWS_DEFAULT_REGION: "{{ nfs_backup.s3.region }}"     # AWS region for S3 bucket
+      AWS_ACCESS_KEY_ID: "{{ nfs_backup.s3.key_id }}"      # S3 access credentials
+      AWS_SECRET_ACCESS_KEY: "{{ nfs_backup.s3.access_key }}"
       
       # Encryption password (from Ansible vault)
-      RESTIC_PASSWORD: "{{ nfs_encryption_key }}"
+      RESTIC_PASSWORD: "{{ nfs_backup.encryption_key }}"
       
       # Backup source configuration
       RESTIC_BACKUP_SOURCES: /exports/docker        # Directory to be backed up
@@ -75,7 +75,7 @@ services:
   # =============================================================================
   # Maintenance service that applies retention policies and optimizes repository space
   prune:
-    image: mazzolino/restic                         # Using same Restic image
+    image: "mazzolino/restic:{{ nfs_backup.version }}"                   # Using same Restic image
     container_name: restic-prune                    # Unique container name
     hostname: nfs-backup                            # Consistent hostname across services
     environment:
@@ -94,13 +94,13 @@ services:
       PRUNE_CRON: "30 3 * * *"
       
       # Repository access configuration (matching backup service)
-      RESTIC_REPOSITORY: "{{ nfs_s3_bucket }}"
-      RESTIC_PASSWORD: "{{ nfs_encryption_key }}"
+      RESTIC_REPOSITORY: "{{ nfs_backup.s3.bucket }}"
+      RESTIC_PASSWORD: "{{ nfs_backup.encryption_key }}"
       RESTIC_COMPRESSION: max                       # Consistent compression settings
       TZ: Europe/London                             # Timezone for scheduling
-      AWS_DEFAULT_REGION: "{{ nfs_s3_region }}"
-      AWS_ACCESS_KEY_ID: "{{ nfs_s3_key_id }}"
-      AWS_SECRET_ACCESS_KEY: "{{ nfs_s3_access_key }}"
+      AWS_DEFAULT_REGION: "{{ nfs_backup.s3.region }}"
+      AWS_ACCESS_KEY_ID: "{{ nfs_backup.s3.key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ nfs_backup.s3.access_key }}"
     
     # Security configuration
     security_opt:
@@ -118,7 +118,7 @@ services:
   # =============================================================================
   # Verification service that ensures backup integrity and repository health
   check:
-    image: mazzolino/restic
+    image: "mazzolino/restic:{{ nfs_backup.version }}"
     container_name: restic-check
     hostname: nfs-backup
     environment:
@@ -133,11 +133,11 @@ services:
       RESTIC_CHECK_ARGS: --read-data-subset=10%     # Sample 10% of data for efficiency
       
       # Repository access configuration
-      RESTIC_REPOSITORY: "{{ nfs_s3_bucket }}"
-      AWS_DEFAULT_REGION: "{{ nfs_s3_region }}"
-      AWS_ACCESS_KEY_ID: "{{ nfs_s3_key_id }}"
-      AWS_SECRET_ACCESS_KEY: "{{ nfs_s3_access_key }}"
-      RESTIC_PASSWORD: "{{ nfs_encryption_key }}"
+      RESTIC_REPOSITORY: "{{ nfs_backup.s3.bucket }}"
+      AWS_DEFAULT_REGION: "{{ nfs_backup.s3.region }}"
+      AWS_ACCESS_KEY_ID: "{{ nfs_backup.s3.key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ nfs_backup.s3.access_key }}"
+      RESTIC_PASSWORD: "{{ nfs_backup.encryption_key }}"
       TZ: Europe/London
     
     # Security configuration

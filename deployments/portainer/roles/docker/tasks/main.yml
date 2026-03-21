@@ -13,17 +13,16 @@
 
 - name: Iterate over secrets defined in group variables
   community.docker.docker_secret:
-    name: "{{ item.key }}"  # The name of the Docker secret, derived from the key in the `secrets` dictionary.
-    data: "{{ item.value }}"  # The value of the Docker secret, derived from the value in the `secrets` dictionary.
-    force: true  # Overwrite the secret if it already exists.
-  with_dict: "{{ secrets }}"  # Iterate over the `secrets` dictionary defined in the group variables file.
-  no_log: true  # Prevent sensitive data from being logged to ensure security.
-  # This task creates Docker secrets from the `secrets` dictionary defined in the group variables file.
-  # Docker secrets provide a secure way to manage sensitive data in containerized environments.
+    name: "{{ item.key }}"
+    data: "{{ item.value }}"
+    force: true
+  with_dict:
+    portainer_admin_password: "{{ portainer.admin_password }}"
+  no_log: true
 
 # Notes:
-# - Ensure that the `secrets` dictionary is properly defined in the group variables file.
-#   Each key-value pair in the dictionary represents a Docker secret.
+# - Ensure that portainer.admin_password is defined and encrypted in Ansible Vault.
+#   The secret name must match what the compose template references (/run/secrets/portainer_admin_password).
 # - The `no_log: true` option ensures that sensitive data (e.g., secret values) is not logged during playbook execution.
 # - Always test the playbook in a staging environment before applying it to production systems.
 # - Use caution when removing services to avoid unintended disruptions in production environments.

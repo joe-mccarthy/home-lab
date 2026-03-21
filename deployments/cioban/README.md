@@ -1,5 +1,7 @@
 # Cioban Deployment
 
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) ![Auto Update](https://img.shields.io/badge/Auto%20Update-Service%20Images-2EA44F?style=flat-square) ![Docker Socket](https://img.shields.io/badge/Docker%20Socket-Required-2496ED?logo=docker&logoColor=white&style=flat-square) ![Cioban](https://img.shields.io/badge/cioban-v0.17.14-5C5C5C?style=flat-square)
+
 This project provides an automated solution for deploying and managing the **Cioban** stack in a Docker Swarm cluster using Ansible. It is designed to ensure scalability, high availability, and secure integration with external services.
 
 ## Overview

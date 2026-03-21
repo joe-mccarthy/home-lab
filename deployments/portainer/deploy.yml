@@ -10,6 +10,7 @@
   order: shuffle  # Select a manager without always preferring the first inventory host.
   become: true  # Execute tasks with elevated privileges (sudo) to ensure proper permissions.
   vars:
+    # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
     portainer_deploy_host: "{{ ansible_play_hosts_all | first }}"
   tasks:
     - name: Prepare Docker environment

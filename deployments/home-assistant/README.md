@@ -1,8 +1,10 @@
 # Home Assistant Smart Home Stack Deployment
 
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![MQTT](https://img.shields.io/badge/MQTT-IoT%20Messaging-660066?logo=eclipsemosquitto&logoColor=white&style=flat-square)](https://mqtt.org/) [![Zigbee](https://img.shields.io/badge/Zigbee-Device%20Network-EB0443?style=flat-square)](https://csa-iot.org/all-solutions/zigbee/) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.3.3-5C5C5C?style=flat-square) ![Zigbee2MQTT](https://img.shields.io/badge/Zigbee2MQTT-v2.9.1-5C5C5C?style=flat-square) ![Mosquitto](https://img.shields.io/badge/Mosquitto-2.1--alpine-5C5C5C?style=flat-square)
+
 This project provides a comprehensive, production-ready solution for deploying **Home Assistant** with integrated smart home services using Ansible and Docker Swarm. The deployment creates a complete smart home automation platform with Zigbee device support, MQTT communication, and secure external access.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
@@ -18,7 +20,7 @@ This project provides a comprehensive, production-ready solution for deploying *
 - [Backup & Recovery](#backup--recovery)
 - [Contributing](#contributing)
 
-## 🏠 Overview
+## Overview
 
 This deployment solution creates a complete smart home automation stack consisting of:
 
@@ -30,7 +32,7 @@ This deployment solution creates a complete smart home automation stack consisti
 
 The deployment is designed for high availability, security, and ease of management in a Docker Swarm environment.
 
-## 🏗️ Architecture
+## Architecture
 
 ### System Architecture
 
@@ -71,33 +73,33 @@ The deployment is designed for high availability, security, and ease of manageme
 2. **Device Communication**: Zigbee Devices → Zigbee2MQTT → MQTT → Home Assistant
 3. **Data Persistence**: All services → NFS Storage
 
-## ✨ Features
+## Features
 
-### 🏠 Home Automation
+### Home Automation
 - **Complete Home Assistant Installation**: Latest stable version with all integrations
 - **Zigbee Device Support**: Native support for 1000+ Zigbee devices
 - **MQTT Integration**: Reliable IoT device communication
 - **Web Interface**: Modern, responsive web UI for device management
 
-### 🔧 Infrastructure
+### Infrastructure
 - **Docker Swarm Deployment**: High availability and container orchestration
 - **NFS Persistent Storage**: Shared storage across cluster nodes
 - **Automatic SSL Certificates**: Let's Encrypt integration via Traefik
 - **Zero-Downtime Updates**: Rolling updates with Docker Swarm
 
-### 🔐 Security
+### Security
 - **Ansible Vault Integration**: Encrypted secrets management
 - **HTTPS Enforcement**: Automatic HTTP to HTTPS redirection
 - **Network Isolation**: Segregated internal and external networks
 - **Container Security**: Minimal privileges and security contexts
 
-### 🛠️ Operations
+### Operations
 - **Infrastructure as Code**: Fully automated deployment
 - **Configuration Management**: Template-based configuration
 - **Health Monitoring**: Built-in service health checks
 - **Backup Integration**: NFS-based backup strategy
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### Infrastructure Requirements
 
@@ -136,7 +138,7 @@ The deployment is designed for high availability, security, and ease of manageme
   - `zigbee2mqtt.yourdomain.com`
 - **Firewall Rules**: Ports 80, 443, 1883 (MQTT) accessible
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone and Navigate
 ```bash
@@ -186,7 +188,7 @@ docker service ls
 docker service logs homeassistant_homeassistant
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Ansible Variables
 
@@ -231,7 +233,7 @@ The main deployment playbook that orchestrates the entire process:
 - Network configuration
 - Traefik labels
 
-## 🚀 Deployment
+## Deployment
 
 ### Standard Deployment Process
 
@@ -239,7 +241,7 @@ The main deployment playbook that orchestrates the entire process:
    ```bash
    # Verify NFS mount
    ls -la /mnt/nfs/docker/
-   
+
    # Check Docker Swarm status
    docker node ls
    ```
@@ -253,7 +255,7 @@ The main deployment playbook that orchestrates the entire process:
    ```bash
    # Watch service deployment
    watch docker service ls
-   
+
    # Check specific service logs
    docker service logs -f homeassistant_homeassistant
    ```
@@ -278,7 +280,7 @@ ansible-playbook deploy.yml --check --diff
 ansible-playbook deploy.yml -vvv
 ```
 
-## 📊 Post-Deployment
+## Post-Deployment
 
 ### Service Verification
 
@@ -298,7 +300,7 @@ ansible-playbook deploy.yml -vvv
    ```bash
    # Install MQTT client
    sudo apt install mosquitto-clients
-   
+
    # Test MQTT broker
    mosquitto_pub -h <mqtt-server> -t test/topic -m "Hello World"
    mosquitto_sub -h <mqtt-server> -t test/topic
@@ -323,7 +325,7 @@ ansible-playbook deploy.yml -vvv
    - Verify device discovery
    - Test device control
 
-## 🔧 Management
+## Management
 
 ### Service Management
 
@@ -366,7 +368,7 @@ docker service logs -f homeassistant_homeassistant
 docker service logs homeassistant_homeassistant > homeassistant.log
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -432,7 +434,7 @@ docker service logs homeassistant_homeassistant 2>&1 | grep ERROR
 docker service inspect homeassistant_homeassistant
 ```
 
-## 🔒 Security
+## Security
 
 ### Security Best Practices
 
@@ -472,7 +474,7 @@ docker service inspect homeassistant_homeassistant
 ansible-playbook deploy.yml --tags "security"
 ```
 
-## 💾 Backup & Recovery
+## Backup & Recovery
 
 ### Backup Strategy
 
@@ -504,7 +506,7 @@ ansible-playbook deploy.yml --tags "security"
    # Restore NFS data
    sudo tar -xzf homeassistant-backup-YYYYMMDD.tar.gz \
      -C /mnt/nfs/docker/home_assistant/
-   
+
    # Redeploy services
    ansible-playbook deploy.yml
    ```
@@ -514,7 +516,7 @@ ansible-playbook deploy.yml --tags "security"
    # Restore Zigbee coordinator backup
    cp zigbee-backup-YYYYMMDD.json \
      /mnt/nfs/docker/home_assistant/zigbee2mqtt/data/coordinator_backup.json
-   
+
    # Restart Zigbee2MQTT service
    docker service update --force homeassistant_zigbee2mqtt
    ```
@@ -545,7 +547,7 @@ chmod +x /usr/local/bin/homeassistant-backup.sh
 echo "0 2 * * * /usr/local/bin/homeassistant-backup.sh" | sudo crontab -
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions to improve this deployment solution!
 
@@ -583,7 +585,7 @@ We welcome contributions to improve this deployment solution!
 
 ---
 
-## 📞 Support
+## Support
 
 For support and questions:
 

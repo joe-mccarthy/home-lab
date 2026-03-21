@@ -11,13 +11,14 @@
   hosts: manager
   order: shuffle
   # Targets the Docker Swarm manager group for deployment.
-  # `run_once` tasks below ensure only one manager executes deployment logic.
+  # Tasks are gated to one selected manager host for single-node deployment.
 
   become: true
   # Enables privilege escalation to run tasks as root when necessary.
   # Required for creating directories, managing Docker services, and setting file permissions.
   # Many Docker and file system operations require elevated privileges.
   vars:
+    # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
     immich_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
   tasks:

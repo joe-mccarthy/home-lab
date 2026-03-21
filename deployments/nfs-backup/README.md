@@ -1,5 +1,7 @@
 # NFS Backup Solution
 
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Scheduled%20Jobs-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Restic](https://img.shields.io/badge/Restic-Encrypted%20Backups-0F7B0F?style=flat-square)](https://restic.net/) [![S3](https://img.shields.io/badge/S3-Object%20Storage-569A31?logo=amazons3&logoColor=white&style=flat-square)](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) ![Restic](https://img.shields.io/badge/restic-v1.8.2-5C5C5C?style=flat-square)
+
 A comprehensive S3-backed encrypted backup solution for Docker Swarm NFS shared volumes using Restic.
 
 ## Overview
@@ -35,13 +37,16 @@ The system runs as a stack on Docker Swarm with the following components:
 All configuration is managed through Ansible variables with sensitive data stored in Ansible Vault:
 
 - **S3 Configuration**:
-  - `nfs_s3_bucket`: S3 bucket URL
-  - `nfs_s3_region`: AWS/S3 region
-  - `nfs_s3_key_id`: S3 access key ID
-  - `nfs_s3_access_key`: S3 secret access key
+  - `nfs_backup.s3.bucket`: S3 bucket URL
+  - `nfs_backup.s3.region`: AWS/S3 region
+  - `nfs_backup.s3.key_id`: S3 access key ID
+  - `nfs_backup.s3.access_key`: S3 secret access key
 
 - **Encryption**:
-  - `nfs_encryption_key`: Password for encrypting all backup data
+  - `nfs_backup.encryption_key`: Password for encrypting all backup data
+
+- **Image**:
+  - `nfs_backup.version`: Pinned restic image tag
 
 ### Backup Schedule
 
@@ -90,7 +95,7 @@ ansible-playbook -i inventory/hosts deploy.yml -v
 ansible-playbook -i inventory/hosts deploy.yml --check
 ```
 
-The playbook targets only the first Swarm manager node to prevent duplicate deployment commands.
+The playbook targets the `manager` group and executes deployment tasks on one selected manager host to prevent duplicate deployment commands.
 
 ## Manual Operations
 

@@ -2,7 +2,7 @@
 #
 # This playbook deploys the Paperless stack onto a Docker Swarm manager node.
 # It is intended to be executed from the Ansible control machine and targets the
-# first manager (`manager[0]`) in the inventory.
+# manager group, executing deployment tasks on one selected manager host.
 #
 # High-level flow:
 #   1) Ensure NFS storage paths exist and are writable (via the `check_nfs` role).
@@ -20,6 +20,7 @@
   order: shuffle
   become: true
   vars:
+    # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
     paperless_deploy_host: "{{ ansible_play_hosts_all | first }}"
   tasks:
     - name: Ensure Paperless NFS paths exist

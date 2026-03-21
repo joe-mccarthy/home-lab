@@ -1,15 +1,17 @@
 # Paperless (paperless-ngx) Ansible Deployment
 
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Routing-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![NFS](https://img.shields.io/badge/NFS-Persistent%20Storage-2C3E50?style=flat-square)](https://documentation.ubuntu.com/server/how-to/networking/install-nfs/) ![paperless-ngx](https://img.shields.io/badge/paperless--ngx-v2.20.13-5C5C5C?style=flat-square)
+
 This directory contains an Ansible-based deployment for **Paperless-ngx** using Docker Swarm, Traefik for ingress routing, and NFS-backed persistent storage.
 
-## 🔎 What this deployment does
+## What this deployment does
 
 - Prepares required NFS directories and permissions for Paperless (via `check_nfs` role).
 - Renders a Docker Compose stack definition from a Jinja2 template.
 - Deploys the stack to Docker Swarm using `docker stack deploy`.
 - Uses Traefik labels to expose the Paperless UI/API over HTTPS using Let’s Encrypt.
 
-## 🧠 Architecture overview
+## Architecture overview
 
 - **Docker Swarm stack**: the deployment is managed as a Swarm stack (`docker stack deploy`).
 - **Traefik**: handles ingress routing on the `proxy` overlay network.
@@ -20,14 +22,14 @@ This directory contains an Ansible-based deployment for **Paperless-ngx** using 
   - `paperless-gotenberg` – PDF rendering/conversion
   - `paperless-tika` – document parsing (Tika)
 
-## ✅ Prerequisites
+## Prerequisites
 
 1. **Docker Swarm cluster already initialized** (at least one manager).
 2. **Traefik stack deployed**, providing an external overlay network named `proxy`.
 3. **Ansible control node** with access to inventory and Vault secrets.
 4. **NFS volume mounted** on target host(s) (default is `/mnt/nfs`).
 
-## 🛠️ Deployment steps
+## Deployment steps
 
 1. Ensure you have the required Vault values defined (see next section).
 2. Run the playbook:
@@ -36,7 +38,7 @@ This directory contains an Ansible-based deployment for **Paperless-ngx** using 
 ansible-playbook -i inventory deployments/paperless/deploy.yml
 ```
 
-## 🔐 Vault / configuration variables
+## Vault / configuration variables
 
 This deployment pulls sensitive settings from an Ansible Vault file referenced as `vault_paperless`.
 
@@ -54,14 +56,14 @@ The primary runtime configuration lives under `deployments/paperless/group_vars/
   - `broker` (Redis)
   - `gotenberg` (PDF rendering)
 
-## 📁 Important paths
+## Important paths
 
 - `deployments/paperless/deploy.yml` – main playbook
 - `deployments/paperless/roles/check_nfs/tasks/main.yml` – creates required NFS directories
 - `deployments/paperless/roles/deploy_paperless/tasks/main.yml` – renders compose file and deploys the stack
 - `deployments/paperless/templates/docker-compose.yaml` – the Docker stack template
 
-## ⚙️ How the stack is deployed
+## How the stack is deployed
 
 - The `deploy_paperless` role renders `templates/docker-compose.yaml` into a temporary directory (`/home/docker-compose/paperless`).
 - It then runs:
@@ -72,7 +74,7 @@ docker stack deploy -c /home/docker-compose/paperless/docker-compose.yaml paperl
 
 - The temporary directory is removed after deployment so the host is not left with artifacts.
 
-## 🧩 Customization
+## Customization
 
 ### Changing the domain
 Update `group_vars/all.yml` (or your vault values) so `general.domain` resolves to the desired DNS name.
@@ -80,7 +82,7 @@ Update `group_vars/all.yml` (or your vault values) so `general.domain` resolves 
 ### Changing ports or storage paths
 Adjust the vault values referenced by `vault_paperless.ports.*` and `vault_paperless.volumes.*`.
 
-## 🐞 Troubleshooting
+## Troubleshooting
 
 - If Paperless cannot connect to Redis, verify the `paperless-broker` service is running and reachable from the `paperless` service.
 - If the stack fails to start due to missing directories, ensure the NFS share is mounted and the expected paths exist (see `check_nfs` role).

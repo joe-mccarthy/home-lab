@@ -20,3 +20,10 @@ paperless:
     tika: "{{ vault_paperless.ports.tika }}"
     broker: "{{ vault_paperless.ports.broker }}"
     gotenberg: "{{ vault_paperless.ports.gotenberg }}"
+
+  # Pinned image tags for reproducible deployments
+  versions:
+    broker: "8.6.1"
+    app: "2.20.13"
+    gotenberg: "8.28.0"
+    tika: "3.2.3.0"

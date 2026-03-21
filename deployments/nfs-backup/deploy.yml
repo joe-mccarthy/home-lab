@@ -5,8 +5,8 @@
 #   2. prune - Manages backup retention and removes old backups according to policy
 #   3. check - Verifies backup integrity by scanning the repository
 #
-# The playbook targets only the first Swarm manager node to ensure that deployment
-# commands are executed exactly once, preventing duplicate service deployments.
+# The playbook targets the manager group and gates deployment tasks to one selected
+# manager host so commands execute exactly once and avoid duplicate deployments.
 
 - name: Deploy NFS Backup Jobs
   hosts: manager  # Target the manager group in the Swarm cluster.
@@ -14,6 +14,7 @@
   become: true       # Execute tasks with elevated privileges (sudo)
                      # Required for Docker operations and filesystem access
   vars:
+    # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
     nfs_backup_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
   # Pre-deployment checks could be added here

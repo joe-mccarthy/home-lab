@@ -109,19 +109,19 @@ services:
         # Configures Let's Encrypt as the certificate resolver for the secure router.
         - "traefik.http.routers.traefik-secure.service=traefik"
         # Associates the secure router with the Traefik service.
-        - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+        - "traefik.http.services.traefik.loadbalancer.server.port={{ traefik.ports.dashboard_internal }}"
         # Specifies the internal port (8080) of the Traefik service for the dashboard.
         - "traefik.docker.network=proxy"
         # Specifies the Docker network that Traefik should use.
 
     ports:
-      - "80:80"
+      - "{{ traefik.ports.web }}:80"
       # Maps port 80 on the host to port 80 in the container for HTTP traffic.
-      - "443:443"
+      - "{{ traefik.ports.websecure }}:443"
       # Maps port 443 on the host to port 443 in the container for HTTPS traffic.
-      - "8080:8080"
+      - "{{ traefik.ports.dashboard }}:{{ traefik.ports.dashboard_internal }}"
       # Maps port 8080 on the host to port 8080 in the container for the Traefik dashboard.
-      - "2222:2222"
+      - "{{ traefik.ports.ssh }}:2222"
       # Maps port 2222 on the host to port 2222 in the container for SSH traffic.
 
     environment:

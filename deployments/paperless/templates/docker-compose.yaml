@@ -38,13 +38,11 @@ services:
   # The service is reachable via the DNS name `paperless-broker` on the overlay
   # network, and the app uses this name in the `PAPERLESS_REDIS` env var.
   paperless-broker:
-    image: "docker.io/library/redis:{{ paperless.versions.broker }}"
+    image: docker.io/library/redis:8
     container_name: paperless-redis  # helpful for debugging on individual nodes
     restart: unless-stopped
     networks:
       - paperless
-    ports:
-      - "{{ paperless.ports.broker }}:6379"  # host port -> container port
     volumes:
       - redisdata:/data  # persistence for broker state
     # Swarm-only deployment settings (ignored by plain docker-compose).
@@ -57,7 +55,7 @@ services:
   # Paperless application service.
   # This is the main web UI/API and uses Redis, Tika, and Gotenberg for processing.
   paperless:
-    image: "ghcr.io/paperless-ngx/paperless-ngx:{{ paperless.versions.app }}"
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
     container_name: paperless  # optional; can be removed if it causes scheduling restrictions
     depends_on:
@@ -66,8 +64,6 @@ services:
       - paperless-broker
       - paperless-gotenberg
       - paperless-tika
-    ports:
-      - "{{ paperless.ports.paperless }}:8000"  # exposes Paperless UI/API on host
     networks:
       - proxy    # Traefik ingress network (routes host traffic into the stack)
       - paperless  # internal network for backend communications
@@ -92,20 +88,20 @@ services:
         - "traefik.http.routers.paperless-secure.tls=true"
         - "traefik.http.routers.paperless-secure.service=paperless"
         - "traefik.http.routers.paperless-secure.tls.certresolver=letsencrypt"
-        - "traefik.http.services.paperless.loadbalancer.server.port={{ paperless.ports.paperless }}"
+        - "traefik.http.services.paperless.loadbalancer.server.port=8000"
         - "traefik.docker.network=proxy"
     environment:
       # Where the app reads its configuration file from.
       PAPERLESS_CONFIGURATION_PATH: ./paperless.conf
       # Redis backend for job queueing.
-      PAPERLESS_REDIS: redis://paperless-broker:{{ paperless.ports.broker }}
+      PAPERLESS_REDIS: redis://paperless-broker:6379
       # The externally reachable URL for the Paperless UI.
       PAPERLESS_URL: https://paperless.{{ general.domain }}
       # Enable Tika integration for document parsing.
       PAPERLESS_TIKA_ENABLED: 1
       # Endpoints for Tika+Gotenberg (used to extract text and render PDFs).
-      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:{{ paperless.ports.gotenberg }}
-      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:{{ paperless.ports.tika }}
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:9998
       # Allowed hosts to prevent Host header spoofing in Django.
       PAPERLESS_ALLOWED_HOSTS: paperless.{{ general.domain }},{{ general.domain }},.{{ general.domain }}
 
@@ -114,11 +110,9 @@ services:
   # It's typically only called from within the Paperless container (via the
   # internal overlay network) and does not need to be exposed through Traefik.
   paperless-gotenberg:
-    image: "docker.io/gotenberg/gotenberg:{{ paperless.versions.gotenberg }}"
+    image: docker.io/gotenberg/gotenberg:8.27
     restart: unless-stopped
     container_name: paperless-gotenberg
-    ports:
-      - "{{ paperless.ports.gotenberg }}:3000"  # used internally (not exposed to the public web)
     networks:
       - paperless
     # Swarm-only deployment settings (ignored by plain docker-compose).
@@ -135,7 +129,7 @@ services:
   # Tika is used for document parsing/metadata extraction.
   # It is not exposed via Traefik; Paperless talks to it over the overlay network.
   paperless-tika:
-    image: "docker.io/apache/tika:{{ paperless.versions.tika }}"
+    image: docker.io/apache/tika:latest
     container_name: paperless-tika
     restart: unless-stopped
     networks:
@@ -146,8 +140,6 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=false"  # not exposed via Traefik
-    ports:
-      - "{{ paperless.ports.tika }}:9998"  # internal service port used by Paperless
 
 # Persistent storage volumes backed by host paths (typically NFS mounts).
 #

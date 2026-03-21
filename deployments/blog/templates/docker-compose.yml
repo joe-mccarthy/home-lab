@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   blog: # Define the blog service
-    image: {{ blog_image }} # Docker image for the blog
+    image: {{ blog.image }} # Docker image for the blog
     container_name: blog # Name of the container for easier identification
     networks:
       proxy: # Connect the service to the external proxy network
@@ -27,7 +27,7 @@ services:
         - "traefik.http.routers.blog-secure.tls=true" # Enable TLS for the secure router
         - "traefik.http.routers.blog-secure.service=blog" # Link the secure router to the blog service
         - "traefik.http.routers.blog-secure.tls.certresolver=letsencrypt" # Use Let's Encrypt for TLS certificates
-        - "traefik.http.services.blog.loadbalancer.server.port=80" # Define the internal port for the service
+        - "traefik.http.services.blog.loadbalancer.server.port={{ blog.port }}" # Define the internal port for the service
         - "traefik.http.services.blog.loadbalancer.passhostheader=true" # Pass the original host header to the service
         - "traefik.docker.network=proxy" # Specify the Traefik network for the service
         - "ai.ix.auto-update=true" # Enable auto-update for the service (used by cioban or similar tools)

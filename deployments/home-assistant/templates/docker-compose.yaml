@@ -200,13 +200,6 @@ services:
       # Enables proper device detection and handling when USB coordinator
       # is connected or reconnected.
 
-    ports:
-      - 9876:8080
-      # Zigbee2MQTT web frontend port mapping.
-      # External port 9876 maps to internal port 8080 for web interface access.
-      # The web interface provides device management, network topology, and
-      # pairing capabilities.
-
     networks:
       proxy:
         # External network for Traefik reverse proxy access.
@@ -276,15 +269,6 @@ services:
       # - mosquitto.conf: Main broker configuration
       # - pwfile: User authentication (if enabled)
       # - aclfile: Access control lists (if enabled)
-
-    ports:
-      - "1883:1883"
-      # Standard MQTT protocol port for unencrypted communication.
-      # Used by internal services and local IoT devices.
-      
-      - "9001:9001"
-      # WebSocket port for MQTT over WebSocket connections.
-      # Enables web-based MQTT clients and browser integrations.
 
     command: "mosquitto -c /mosquitto-no-auth.conf"
     # Custom configuration file for development/testing environments.

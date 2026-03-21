@@ -22,6 +22,7 @@ services:
       # Mounts the host's local time configuration as read-only.
       # Synchronizes container time with host system for accurate timestamps.
 
+
     networks:
       - proxy
       # Connects to the external proxy network for Traefik reverse proxy access.

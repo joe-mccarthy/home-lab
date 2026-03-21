@@ -14,11 +14,11 @@ services:
       # Specifies the user ID under which the Gitea service will run. This improves security by avoiding root privileges.
       - USER_GID=1000
       # Specifies the group ID under which the Gitea service will run. Ensure this matches the NFS directory permissions.
-      - SSH_PORT=2222
+      - SSH_PORT={{ gitea.ports.ssh_internal }}
       # Explicitly sets the SSH port inside the container to 2222 to ensure Gitea's SSH service uses this port.
       - SSH_DOMAIN=git.{{ general.domain }}
       # Sets the SSH domain for repository URLs. This helps Gitea generate correct SSH URLs.
-      - SSH_LISTEN_PORT=2222
+      - SSH_LISTEN_PORT={{ gitea.ports.ssh_internal }}
       # Configures the internal port that Gitea's SSH service listens on.
       - GITEA__server__OFFLINE_MODE=false
       # Disables offline mode to allow Gitea to access external resources, such as updates and integrations.
@@ -69,7 +69,7 @@ services:
         # Associates the `git-secure` router with the `git` service.
         - "traefik.http.routers.git-secure.tls.certresolver=letsencrypt"
         # Configures Traefik to use the Let's Encrypt certificate resolver for automatic SSL certificate management.
-        - "traefik.http.services.git.loadbalancer.server.port=3000"
+        - "traefik.http.services.git.loadbalancer.server.port={{ gitea.ports.web_internal }}"
         # Specifies the internal port (3000) of the Gitea service to which Traefik should route traffic.
         - "traefik.http.services.git.loadbalancer.passhostheader=true"
         # Ensures that the original `Host` header is passed to the Gitea service.
@@ -83,7 +83,7 @@ services:
         # Uses a catch-all rule for SSH traffic as SSH doesn't use SNI headers.
         - "traefik.tcp.routers.git-ssh.service=git-ssh"
         # Associates the `git-ssh` router with the `git-ssh` service.
-        - "traefik.tcp.services.git-ssh.loadbalancer.server.port=2222"
+        - "traefik.tcp.services.git-ssh.loadbalancer.server.port={{ gitea.ports.ssh_internal }}"
         # Specifies the internal port (2222) of the Gitea service for SSH access.
 
 networks:

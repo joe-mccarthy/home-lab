@@ -4,6 +4,14 @@ traefik:
   cf_token: "{{ vault_cf_token }}"   # API token — scoped to DNS zone edit only
   cf_email: "{{ vault_cf_email }}"   # Cloudflare account email
 
+  # Published host ports
+  ports:
+    web: "{{ (vault_traefik_ports | default({})).web | default('80') }}"
+    websecure: "{{ (vault_traefik_ports | default({})).websecure | default('443') }}"
+    dashboard_internal: "{{ (vault_traefik_ports | default({})).dashboard_internal | default('8080') }}"
+    dashboard: "{{ (vault_traefik_ports | default({})).dashboard | default('8080') }}"
+    ssh: "{{ (vault_traefik_ports | default({})).ssh | default('2222') }}"
+
   # Pinned image tag for reproducible deployments
   version: "3.6.11"
 

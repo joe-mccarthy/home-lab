@@ -47,6 +47,7 @@
     compose:
       - /home/docker-compose/cioban/docker-compose.yaml
     state: present
+    with_registry_auth: true
   register: deploy_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
   # This task deploys the Cioban stack to the Docker Swarm cluster.

@@ -1,7 +1,11 @@
 ---
 
 - name: Deploy Gitea Runners
-  hosts: manager[0]  # Target the first manager node in the `manager` group.
+  hosts: manager  # Target the manager group instead of hard-coding a specific index.
+  order: shuffle  # Select a manager without always preferring the first inventory host.
   become: true  # Execute tasks with elevated privileges (sudo) to ensure proper permissions.
-  roles:
-    - runner_deploy  # Handles the deployment of Gitea runners (act_runner) for CI/CD capabilities.
+  tasks:
+    - name: Deploy Gitea runners
+      ansible.builtin.include_role:
+        name: runner_deploy
+      run_once: true

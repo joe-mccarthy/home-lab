@@ -3,61 +3,14 @@
 # This task file handles the complete deployment process for the Immich application stack.
 # It ensures prerequisites are met, cleans up existing services, and deploys the new stack.
 
-- name: Ensure docker-compose is installed
-  # Installs the docker-compose package which is required for processing the compose template.
-  # Even though we deploy to Docker Swarm, docker-compose helps parse and validate the YAML.
-  # This ensures the deployment environment has all necessary tools available.
-
-  ansible.builtin.package:
-    name: docker-compose
-    # The package name for docker-compose in the system package manager.
-    # On most distributions this is available in the default repositories.
-
-    state: present
-    # Ensures docker-compose is installed but doesn't force upgrades.
-    # This maintains stability while ensuring the required tool is available.
-
-- name: Ensure Docker service is running
-  # Verifies that the Docker daemon is active before attempting any Docker operations.
-  # This prevents deployment failures due to Docker being stopped or disabled.
-  # Also ensures Docker will start automatically on system boot.
-
-  ansible.builtin.service:
-    name: docker
-    # The systemd service name for the Docker daemon.
-    # This is consistent across most modern Linux distributions.
-
-    state: started
-    # Ensures the Docker service is currently running.
-    # Will start the service if it's currently stopped.
-
-    enabled: true
-    # Configures Docker to start automatically on system boot.
-    # Provides resilience against system restarts.
-
-- name: Stop specified Docker services
-  # Removes existing Immich services before redeployment to ensure clean state.
-  # This prevents conflicts between old and new service configurations.
-  # Service names follow Docker Swarm naming convention: stack_service.
-
-  community.docker.docker_swarm_service:
-    name: "{{ item }}"
-    # The full service name as it appears in Docker Swarm.
-    # Names are prefixed with the stack name 'immich_' followed by the service name.
-
-    state: absent
-    # Ensures the service is completely removed from the swarm.
-    # This includes stopping containers and removing service definitions.
-
-  loop:
-    - immich_immich-database
-    - immich_immich-machine-learning
-    - immich_immich-redis
-    - immich_immich-server
-
-  failed_when: false
-  # Continues deployment even if some services don't exist or fail to stop.
-  # This is necessary for initial deployments where services haven't been created yet.
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_tasks: "{{ role_path }}/../../../_shared/roles/docker_prereqs_and_stop/tasks/main.yml"
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - immich_immich-database
+      - immich_immich-machine-learning
+      - immich_immich-redis
+      - immich_immich-server
 
 - name: Setup immich directory
   ansible.builtin.file:

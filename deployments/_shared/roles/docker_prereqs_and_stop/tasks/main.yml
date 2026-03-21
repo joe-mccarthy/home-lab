@@ -1,0 +1,21 @@
+---
+# Shared role: Docker deployment prerequisites + optional Swarm service cleanup.
+
+- name: Ensure Docker Compose is installed
+  ansible.builtin.package:
+    name: docker-compose
+    state: present
+
+- name: Ensure Docker service is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Remove existing Docker Swarm services
+  community.docker.docker_swarm_service:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ docker_prereqs_and_stop_services_to_stop | default([]) }}"
+  failed_when: false
+  when: (docker_prereqs_and_stop_services_to_stop | default([]) | length) > 0

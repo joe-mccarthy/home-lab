@@ -13,7 +13,7 @@ on:
       - '**/*.yaml'
       - 'ansible.cfg'
       - '.ansible-lint'
-      - '.github/workflows/ansible-lint.yml'
+      - '.github/workflows/ansible-linter.yml'
 
 jobs:
   lint:

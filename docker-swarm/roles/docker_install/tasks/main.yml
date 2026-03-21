@@ -60,11 +60,10 @@
   # This step ensures that the Docker service is active and will persist across reboots.
 
 - name: Docker Permissions
-  ansible.builtin.command: "{{ item }}"  # Execute the specified command.
-  with_items:
-    - usermod -aG docker $USER  # Add the current user to the `docker` group for non-root access to Docker.
-  failed_when: false  # Ignore errors if the user is already in the `docker` group.
-  changed_when: false
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"  # The current Ansible connection user.
+    groups: docker
+    append: true  # Add to the docker group without removing existing groups.
   # This step allows the current user to run Docker commands without using `sudo`.
 
 - name: Docker login to registry

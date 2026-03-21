@@ -68,7 +68,7 @@
     fstype: nfs
     opts: "rw,sync,hard,_netdev,noatime,noauto,x-systemd.automount,x-systemd.mount-timeout=600,timeo=100"
     state: mounted
-  register: mount_result
+  register: mount_nfs_result
   changed_when: false
   # Ensures the mount entry is active and consistent with the desired fstab configuration
   # The changed_when: false prevents unnecessary "changed" reports in Ansible output

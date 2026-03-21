@@ -22,7 +22,7 @@
 
 - name: Get DEB architecture
   ansible.builtin.command: dpkg --print-architecture  # Retrieve the architecture of the system (e.g., amd64, arm64).
-  register: deb_architecture  # Store the output in the `deb_architecture` variable.
+  register: docker_install_deb_architecture  # Store the output in the `deb_architecture` variable.
   changed_when: false
   # This step ensures that the correct Docker repository is added based on the system architecture.
 

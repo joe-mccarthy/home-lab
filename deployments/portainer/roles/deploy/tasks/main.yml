@@ -23,7 +23,7 @@
     # The `docker stack deploy` command deploys the stack using the specified compose file.
     # - `-c`: Specifies the path to the docker-compose file.
     # - `portainer`: The name of the stack to deploy.
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable for debugging or logging purposes.
+  register: deploy_swarm_check  # Store the output of the command in the `swarm_check` variable for debugging or logging purposes.
   changed_when: false  # Prevent this task from marking the playbook as "changed" to avoid unnecessary notifications.
   # This task deploys the Portainer stack to the Docker Swarm cluster.
 

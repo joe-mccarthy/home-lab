@@ -71,7 +71,7 @@
     compose:
       - /home/docker-compose/paperless/docker-compose.yaml
     state: present
-  register: swarm_deployment_result
+  register: deploy_paperless_swarm_deployment_result
   # The docker CLI can exit with 0 even when no changes occur. Mark this task as
   # not-changed so that the playbook doesn't always report changes just because
   # the command ran.

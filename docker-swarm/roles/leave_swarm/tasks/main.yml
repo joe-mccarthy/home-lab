@@ -16,7 +16,7 @@
   # The `changed_when` directive ensures that this task does not mark the playbook as "changed."
   # This is useful for idempotency, as leaving a Swarm does not necessarily indicate a configuration change.
 
-  register: leave_swarm
+  register: leave_swarm_result
   # The `register` directive stores the output of the command in the `leave_swarm` variable.
   # This can be used for debugging or logging purposes in subsequent tasks.
 

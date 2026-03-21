@@ -6,7 +6,7 @@
   ansible.builtin.command: docker service ls -q | wc -l
   # The `docker service ls -q` command lists the IDs of all running Docker services.
   # The `wc -l` command counts the number of lines in the output, effectively giving the total number of services.
-  register: service_count  # Store the output of the command in the `service_count` variable.
+  register: stop_services_service_count  # Store the output of the command in the `service_count` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
   ignore_errors: true  # Allow the playbook to continue even if this task fails.
   # This task retrieves the total number of running Docker services in the Swarm cluster.
@@ -17,8 +17,8 @@
   # The `xargs docker service rm` command removes all the services listed by the previous command.
   ignore_errors: true  # Allow the playbook to continue even if this task fails.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
-  register: service_stop  # Store the output of the command in the `service_stop` variable.
-  when: service_count.stdout != "0"
+  register: stop_services_service_stop  # Store the output of the command in the `service_stop` variable.
+  when: stop_services_service_count.stdout != "0"
   # The `when` clause ensures that this task runs only if there are active services to stop.
   # If no services are running (`service_count.stdout == "0"`), this task is skipped.
 

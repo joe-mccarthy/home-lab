@@ -47,7 +47,7 @@
     compose:
       - /home/docker-compose/gitea/docker-compose.yaml
     state: present
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+  register: deploy_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
   # This task deploys the Gitea stack to the Docker Swarm cluster.
 

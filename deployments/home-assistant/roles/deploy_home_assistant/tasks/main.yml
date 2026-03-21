@@ -155,7 +155,7 @@
     compose:
       - /home/docker-compose/home_assistant/docker-compose.yaml
     state: present
-  register: swarm_deployment_result
+  register: deploy_home_assistant_swarm_deployment_result
   changed_when: false
   # Deploys the complete Home Assistant stack to the Docker Swarm cluster.
   # This creates and orchestrates all services defined in the compose file.

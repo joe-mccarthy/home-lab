@@ -107,7 +107,7 @@
     # -c specifies the compose file path
     # 'immich' is the stack name that prefixes all service names
 
-  register: swarm_check
+  register: deploy_swarm_check
   # Stores the command output in a variable for potential debugging.
   # Can be useful for troubleshooting deployment issues.
 

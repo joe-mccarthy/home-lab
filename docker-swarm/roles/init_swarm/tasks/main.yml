@@ -6,7 +6,7 @@
 - name: Check if Swarm is already initialized
   ansible.builtin.command:
     cmd: docker info  # Run the `docker info` command to check the current Docker configuration.
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+  register: init_swarm_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed".
   # This task checks if Swarm is already active by analyzing the output of `docker info`.
   # If Swarm is inactive, the next task will initialize it.
@@ -18,22 +18,22 @@
     # - `--advertise-addr`: Specifies the IP address to advertise to other nodes in the cluster.
     #   Here, it uses the default IPv4 address of the current node.
     # - `--force-new-cluster`: Forces the creation of a new Swarm cluster, even if one already exists.
-  when: "'Swarm: inactive' in swarm_check.stdout"  # Only run this task if Swarm is inactive.
-  register: swarm_init  # Store the result of the initialization in the `swarm_init` variable.
-  changed_when: swarm_init.rc == 0  # Mark the task as "changed" only if the command succeeds.
+  when: "'Swarm: inactive' in init_swarm_swarm_check.stdout"  # Only run this task if Swarm is inactive.
+  register: init_swarm_swarm_init  # Store the result of the initialization in the `swarm_init` variable.
+  changed_when: init_swarm_swarm_init.rc == 0  # Mark the task as "changed" only if the command succeeds.
   # This task ensures that Swarm is initialized only when it is not already active.
 
 - name: Get Swarm join token for managers
   ansible.builtin.command:
     cmd: docker swarm join-token -q manager  # Retrieve the join token for manager nodes.
-  register: manager_token  # Store the token in the `manager_token` variable.
+  register: init_swarm_manager_token  # Store the token in the `manager_token` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed".
   # The manager join token is required to add additional manager nodes to the Swarm cluster.
 
 - name: Get Swarm join token for workers
   ansible.builtin.command:
     cmd: docker swarm join-token -q worker  # Retrieve the join token for worker nodes.
-  register: worker_token  # Store the token in the `worker_token` variable.
+  register: init_swarm_worker_token  # Store the token in the `worker_token` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed".
   # The worker join token is required to add additional worker nodes to the Swarm cluster.
 

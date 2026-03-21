@@ -8,7 +8,7 @@
   # The `docker node ls` command lists all nodes in the Swarm.
   # - `-f 'role=worker'`: Filters the output to include only worker nodes.
   # - `-q`: Outputs only the node IDs, making it easier to process the results.
-  register: worker_nodes  # Store the output of the command in the `worker_nodes` variable.
+  register: remove_workers_remove_workers_worker_nodes  # Store the output of the command in the `worker_nodes` variable.
   changed_when: false
   # This task retrieves the list of worker nodes in the Swarm cluster.
 
@@ -16,15 +16,15 @@
   ansible.builtin.command: docker node update --availability drain {{ item }}
   # The `docker node update --availability drain` command marks a node as unavailable for task scheduling.
   # - `{{ item }}`: Refers to each worker node ID retrieved in the previous task.
-  with_items: "{{ worker_nodes.stdout_lines | list }}"
+  with_items: "{{ remove_workers_worker_nodes.stdout_lines | list }}"
   # The `with_items` loop iterates over the list of worker node IDs.
   ignore_errors: true
   # The `ignore_errors` directive ensures that the playbook continues even if this task fails for some nodes.
   changed_when: false
   # The `changed_when` directive ensures that this task does not mark the playbook as "changed."
-  register: remove_worker
+  register: remove_workers_remove_worker
   # The `register` directive stores the output of the command in the `remove_worker` variable.
-  when: worker_nodes.stdout != "0"
+  when: remove_workers_worker_nodes.stdout != "0"
   # The `when` clause ensures that this task runs only if there are worker nodes to process.
   # If no worker nodes are found, the task is skipped.
 

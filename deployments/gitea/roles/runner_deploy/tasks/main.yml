@@ -50,7 +50,7 @@
     # The `docker stack deploy` command deploys the runner stack using the specified compose file.
     # - `-c`: Specifies the path to the docker-compose file.
     # - `gitea`: The name of the stack to deploy (contains the Gitea runners).
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+  register: runner_deploy_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
   # This task deploys the Gitea runner stack to the Docker Swarm cluster.
 

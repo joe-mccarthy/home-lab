@@ -8,7 +8,7 @@
   hosts: manager[0]  # Target the first manager node in the `manager` group.
   become: true  # Execute tasks with elevated privileges (sudo) to ensure proper permissions.
   roles:
-  - deploy  # Use the `deploy` role to handle all tasks related to deploying the DDNS stack.
+    - deploy  # Use the `deploy` role to handle all tasks related to deploying the DDNS stack.
 
 # Notes:
 # - Ensure that the `manager` group is properly defined in the Ansible inventory file, with at least one manager node.

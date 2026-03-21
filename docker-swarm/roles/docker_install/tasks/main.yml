@@ -7,7 +7,7 @@
   ansible.builtin.apt:
     name: "{{ item }}"  # Install the specified packages.
     state: present  # Ensure the packages are installed.
-    update_cache: yes  # Update the apt cache before installing packages.
+    update_cache: true  # Update the apt cache before installing packages.
   loop:
     - apt-transport-https  # Allows the use of HTTPS for apt repositories.
     - ca-certificates  # Provides SSL certificates for secure communication.
@@ -21,13 +21,14 @@
   # The GPG key is required to verify the authenticity of the Docker packages.
 
 - name: Get DEB architecture
-  shell: dpkg --print-architecture  # Retrieve the architecture of the system (e.g., amd64, arm64).
-  register: deb_architecture  # Store the output in the `deb_architecture` variable.
+  ansible.builtin.command: dpkg --print-architecture  # Retrieve the architecture of the system (e.g., amd64, arm64).
+  register: docker_install_deb_architecture  # Store the output in the `deb_architecture` variable.
+  changed_when: false
   # This step ensures that the correct Docker repository is added based on the system architecture.
 
 - name: Add Docker repository
   ansible.builtin.apt_repository:
-    repo: "{{ docker_apt_repository }}"  # The Docker repository URL.
+    repo: "{{ docker_install_docker_apt_repository }}"  # The Docker repository URL.
     state: present  # Ensure the repository is added.
   # The Docker repository provides access to the latest Docker packages.
 
@@ -59,22 +60,22 @@
   # This step ensures that the Docker service is active and will persist across reboots.
 
 - name: Docker Permissions
-  command: "{{ item }}"  # Execute the specified command.
-  with_items:
-    - usermod -aG docker $USER  # Add the current user to the `docker` group for non-root access to Docker.
-  ignore_errors: yes  # Ignore errors if the user is already in the `docker` group.
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"  # The current Ansible connection user.
+    groups: docker
+    append: true  # Add to the docker group without removing existing groups.
   # This step allows the current user to run Docker commands without using `sudo`.
 
-- name: docker login to registry
-  ansible.builtin.command:
-    cmd: docker login -u {{ registry_user }} -p {{ registry_password }} {{ registry_url }}
+- name: Docker login to registry
+  community.docker.docker_login:
+    username: "{{ registry_user }}"
+    password: "{{ registry_password }}"
+    registry_url: "{{ registry_url }}"
   # Log in to the private Docker registry using the provided credentials.
   # The `registry_user`, `registry_password`, and `registry_url` variables should be defined in group variables or an Ansible Vault.
-
 # Notes:
-# - Ensure that the `docker_apt_repository` variable is defined in your group variables file.
-#   Example: `docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"`
+# - Ensure that the `docker_install_docker_apt_repository` variable is defined in your group variables file.
+#   Example: `docker_install_docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"`
 # - The `templates/docker_daemon.json.j2` file should contain the desired Docker daemon configuration.
 # - Be cautious when running the `docker login` task, as it stores credentials locally on the node.
 # - This playbook assumes that the target system is running Ubuntu or a compatible Debian-based distribution.
-

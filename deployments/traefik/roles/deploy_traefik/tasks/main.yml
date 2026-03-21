@@ -23,14 +23,14 @@
   # This task creates the directory structure required for the Traefik deployment.
 
 - name: Remove service
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: traefik_traefik  # The name of the Docker Swarm service to remove.
     state: absent  # Ensure the service is removed.
-  ignore_errors: true  # Allow the playbook to continue even if this task fails.
+  failed_when: false  # Allow the playbook to continue even if this task fails.
   # This task removes any existing instance of the Traefik service to avoid conflicts during deployment.
 
 - name: Iterate over secrets defined in group variables
-  docker_secret:
+  community.docker.docker_secret:
     name: "{{ item.key }}"  # The name of the Docker secret, derived from the key in the `secrets` dictionary.
     data: "{{ item.value }}"  # The value of the Docker secret, derived from the value in the `secrets` dictionary.
     force: true  # Overwrite the secret if it already exists.
@@ -47,18 +47,22 @@
   # This task copies the docker-compose template to the target system, ensuring it is ready for deployment.
 
 - name: Deploy Traefik stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/traefik/docker-compose.yaml traefik
+  community.docker.docker_stack:
+    name: traefik
+    compose:
+      - /home/docker-compose/traefik/docker-compose.yaml
+    state: present
     # The `docker stack deploy` command deploys the stack using the specified compose file.
     # - `-c`: Specifies the path to the docker-compose file.
     # - `traefik`: The name of the stack to deploy.
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable for debugging or logging purposes.
+  register: deploy_traefik_swarm_check  # Store the output of the command in the `swarm_check` variable for debugging or logging purposes.
   changed_when: false  # Prevent this task from marking the playbook as "changed" to avoid unnecessary notifications.
   # This task deploys the Traefik stack to the Docker Swarm cluster.
 
 - name: Delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # This task cleans up the temporary files and directories created during the deployment process.
 
 # Notes:

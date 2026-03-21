@@ -4,13 +4,13 @@
 # between services in a Docker Swarm cluster. Overlay networks allow containers running on
 # different nodes in the Swarm to communicate with each other.
 
-- name: create proxy network for traefik
+- name: Create proxy network for traefik
   community.docker.docker_network:  # Use the `docker_network` module from the `community.docker` collection.
     name: proxy  # The name of the network to be created.
     # The `name` parameter specifies the name of the Docker network. In this case, it is "proxy".
 
     driver: overlay  # The network driver to use.
-    # The `driver` parameter specifies the type of network to create. 
+    # The `driver` parameter specifies the type of network to create.
     # "overlay" is used for multi-host networking in Docker Swarm, enabling communication between containers on different nodes.
 
     state: present  # Ensure the network is created and exists.

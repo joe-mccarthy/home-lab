@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   blog: # Define the blog service
     image: {{ blog_image }} # Docker image for the blog

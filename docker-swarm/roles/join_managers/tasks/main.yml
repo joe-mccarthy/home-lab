@@ -6,32 +6,32 @@
 - name: Check if Swarm is already initialized
   ansible.builtin.command:
     cmd: docker info  # Run the `docker info` command to check the current Docker configuration.
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+  register: join_managers_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed".
   # This task checks if the node is already part of a Swarm by analyzing the output of `docker info`.
   # If the node is not part of a Swarm, the next tasks will retrieve the join token and add it as a manager.
 
 - name: Retrieve manager join token from manager
   ansible.builtin.set_fact:
-    manager_token: "{{ hostvars[groups['manager'][0]]['manager_token'].stdout }}"
+    join_managers_manager_token: "{{ hostvars[groups['manager'][0]]['init_swarm_manager_token'].stdout }}"
     # Retrieve the manager join token from the first manager node in the `manager` group.
     # The `hostvars` dictionary allows access to variables from other hosts in the inventory.
     # `groups['manager'][0]` refers to the first host in the `manager` group.
-  when: "'Swarm: inactive' in swarm_check.stdout"  # Only run this task if the node is not part of a Swarm.
+  when: "'Swarm: inactive' in join_managers_swarm_check.stdout"  # Only run this task if the node is not part of a Swarm.
   # This task ensures that the manager join token is retrieved only when the node is not already part of a Swarm.
 
 - name: Join manager to Swarm
   ansible.builtin.command:
-    cmd: docker swarm join --token {{ manager_token }} {{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377
+    cmd: docker swarm join --token {{ join_managers_manager_token }} {{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377
     # The `docker swarm join` command adds the node to the Swarm as a manager.
-    # - `--token {{ manager_token }}`: Specifies the manager join token retrieved from the first manager node.
+    # - `--token {{ join_managers_manager_token }}`: Specifies the manager join token retrieved from the first manager node.
     # - `{{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377`: Specifies the IP address
     #   and port of the first manager node to connect to.
   when:
-    - manager_token is defined  # Ensure the manager join token is available.
-    - "'Swarm: inactive' in swarm_check.stdout"  # Ensure the node is not already part of a Swarm.
-  register: swarm_join  # Store the output of the join command in the `swarm_join` variable.
-  changed_when: "'This node joined a swarm as a manager' in swarm_join.stdout"
+    - join_managers_manager_token is defined  # Ensure the manager join token is available.
+    - "'Swarm: inactive' in join_managers_swarm_check.stdout"  # Ensure the node is not already part of a Swarm.
+  register: join_managers_swarm_join  # Store the output of the join command in the `swarm_join` variable.
+  changed_when: "'This node joined a swarm as a manager' in join_managers_swarm_join.stdout"
   # Mark the task as "changed" only if the output indicates that the node successfully joined the Swarm as a manager.
 
 # Notes:

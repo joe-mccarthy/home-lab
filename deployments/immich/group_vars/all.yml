@@ -35,4 +35,3 @@ database_password: "{{ vault_immich_password }}"
 # - templates/docker-compose.yaml: Uses these variables in environment sections
 # - vault.yml: Contains the encrypted vault_* variables (not in version control)
 # - deploy.yml: Main playbook that processes these variables
-

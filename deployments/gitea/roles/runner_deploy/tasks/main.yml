@@ -3,7 +3,7 @@
 # It ensures that Docker and docker-compose are installed and running, removes any existing services,
 # sets up the required directory structure, deploys the runner stack, and cleans up temporary files.
 
-- name: Ensure docker-compose is installed
+- name: Ensure Docker Compose is installed
   ansible.builtin.package:
     name: docker-compose  # The package name for docker-compose.
     state: present  # Ensure docker-compose is installed on the target system.
@@ -17,13 +17,13 @@
   # This task ensures that the Docker daemon is active and ready to manage containers.
 
 - name: Remove existing Gitea runner services
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: gitea_runner  # The name of the Docker Swarm service to remove (stack_name + service_name).
     state: absent  # Ensure the service is removed.
-  ignore_errors: true  # Allow the playbook to continue even if this task fails.
+  failed_when: false  # Allow the playbook to continue even if this task fails.
   # This task removes any existing instance of the Gitea runner service to avoid conflicts during deployment.
 
-- name: Setup Gitea runner directory
+- name: Set up Gitea runner directory
   ansible.builtin.file:
     path: /home/docker-compose/gitea-runner # The path to the directory to be created.
     state: directory  # Ensure the path is a directory.
@@ -42,18 +42,22 @@
   # This task copies the docker-compose template to the target system, ensuring it is ready for runner deployment.
 
 - name: Deploy Gitea Runner stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/gitea-runner/docker-compose.yaml gitea
+  community.docker.docker_stack:
+    name: gitea
+    compose:
+      - /home/docker-compose/gitea-runner/docker-compose.yaml
+    state: present
     # The `docker stack deploy` command deploys the runner stack using the specified compose file.
     # - `-c`: Specifies the path to the docker-compose file.
-    # - `gitea_runner`: The name of the stack to deploy (contains the Gitea runners).
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+    # - `gitea`: The name of the stack to deploy (contains the Gitea runners).
+  register: runner_deploy_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
   # This task deploys the Gitea runner stack to the Docker Swarm cluster.
 
-- name: delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+- name: Delete compose directory
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # This task cleans up the temporary files and directories created during the deployment process.
 
 # Notes:

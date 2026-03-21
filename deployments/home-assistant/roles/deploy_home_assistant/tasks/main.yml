@@ -53,10 +53,10 @@
 # Service Cleanup and Preparation
 # ============================================================================
 - name: Remove existing Home Assistant core service
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: homeassistant_homeassistant
     state: absent
-  ignore_errors: true
+  failed_when: false
   # Removes any existing Home Assistant core service from Docker Swarm.
   # This ensures a clean deployment without conflicts from previous versions.
   #
@@ -64,14 +64,14 @@
   # - homeassistant: Stack name
   # - homeassistant: Service name (core Home Assistant container)
   #
-  # Error Handling: ignore_errors prevents deployment failure if the
+  # Error Handling: failed_when prevents deployment failure if the
   # service doesn't exist or is already removed.
 
 - name: Remove existing Zigbee2MQTT service
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: homeassistant_zigbee2mqtt
     state: absent
-  ignore_errors: true
+  failed_when: false
   # Removes the Zigbee2MQTT bridge service for clean redeployment.
   # Zigbee2MQTT requires careful handling due to its hardware dependencies
   # and persistent device database.
@@ -82,10 +82,10 @@
   # - Coordinator backup should be verified before service removal
 
 - name: Remove existing MQTT broker service
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: homeassistant_mqtt
     state: absent
-  ignore_errors: true
+  failed_when: false
   # Removes the Mosquitto MQTT broker service for clean redeployment.
   # MQTT is the communication backbone for IoT devices and Home Assistant.
   #
@@ -150,9 +150,12 @@
 # Docker Swarm Stack Deployment
 # ============================================================================
 - name: Deploy Home Assistant stack to Docker Swarm
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml homeassistant
-  register: swarm_deployment_result
+  community.docker.docker_stack:
+    name: homeassistant
+    compose:
+      - /home/docker-compose/home_assistant/docker-compose.yaml
+    state: present
+  register: deploy_home_assistant_swarm_deployment_result
   changed_when: false
   # Deploys the complete Home Assistant stack to the Docker Swarm cluster.
   # This creates and orchestrates all services defined in the compose file.
@@ -182,8 +185,9 @@
 # Cleanup and Maintenance
 # ============================================================================
 - name: Remove temporary deployment directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # Cleans up temporary deployment artifacts to maintain system hygiene.
   # The Docker Compose files are no longer needed after stack deployment
   # as Docker Swarm maintains the service state internally.

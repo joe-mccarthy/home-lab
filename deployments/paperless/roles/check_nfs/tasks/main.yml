@@ -15,26 +15,24 @@
   ansible.builtin.file:
     path: /mnt/nfs/docker/paperless
     state: directory
-    mode: 0777
+    mode: '0777'
     owner: nobody
     group: nogroup
   # This is the base root under which all Paperless data lives. It should exist
   # before creating sub-directories.
 
 - name: Create Paperless Directories
-  file:
+  ansible.builtin.file:
     # These directories are consumed by the Paperless stack (media, data, broker)
     # and are mounted into the containers to persist state and communicate.
     path: "/mnt/nfs/docker/paperless/{{ item }}"
     state: directory
     owner: nobody
     group: nogroup
-    mode: 0777
+    mode: '0777'
   loop:
     - media   # where scanned/imported documents are stored
     - data    # Paperless app data
     - consume # input queue for document ingestion
     - export  # export output directory
     - broker  # message broker in this case, used by the Redis service
-
-

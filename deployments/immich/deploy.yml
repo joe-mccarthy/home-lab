@@ -7,18 +7,18 @@
   # Main playbook task that orchestrates the complete Immich deployment process.
   # This includes preparing the environment, setting up storage, and deploying all services.
   # The deployment creates a fully functional photo management system with web interface.
-  
+
   hosts: manager[0]
   # Targets the first Docker Swarm manager node for deployment.
   # Using manager[0] ensures deployment happens on a node with swarm management capabilities.
   # The [0] index selects the first manager from the inventory group.
   # This approach provides consistency when multiple manager nodes are available.
-  
+
   become: true
   # Enables privilege escalation to run tasks as root when necessary.
   # Required for creating directories, managing Docker services, and setting file permissions.
   # Many Docker and file system operations require elevated privileges.
-  
+
   roles:
     - check_nfs
     # First role: Prepares the NFS storage infrastructure for Immich.
@@ -28,7 +28,7 @@
     #   - Creating /mnt/nfs/docker/immich and subdirectories
     #   - Setting 0777 permissions for container access
     #   - Configuring nobody:nogroup ownership
-    
+
     - deploy
     # Second role: Handles the actual application deployment to Docker Swarm.
     # Processes templates, manages existing services, and deploys the new stack.
@@ -45,5 +45,3 @@
 # - templates/docker-compose.yaml: Service definitions and configuration
 # - roles/check_nfs/tasks/main.yml: NFS directory preparation tasks
 # - roles/deploy/tasks/main.yml: Main deployment logic and service management
-
-

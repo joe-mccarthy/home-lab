@@ -28,7 +28,7 @@
     state: touch  # Ensure the files exist. If they do not exist, they will be created as empty files.
     mode: '0600'  # Set the file permissions to allow read and write access for the owner only.
   with_items:
-  - acme.json  # File for storing Let's Encrypt certificates and keys.
+    - acme.json  # File for storing Let's Encrypt certificates and keys.
   # This task ensures that the required configuration files for Traefik exist in the NFS directory.
   # The `0600` permissions restrict access to the owner, which is critical for sensitive files like `acme.json`.
 

@@ -18,7 +18,7 @@ collections:
   # This collection is critical for configuring Linux-based systems in the cluster.
   - name: ansible.posix
 
-  # The `community.docker.docker_stack` collection provides modules for managing Docker and Docker Swarm.
+  # The `community.docker` collection provides modules for managing Docker and Docker Swarm.
   # It includes tools for deploying and managing Docker stacks, containers, networks, and volumes.
   # This collection is essential for orchestrating services in the Docker Swarm cluster.
-  - name: community.docker.docker_stack
+  - name: community.docker

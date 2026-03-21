@@ -3,7 +3,7 @@
 # It ensures that Docker and docker-compose are installed and running, removes any existing services,
 # sets up the required directory structure, deploys the stack, and cleans up temporary files.
 
-- name: Ensure docker-compose is installed
+- name: Ensure Docker Compose is installed
   ansible.builtin.package:
     name: docker-compose  # The package name for docker-compose.
     state: present  # Ensure docker-compose is installed on the target system.
@@ -16,14 +16,14 @@
     enabled: true  # Ensure the Docker service starts on boot.
   # This task ensures that the Docker daemon is active and ready to manage containers.
 
-- name: Remove service
-  docker_swarm_service:
+- name: Remove Service
+  community.docker.docker_swarm_service:
     name: ddns_cloudflare-ddns  # The name of the Docker Swarm service to remove.
     state: absent  # Ensure the service is removed.
-  ignore_errors: true  # Allow the playbook to continue even if this task fails.
+  failed_when: false  # Allow the playbook to continue even if this task fails.
   # This task removes any existing instance of the DDNS service to avoid conflicts during deployment.
 
-- name: Setup DDNS directory
+- name: Set up DDNS directory
   ansible.builtin.file:
     path: /home/docker-compose/ddns  # The path to the directory to be created.
     state: directory  # Ensure the path is a directory.
@@ -32,7 +32,7 @@
     group: nogroup  # Set the directory group to `nogroup`.
   # This task creates the directory structure required for the deployment.
 
-- name: Copy compose from template to host
+- name: Copy Compose from template to host
   ansible.builtin.template:
     src: "templates/docker-compose.yml"  # Path to the Jinja2 template for the docker-compose file.
     dest: "/home/docker-compose/ddns/docker-compose.yaml"  # Destination path for the docker-compose file.
@@ -42,18 +42,19 @@
   # This task copies the docker-compose template to the target system, ensuring it is ready for deployment.
 
 - name: Deploy DDNS stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/ddns/docker-compose.yaml ddns
-    # The `docker stack deploy` command deploys the stack using the specified compose file.
-    # - `-c`: Specifies the path to the docker-compose file.
-    # - `ddns`: The name of the stack to deploy.
-  register: swarm_check  # Store the output of the command in the `swarm_check` variable.
+  community.docker.docker_stack:
+    name: ddns
+    compose:
+      - /home/docker-compose/ddns/docker-compose.yaml
+    state: present
+  register: deploy_swarm_check  # Store the output of the command in the `swarm_check` variable.
   changed_when: false  # Ensure this task does not mark the playbook as "changed."
   # This task deploys the DDNS stack to the Docker Swarm cluster.
 
-- name: delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+- name: Delete compose directory
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # This task cleans up the temporary files and directories created during the deployment process.
 
 # Notes:

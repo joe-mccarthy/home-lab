@@ -12,39 +12,16 @@
       - nfs_backup_restic_backup
       - nfs_backup_restic_prune
       - nfs_backup_restic_check
+  # This task ensures Docker and Docker Compose are installed and running on the target system.
+  # It also removes any existing Docker Swarm services related to the NFS backup stack to
+  # ensure a clean deployment environment.
 
-# Prepare local directory structure for deployment files
-- name: Setup restic directory
-  ansible.builtin.file:
-    path: /home/docker-compose/restic  # Directory for deployment configuration
-    state: directory                   # Ensure this is a directory
-    mode: '0755'                       # Secure but usable permissions
-    owner: nobody                      # Non-privileged user ownership
-    group: nogroup                     # Non-privileged group ownership
-  # This temporary directory will store the processed compose file
-  # Using nobody:nogroup increases security by minimizing privileges
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+    copy_and_deploy_stack_name: nfs_backup_restic
 
-# Process and copy the template to the deployment directory
-- name: Copy compose from template to host
-  ansible.builtin.template:
-    src: "templates/docker-compose.yaml"  # Source template with variables
-    dest: "/home/docker-compose/restic/docker-compose.yaml"  # Processed output
-    mode: '0755'                          # Secure but usable permissions
-    owner: nobody                         # Non-privileged user ownership
-    group: nogroup                        # Non-privileged group ownership
-  # This processes the Jinja2 template, resolving variables like encryption keys
-  # The resulting file is a complete Docker Compose file ready for deployment
-
-# Deploy the stack to Docker Swarm
-- name: Deploy restic stack
-  community.docker.docker_stack:
-    name: nfs_backup_restic
-    compose:
-      - /home/docker-compose/restic/docker-compose.yaml
-    state: present
-
-# Clean up temporary deployment files
-- name: Delete compose directory
-  ansible.builtin.file:
-    path: /home/docker-compose
-    state: absent
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup

@@ -31,102 +31,21 @@
       - homeassistant_homeassistant
       - homeassistant_zigbee2mqtt
       - homeassistant_mqtt
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
+  # It also removes any existing Docker Swarm services related to Home Assistant to ensure a clean deployment.
 
-# ============================================================================
-# Local Infrastructure Setup
-# ============================================================================
-- name: Create local deployment directory
-  ansible.builtin.file:
-    path: /home/docker-compose/home-assistant
-    state: directory
-    mode: '0755'
-    owner: nobody
-    group: nogroup
-  # Creates temporary local directory for deployment orchestration files.
-  # This directory holds the Docker Compose/Stack files during deployment
-  # but is cleaned up afterward to maintain system hygiene.
-  #
-  # Directory Purpose:
-  # - Staging area for rendered Docker Compose templates
-  # - Temporary storage for deployment artifacts
-  # - Isolated workspace for stack deployment operations
-  #
-  # Permissions Rationale:
-  # - 0755: Standard directory permissions for system operations
-  # - nobody/nogroup: Neutral ownership suitable for temporary files
-
-# ============================================================================
-# Template Deployment and Configuration
-# ============================================================================
-- name: Deploy Docker Compose stack definition from template
-  ansible.builtin.template:
-    src: "templates/docker-compose.yaml"
-    dest: "/home/docker-compose/home_assistant/docker-compose.yaml"
-    mode: '0755'
-    owner: nobody
-    group: nogroup
-  # Renders and deploys the Docker Compose stack definition from Jinja2 template.
-  # The template incorporates environment-specific variables and configurations
-  # to create a deployment-ready stack definition.
-  #
-  # Template Variables Applied:
-  # - proxy: External access configuration
-  # - mqtt_server: MQTT broker connection details
-  # - zigbee_serial_port: Zigbee coordinator device path
-  # - NFS mount paths and volume configurations
-  # - Container image versions and resource constraints
-  #
-  # Template Benefits:
-  # - Environment-specific configuration injection
-  # - Consistent deployment across multiple environments
-  # - Version control for stack definitions
-  # - Dynamic configuration based on infrastructure state
-
-# ============================================================================
-# Docker Swarm Stack Deployment
-# ============================================================================
-- name: Deploy Home Assistant stack to Docker Swarm
-  community.docker.docker_stack:
-    name: homeassistant
-    compose:
-      - /home/docker-compose/home_assistant/docker-compose.yaml
-    state: present
-  register: deploy_home_assistant_swarm_deployment_result
-  changed_when: false
-  # Deploys the complete Home Assistant stack to the Docker Swarm cluster.
-  # This creates and orchestrates all services defined in the compose file.
-  #
-  # Docker Stack Deploy Process:
-  # 1. Parses the compose file and validates service definitions
-  # 2. Creates or updates services according to the specification
-  # 3. Distributes containers across available Swarm nodes
-  # 4. Configures networking, volumes, and service dependencies
-  # 5. Monitors service health and maintains desired state
-  #
-  # Stack Components Deployed:
-  # - homeassistant_homeassistant: Core Home Assistant service
-  # - homeassistant_mqtt: Mosquitto MQTT broker
-  # - homeassistant_zigbee2mqtt: Zigbee-to-MQTT bridge
-  #
-  # Deployment Features:
-  # - High availability through Swarm orchestration
-  # - Automatic container restart on failure
-  # - Load balancing and service discovery
-  # - Rolling updates with zero downtime
-  #
-  # Result Registration: Captures deployment output for troubleshooting
-  # and verification of successful stack creation.
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+    copy_and_deploy_stack_name: home_assistant
 
 # ============================================================================
 # Cleanup and Maintenance
 # ============================================================================
-- name: Remove temporary deployment directory
-  ansible.builtin.file:
-    path: /home/docker-compose
-    state: absent
-  # Cleans up temporary deployment artifacts to maintain system hygiene.
-  # The Docker Compose files are no longer needed after stack deployment
-  # as Docker Swarm maintains the service state internally.
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup
   #
   # Cleanup Benefits:
   # - Prevents accumulation of temporary files

@@ -24,7 +24,7 @@ permit_join: false
 # Controls whether new Zigbee devices can join the network.
 # - true: Allows new devices to pair with the coordinator
 # - false: Prevents new devices from joining (recommended for security)
-# 
+#
 # Security Note: Only enable temporarily when adding new devices.
 # Leaving this enabled permanently creates a security risk as unauthorized
 # devices could potentially join your network.
@@ -39,7 +39,7 @@ mqtt:
     # - zigbee2mqtt/[device_name]/state (device status)
     # - zigbee2mqtt/[device_name]/set (device commands)
     # - zigbee2mqtt/bridge/state (bridge status)
-    
+
     server: {{ home_assistant.mqtt_server }}
     # MQTT broker server address (templated from Ansible variables).
     # This should point to your MQTT broker (e.g., Mosquitto).
@@ -53,24 +53,24 @@ serial:
     # USB serial port where the Zigbee coordinator is connected.
     # Common values: /dev/ttyUSB0, /dev/ttyACM0, /dev/serial/by-id/...
     # The value is templated from home_assistant.zigbee_serial_port in group_vars.
-    
+
     baudrate: 115200
     # Communication speed between Zigbee2MQTT and the coordinator.
     # 115200 is the standard baudrate for most Zigbee coordinators.
     # Do not change unless specifically required by your hardware.
-    
+
     adapter: zstack
     # Zigbee coordinator adapter type. Common options:
     # - zstack: For Texas Instruments CC2531, CC2538, CC26X2, CC1352 chips
     # - deconz: For Dresden Elektronik ConBee/RaspBee coordinators
     # - zigate: For ZiGate coordinators
     # - ember: For Silicon Labs EmberZNet coordinators
-    
+
     disable_led: false
     # Controls the coordinator's status LED (if available).
     # - false: LED shows coordinator status (recommended for debugging)
     # - true: Disables LED to reduce power consumption or light pollution
-    
+
     advanced:
         transmit_power: 20
         # RF transmission power in dBm (0-20 for most coordinators).
@@ -78,7 +78,7 @@ serial:
         # - 20: Maximum power, longest range
         # - 5: Medium power, balanced range/interference
         # - 0: Minimum power, shortest range
-        # 
+        #
         # Note: Actual maximum depends on coordinator hardware and regulations.
 
 # ============================================================================
@@ -92,7 +92,7 @@ frontend:
     # - Network topology visualization
     # - Device pairing interface
     # - Configuration management
-    
+
     port: 8080
     # Port number for the web interface.
     # Access via: http://[container-ip]:8080
@@ -101,7 +101,7 @@ frontend:
 # ============================================================================
 # Configuration Notes and Best Practices
 # ============================================================================
-# 
+#
 # 1. Device Pairing:
 #    - Set permit_join: true temporarily when adding devices
 #    - Use the web interface or MQTT commands to enable pairing

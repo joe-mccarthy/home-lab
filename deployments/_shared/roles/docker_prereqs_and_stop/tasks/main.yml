@@ -12,10 +12,22 @@
     state: started
     enabled: true
 
-- name: Remove existing Docker Swarm services
+- name: Remove services related to stack
   community.docker.docker_swarm_service:
     name: "{{ item }}"
     state: absent
   loop: "{{ docker_prereqs_and_stop_services_to_stop | default([]) }}"
   failed_when: false
   when: (docker_prereqs_and_stop_services_to_stop | default([]) | length) > 0
+
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup
+
+- name: Create compose directory
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: directory
+    mode: '0755'
+    owner: nobody
+    group: nogroup

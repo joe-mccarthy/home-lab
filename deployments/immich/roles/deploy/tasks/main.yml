@@ -12,73 +12,18 @@
       - immich_immich-machine-learning
       - immich_immich-redis
       - immich_immich-server
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
+  # It also removes any existing Docker Swarm services related to Immich to ensure a clean deployment.
 
-- name: Setup immich directory
-  ansible.builtin.file:
-    path: /home/docker-compose/immich
-    state: directory
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+    copy_and_deploy_stack_name: immich
 
-- name: Copy compose from template to host
-  # Processes the Jinja2 template and copies the resulting Docker Compose file to the host.
-  # This step resolves all Ansible variables and creates a deployable compose file.
-  # The template includes database credentials and domain configuration.
-
-  ansible.builtin.template:
-    src: "templates/docker-compose.yaml"
-    # Source template file with Ansible variables and Jinja2 templating.
-    # Contains placeholders for database credentials and domain names.
-
-    dest: "/home/docker-compose/immich/docker-compose.yaml"
-    # Destination path for the processed compose file on the target host.
-    # This temporary location is used for deployment and then cleaned up.
-
-    mode: '0755'
-    # Sets file permissions to allow read/write for owner and read/execute for others.
-    # Ensures the file can be read by Docker but maintains reasonable security.
-
-    owner: nobody
-    # Sets file ownership to the unprivileged 'nobody' user.
-    # Reduces security risk by avoiding root ownership of temporary files.
-
-    group: nogroup
-    # Sets file group to the unprivileged 'nogroup' group.
-    # Maintains consistency with the ownership model used throughout the deployment.
-
-- name: Deploy Immich stack
-  # Executes the Docker stack deployment using the processed compose file.
-  # This creates all services defined in the compose file on the Docker Swarm cluster.
-  # Services will be distributed across available swarm nodes based on constraints.
-
-  community.docker.docker_stack:
-    name: immich
-    compose:
-      - /home/docker-compose/immich/docker-compose.yaml
-    state: present
-    # Command to deploy the stack to Docker Swarm.
-    # -c specifies the compose file path
-    # 'immich' is the stack name that prefixes all service names
-
-  register: deploy_swarm_check
-  # Stores the command output in a variable for potential debugging.
-  # Can be useful for troubleshooting deployment issues.
-
-  changed_when: false
-  # Prevents this task from showing as 'changed' in Ansible output.
-  # Stack deployment is considered an operational task rather than a configuration change.
-
-- name: Delete compose directory
-  # Removes the temporary directory containing the processed compose file.
-  # This cleanup step prevents accumulation of temporary files on the host.
-  # Also removes any sensitive information that might be in the processed template.
-
-  ansible.builtin.file:
-    path: /home/docker-compose
-    state: absent
-    # Recursively removes the entire temporary directory and its contents.
-    # This ensures complete cleanup regardless of directory structure.
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup
 
 # Deployment Flow:
 # 1. Verify prerequisites (docker-compose package and Docker service)

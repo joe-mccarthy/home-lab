@@ -39,7 +39,7 @@ services:
 
     image: "ghcr.io/home-assistant/home-assistant:{{ home_assistant.versions.homeassistant }}"
     # Official Home Assistant container image from GitHub Container Registry.
-    # 
+    #
     # Version Strategy:
     # - 'stable': Floating stable release (automatic updates)
     # - 'YYYY.MM.X': Specific version for production consistency
@@ -55,7 +55,7 @@ services:
 
     privileged: true
     # Elevated container privileges required for hardware device access.
-    # 
+    #
     # Required For:
     # - USB device access (Zigbee/Z-Wave coordinators)
     # - Bluetooth hardware integration
@@ -76,7 +76,7 @@ services:
     volumes:
       - /mnt/nfs/docker/home_assistant:/config
       # Primary configuration and data storage on NFS.
-      # 
+      #
       # Contains:
       # - configuration.yaml: Main Home Assistant configuration
       # - automations.yaml: Automation definitions
@@ -105,7 +105,7 @@ services:
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
       # USB device passthrough for direct hardware access.
-      # 
+      #
       # Common Device Types:
       # - /dev/ttyUSB0, /dev/ttyUSB1: USB-to-serial adapters
       # - /dev/ttyACM0: Arduino-compatible devices
@@ -171,7 +171,7 @@ services:
 
     image: "koenkk/zigbee2mqtt:{{ home_assistant.versions.zigbee2mqtt }}"
     # Official Zigbee2MQTT container image.
-    # 
+    #
     # Version Considerations:
     # - latest: Most recent features but potential instability
     # - Specific tags: Better for production consistency
@@ -272,7 +272,7 @@ services:
 
     command: "mosquitto -c /mosquitto-no-auth.conf"
     # Custom configuration file for development/testing environments.
-    # 
+    #
     # Security Note: 'no-auth' configuration disables authentication.
     # For production environments, consider:
     # - Enabling user authentication
@@ -307,7 +307,7 @@ networks:
   proxy:
     external: true
     # External network managed by Traefik reverse proxy.
-    # 
+    #
     # Network Purpose:
     # - Enables external access to services through domain routing
     # - Provides SSL termination and certificate management

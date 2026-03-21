@@ -1,113 +1,65 @@
 ---
-# =============================================================================
-# Ansible Vault Template
-# =============================================================================
-# This file documents every vault variable required across the homelab repo.
-# It is NOT encrypted and should NEVER contain real values.
-#
-# Usage:
-#   1. Copy this file to a vault file (e.g. group_vars/vault.yml or a per-deployment vault.yml)
-#   2. Replace placeholder values with real secrets
-#   3. Encrypt it:  ansible-vault encrypt vault.yml
-#   4. Edit later:  ansible-vault edit vault.yml
-#
-# Variables marked [shared] are consumed by multiple deployments.
-# =============================================================================
 
+vault:
+  shared:
+    general:
+      domain: "example.com"
+    registry:
+      user: ""
+      password: ""
+      url: ""
+    cloudflare:
+      token: ""
+      email: ""
 
-# =============================================================================
-# Shared / Global
-# =============================================================================
-general:
-  domain: "example.com"           # [shared] Base domain used by all Traefik routing rules
+  docker_swarm:
+    nfs_restriction: ""
 
+  services:
+    blog:
+      image: ""
+      port: ""
 
-# =============================================================================
-# Docker Registry  (docker-swarm + maintenance/docker-login)
-# =============================================================================
-vault_registry_user: ""           # Docker registry username
-vault_registry_password: ""       # Docker registry password
-vault_registry_url: ""            # Docker registry URL (e.g. ghcr.io or registry.example.com)
+    ddns:
+      dns_domains: ""
 
+    gitea:
+      runner_token: ""
 
-# =============================================================================
-# Docker Swarm
-# =============================================================================
-vault_nfs_restriction: ""         # NFS export restriction (e.g. IP range or hostname)
+    home_assistant:
+      proxy: ""
+      mqtt_server: ""
+      zigbee_serial_port: ""
 
+    immich:
+      database:
+        user: ""
+        password: ""
 
-# =============================================================================
-# Cloudflare  (shared by traefik + ddns)
-# =============================================================================
-vault_cf_token: ""                # Cloudflare API token — DNS zone edit permission only
-vault_cf_email: ""                # Cloudflare account email
+    nfs_backup:
+      encryption_key: ""
+      s3:
+        bucket: ""
+        region: ""
+        key_id: ""
+        access_key: ""
 
-
-# =============================================================================
-# DDNS
-# =============================================================================
-vault_dns_domains: ""             # Comma-separated list of domains to keep updated
-
-
-# =============================================================================
-# Blog
-# =============================================================================
-vault_blog_image: ""              # Full container image reference for the blog service
-                                  # (e.g. ghcr.io/owner/repo:tag)
-
-
-# =============================================================================
-# Gitea
-# =============================================================================
-vault_gitea:
-  runner_token: ""                # Runner registration token from the Gitea admin panel
-
-
-# =============================================================================
-# Home Assistant
-# =============================================================================
-vault_proxy: ""                   # Trusted proxy IP or CIDR (e.g. 172.18.0.0/16)
-vault_mqtt_server: ""             # MQTT broker address (e.g. 192.168.1.100)
-vault_zigbee_serial_port: ""      # Zigbee coordinator USB path (e.g. /dev/ttyUSB0)
-
-
-# =============================================================================
-# Immich
-# =============================================================================
-vault_immich_user: ""             # PostgreSQL username for the Immich database
-vault_immich_password: ""         # PostgreSQL password for the Immich database
-
-
-# =============================================================================
-# NFS Backup
-# =============================================================================
-vault_nfs_encryption_key: ""      # Restic repository encryption password
-                                  # WARNING: loss of this key makes all backups unrecoverable
-vault_nfs_s3_bucket: ""           # S3 bucket URL (e.g. s3:https://s3.amazonaws.com/my-bucket)
-vault_nfs_s3_region: ""           # AWS/S3 region (e.g. us-east-1)
-vault_nfs_s3_key_id: ""           # S3 access key ID
-vault_nfs_s3_access_key: ""       # S3 secret access key
-
-
-# =============================================================================
-# Paperless
-# =============================================================================
-vault_paperless:
-  volumes:
     paperless:
-      media: ""                   # Host path for Paperless media files
-      data: ""                    # Host path for Paperless data files
-      consume: ""                 # Host path for document consumption (inbox)
-      export: ""                  # Host path for document exports
-    broker: ""                    # Host path for Redis broker data
-  ports:
-    paperless: ""                 # Host port for the Paperless web UI (e.g. 8000)
-    tika: ""                      # Host port for Apache Tika (e.g. 9998)
-    broker: ""                    # Host port for Redis broker (e.g. 6379)
-    gotenberg: ""                 # Host port for Gotenberg (e.g. 3000)
+      volumes:
+        paperless:
+          media: ""
+          data: ""
+          consume: ""
+          export: ""
+        broker: ""
 
+    portainer:
+      admin_password: ""
 
-# =============================================================================
-# Portainer
-# =============================================================================
-vault_portainer_admin_password: "" # Portainer admin password (delivered as a Docker secret)
+    traefik:
+      ports:
+        web: "80"
+        websecure: "443"
+        dashboard_internal: "8080"
+        dashboard: "8080"
+        ssh: "2222"

@@ -77,7 +77,7 @@ docker stack deploy -c /home/docker-compose/paperless/docker-compose.yaml paperl
 ## Customization
 
 ### Changing the domain
-Update `group_vars/all.yml` (or your vault values) so `general.domain` resolves to the desired DNS name.
+Update `group_vars/all.yml` (or your vault values) so `vault.shared.general.domain` resolves to the desired DNS name.
 
 ### Changing ports or storage paths
 Adjust the vault values referenced by `vault_paperless.ports.*` and `vault_paperless.volumes.*`.

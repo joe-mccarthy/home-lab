@@ -1,7 +1,7 @@
 ---
 gitea:
   # Runner registration secret from Ansible Vault
-  runner_token: "{{ vault_gitea.runner_token }}"
+  runner_token: "{{ vault.services.gitea.runner_token }}"
 
   # Pinned image tags/versions for reproducible deployments
   versions:

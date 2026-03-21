@@ -132,7 +132,7 @@ services:
         # HTTP to HTTPS redirection configuration
         - "traefik.http.routers.homeassistant.entrypoints=web"
         # HTTP entry point (port 80) for initial requests.
-        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.{{ general.domain }}`)"
+        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.{{ vault.shared.general.domain }}`)"
         # Domain-based routing rule. Template variable populated during deployment.
         - "traefik.http.middlewares.homeassistant-https-redirect.redirectscheme.scheme=https"
         # Middleware to redirect HTTP traffic to HTTPS automatically.
@@ -142,7 +142,7 @@ services:
         # HTTPS (secure) router configuration
         - "traefik.http.routers.homeassistant-secure.entrypoints=websecure"
         # HTTPS entry point (port 443) for secure connections.
-        - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.{{ general.domain }}`)"
+        - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.{{ vault.shared.general.domain }}`)"
         # Domain-based routing for HTTPS traffic.
         - "traefik.http.routers.homeassistant-secure.tls=true"
         # Enables TLS/SSL encryption for secure communications.
@@ -200,13 +200,6 @@ services:
       # Enables proper device detection and handling when USB coordinator
       # is connected or reconnected.
 
-    ports:
-      - 9876:8080
-      # Zigbee2MQTT web frontend port mapping.
-      # External port 9876 maps to internal port 8080 for web interface access.
-      # The web interface provides device management, network topology, and
-      # pairing capabilities.
-
     networks:
       proxy:
         # External network for Traefik reverse proxy access.
@@ -231,13 +224,13 @@ services:
 
         # HTTP configuration and HTTPS redirection
         - "traefik.http.routers.zigbee2mqtt.entrypoints=web"
-        - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.{{ general.domain }}`)"
+        - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.{{ vault.shared.general.domain }}`)"
         - "traefik.http.middlewares.zigbee2mqtt-https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.zigbee2mqtt.middlewares=zigbee2mqtt-https-redirect"
 
         # HTTPS configuration with automatic SSL
         - "traefik.http.routers.zigbee2mqtt-secure.entrypoints=websecure"
-        - "traefik.http.routers.zigbee2mqtt-secure.rule=Host(`zigbee2mqtt.{{ general.domain }}`)"
+        - "traefik.http.routers.zigbee2mqtt-secure.rule=Host(`zigbee2mqtt.{{ vault.shared.general.domain }}`)"
         - "traefik.http.routers.zigbee2mqtt-secure.tls=true"
         - "traefik.http.routers.zigbee2mqtt-secure.service=zigbee2mqtt"
         - "traefik.http.routers.zigbee2mqtt-secure.tls.certresolver=letsencrypt"
@@ -276,15 +269,6 @@ services:
       # - mosquitto.conf: Main broker configuration
       # - pwfile: User authentication (if enabled)
       # - aclfile: Access control lists (if enabled)
-
-    ports:
-      - "1883:1883"
-      # Standard MQTT protocol port for unencrypted communication.
-      # Used by internal services and local IoT devices.
-      
-      - "9001:9001"
-      # WebSocket port for MQTT over WebSocket connections.
-      # Enables web-based MQTT clients and browser integrations.
 
     command: "mosquitto -c /mosquitto-no-auth.conf"
     # Custom configuration file for development/testing environments.

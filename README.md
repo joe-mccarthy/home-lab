@@ -84,7 +84,7 @@ cf_token: your-actual-token
 
 #### Domain Name Information
 
-There is one other vault variable used in the inventory itself — the base domain for all proxy routing. This is consumed by [Traefik](https://doc.traefik.io/traefik/) to define what it listens for, where it forwards traffic, and which domain to issue certificates for. It is documented in [`vault.template.yml`](vault.template.yml) under `general.domain`.
+There is one other vault variable used in the inventory itself — the base domain for all proxy routing. This is consumed by [Traefik](https://doc.traefik.io/traefik/) to define what it listens for, where it forwards traffic, and which domain to issue certificates for. It is documented in [`vault.template.yml`](vault.template.yml) under `vault.shared.general.domain`.
 
 ```yml
 general:

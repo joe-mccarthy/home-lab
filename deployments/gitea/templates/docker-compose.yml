@@ -15,8 +15,9 @@ services:
       - USER_GID=1000
       # Specifies the group ID under which the Gitea service will run. Ensure this matches the NFS directory permissions.
       - SSH_PORT=2222
+      # Configures the SSH port for Gitea's built-in SSH server. This should
       # Explicitly sets the SSH port inside the container to 2222 to ensure Gitea's SSH service uses this port.
-      - SSH_DOMAIN=git.{{ general.domain }}
+      - SSH_DOMAIN=git.{{ vault.shared.general.domain }}
       # Sets the SSH domain for repository URLs. This helps Gitea generate correct SSH URLs.
       - SSH_LISTEN_PORT=2222
       # Configures the internal port that Gitea's SSH service listens on.
@@ -53,7 +54,7 @@ services:
         # Enables Traefik integration for this service.
         - "traefik.http.routers.git.entrypoints=web"
         # Defines the entry point for HTTP traffic (port 80) for the `git` router.
-        - "traefik.http.routers.git.rule=Host(`git.{{ general.domain }}`)"
+        - "traefik.http.routers.git.rule=Host(`git.{{ vault.shared.general.domain }}`)"
         # Specifies the routing rule for HTTP traffic. Requests to `git.<domain>` are routed to this service.
         - "traefik.http.middlewares.git-https-redirect.redirectscheme.scheme=https"
         # Redirects HTTP traffic to HTTPS for secure communication.
@@ -61,7 +62,7 @@ services:
         # Applies the HTTPS redirection middleware to the `git` router.
         - "traefik.http.routers.git-secure.entrypoints=websecure"
         # Defines the entry point for HTTPS traffic (port 443) for the `git-secure` router.
-        - "traefik.http.routers.git-secure.rule=Host(`git.{{ general.domain }}`)"
+        - "traefik.http.routers.git-secure.rule=Host(`git.{{ vault.shared.general.domain }}`)"
         # Specifies the routing rule for HTTPS traffic. Requests to `git.<domain>` are routed to this service.
         - "traefik.http.routers.git-secure.tls=true"
         # Enables TLS (HTTPS) for the `git-secure` router.

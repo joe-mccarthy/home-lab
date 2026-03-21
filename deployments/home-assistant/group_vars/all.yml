@@ -1,9 +1,9 @@
 ---
 home_assistant:
   # Vault-backed secrets and configuration
-  proxy: "{{ vault_proxy }}"               # Trusted proxy IP/CIDR for reverse proxy headers
-  mqtt_server: "{{ vault_mqtt_server }}"   # MQTT broker address for IoT device communication
-  zigbee_serial_port: "{{ vault_zigbee_serial_port }}"  # USB path for Zigbee coordinator dongle
+  proxy: "{{ vault.services.home_assistant.proxy }}"               # Trusted proxy IP/CIDR for reverse proxy headers
+  mqtt_server: "{{ vault.services.home_assistant.mqtt_server }}"   # MQTT broker address for IoT device communication
+  zigbee_serial_port: "{{ vault.services.home_assistant.zigbee_serial_port }}"  # USB path for Zigbee coordinator dongle
 
   # Pinned image tags for reproducible deployments
   versions:
@@ -12,7 +12,7 @@ home_assistant:
     mqtt: "2.1-alpine"
 
 # Notes:
-# - All vault_* variables must be defined and encrypted in Ansible Vault.
+# - All vault.services.home_assistant.* variables must be defined and encrypted in Ansible Vault.
 # - To edit encrypted variables: ansible-vault edit group_vars/all.yml
 # - proxy should be the IP/CIDR of your reverse proxy (e.g., "172.18.0.0/16").
 # - zigbee_serial_port must match the host USB device path (e.g., "/dev/ttyUSB0").

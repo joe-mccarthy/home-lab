@@ -9,7 +9,7 @@ home_assistant:
   versions:
     homeassistant: "2026.3.3"
     zigbee2mqtt: "2.9.1"
-    mqtt: "2.1.2"
+    mqtt: "2.1-alpine"
 
 # Notes:
 # - All vault_* variables must be defined and encrypted in Ansible Vault.

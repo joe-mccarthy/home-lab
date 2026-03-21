@@ -5,30 +5,36 @@
 # 2. Deploys or reconciles the Portainer stack in Docker Swarm.
 # 3. Removes temporary compose artifacts after deployment.
 
-- name: Copy compose from template to host
-  ansible.builtin.template:
-    src: "templates/docker-compose.yaml"  # Jinja2 source for the stack definition.
-    dest: "/home/docker-compose/portainer/docker-compose.yaml"  # Rendered compose file consumed by docker_stack.
-    mode: '0755'  # Readable by runtime processes; writable by owner.
-    owner: nobody  # Aligns with shared NFS ownership used by this project.
-    group: nogroup
-  # Render the compose file before deploying the stack.
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - portainer_portainer
+      - portainer_agent
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
+  # It also removes any existing Docker Swarm services related to Portainer to ensure a clean deployment.
 
-- name: Deploy Portainer stack
-  community.docker.docker_stack:
-    name: portainer
-    compose:
-      - /home/docker-compose/portainer/docker-compose.yaml
-    state: present
-  register: deploy_swarm_check  # Captures module output for debugging.
-  changed_when: false  # Keeps output stable for repeated deploy runs.
-  # Deploy or update the Portainer stack on the Swarm manager.
+- name: Iterate over secrets defined in group variables
+  community.docker.docker_secret:
+    name: "{{ item.key }}"
+    data: "{{ item.value }}"
+    force: true
+  with_dict:
+    portainer_admin_password: "{{ portainer.admin_password }}"
+  no_log: true
+  # This task creates Docker secrets for the Portainer deployment using the variables defined in the group variables file.
+  # The `no_log: true` option ensures that sensitive data (e.g., secret values) is not logged during playbook execution.
 
-- name: Delete compose directory
-  ansible.builtin.file:
-    path: /home/docker-compose
-    state: absent
-  # Clean up temporary deployment files.
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+      stack_name: portainer
+
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup
 
 # Notes:
 # - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.

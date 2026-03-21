@@ -9,43 +9,18 @@
   vars:
     docker_prereqs_and_stop_services_to_stop:
       - gitea_runner
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
+  # It also removes any existing Docker Swarm services related to Gitea runners to ensure 
 
-- name: Set up Gitea runner directory
-  ansible.builtin.file:
-    path: /home/docker-compose/gitea-runner # The path to the directory to be created.
-    state: directory  # Ensure the path is a directory.
-    mode: '0755'  # Set the directory permissions (read, write, execute for owner; read and execute for others).
-    owner: nobody  # Set the directory owner to `nobody`.
-    group: nogroup  # Set the directory group to `nogroup`.
-  # This task creates the directory structure required for the Gitea runner deployment.
-
-- name: Copy compose from template to host
-  ansible.builtin.template:
-    src: "templates/runners/docker-compose.yml"  # Path to the Jinja2 template for the docker-compose file.
-    dest: "/home/docker-compose/gitea-runner/docker-compose.yaml"  # Destination path for the docker-compose file.
-    mode: '0755'  # Set the file permissions (read, write, execute for owner; read and execute for others).
-    owner: nobody  # Set the file owner to `nobody`.
-    group: nogroup  # Set the file group to `nogroup`.
-  # This task copies the docker-compose template to the target system, ensuring it is ready for runner deployment.
-
-- name: Deploy Gitea Runner stack
-  community.docker.docker_stack:
-    name: gitea
-    compose:
-      - /home/docker-compose/gitea-runner/docker-compose.yaml
-    state: present
-    # The `docker stack deploy` command deploys the runner stack using the specified compose file.
-    # - `-c`: Specifies the path to the docker-compose file.
-    # - `gitea`: The name of the stack to deploy (contains the Gitea runners).
-  register: runner_deploy_swarm_check  # Store the output of the command in the `swarm_check` variable.
-  changed_when: false  # Ensure this task does not mark the playbook as "changed."
-  # This task deploys the Gitea runner stack to the Docker Swarm cluster.
-
-- name: Delete compose directory
-  ansible.builtin.file:
-    path: /home/docker-compose
-    state: absent
-  # This task cleans up the temporary files and directories created during the deployment process.
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+      stack_name: gitea_runner
+      
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup
 
 # Notes:
 # - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.

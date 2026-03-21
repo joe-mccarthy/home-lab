@@ -13,11 +13,6 @@
     # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
     portainer_deploy_host: "{{ ansible_play_hosts_all | first }}"
   tasks:
-    - name: Prepare Docker environment
-      ansible.builtin.include_role:
-        name: docker
-      when: inventory_hostname == portainer_deploy_host
-
     - name: Ensure NFS directory exists
       ansible.builtin.include_role:
         name: nfs

@@ -12,15 +12,7 @@
   # This task ensures that the NFS directory is available for use by the Portainer service.
   # The `0777` permissions are very permissive and should be used cautiously, especially in production environments.
 
-- name: Setup Portainer directory
-  ansible.builtin.file:
-    path: /home/docker-compose/portainer  # The path to the local directory to be created.
-    state: directory  # Ensure the path is a directory. If it does not exist, it will be created.
-    mode: '0755'  # Set the directory permissions (read, write, execute for owner; read and execute for others).
-    owner: nobody  # Set the directory owner to `nobody`.
-    group: nogroup  # Set the directory group to `nogroup`.
-  # This task creates the local directory structure required for Portainer deployment.
-  # The `0755` permissions are more restrictive and are suitable for local directories.
+
 
 # Notes:
 # - The `0777` permissions for the NFS directory are very permissive and allow full access to all users.

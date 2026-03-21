@@ -10,42 +10,16 @@
   vars:
     docker_prereqs_and_stop_services_to_stop:
       - blog_blog
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
+  # It also removes any existing Docker Swarm services related to the blog to ensure a clean deployment.
 
-# Task 4: Set up Blog directory
-- name: Set up Blog directory
-  ansible.builtin.file:
-    path: /home/docker-compose/blog  # Path to the directory for the blog service
-    state: directory                 # Ensures the directory exists
-    mode: '0755'                     # Sets permissions to allow read, write, and execute
-    owner: nobody                    # Sets the owner to 'nobody'
-    group: nogroup                   # Sets the group to 'nogroup'
-  # This creates a directory to store the Docker Compose configuration for the blog service.
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+      stack_name: blog
 
-# Task 5: Copy Compose from template to host
-- name: Copy Compose from template to host
-  ansible.builtin.template:
-    src: "templates/docker-compose.yml"  # Source template file
-    dest: "/home/docker-compose/blog/docker-compose.yaml"  # Destination on the host
-    mode: '0755'                         # Sets permissions for the file
-    owner: nobody                        # Sets the owner to 'nobody'
-    group: nogroup                       # Sets the group to 'nogroup'
-  # This copies the Docker Compose configuration from a template to the target directory.
 
-# Task 6: Deploy Blog stack
-- name: Deploy Blog stack
-  community.docker.docker_stack:
-    name: blog
-    compose:
-      - /home/docker-compose/blog/docker-compose.yaml
-    state: present
-    with_registry_auth: true
-  register: deploy_swarm_check                 # Registers the output of the command
-  changed_when: false                   # Prevents marking the task as changed
-  # This deploys the blog service stack to the Docker Swarm cluster.
-
-# Task 7: Delete compose directory
-- name: Delete compose directory
-  ansible.builtin.file:
-    path: /home/docker-compose
-    state: absent
-  # This cleans up the temporary directory used for deployment to avoid clutter.
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup

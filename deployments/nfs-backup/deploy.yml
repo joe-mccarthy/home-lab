@@ -9,11 +9,12 @@
 # commands are executed exactly once, preventing duplicate service deployments.
 
 - name: Deploy NFS Backup Jobs
-  hosts: manager[0]  # Target only the first manager node in the Swarm cluster
-                     # Using [0] ensures the playbook runs on exactly one manager, even if
-                     # multiple manager nodes exist in the inventory
+  hosts: manager  # Target the manager group in the Swarm cluster.
+  order: shuffle  # Select a manager without always preferring the first inventory host.
   become: true       # Execute tasks with elevated privileges (sudo)
                      # Required for Docker operations and filesystem access
+  vars:
+    nfs_backup_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
   # Pre-deployment checks could be added here
   # Examples:
@@ -21,10 +22,11 @@
   #   - Verify Docker Swarm is operational
   #   - Validate storage capacity for backups
 
-  roles:
-    - deploy_backup  # The main role that handles all deployment tasks
-                     # This role is defined in ./roles/deploy_backup
-                     # See ./roles/deploy_backup/tasks/main.yml for implementation details
+  tasks:
+    - name: Deploy backup services
+      ansible.builtin.include_role:
+        name: deploy_backup
+      when: inventory_hostname == nfs_backup_deploy_host
 
 # ==============================================================================
 # DEPLOYMENT PROCESS:

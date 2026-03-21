@@ -4,13 +4,14 @@
 # to execute the deployment tasks.
 
 - name: Deploy Blog  # A descriptive name for the playbook
-  hosts: manager[0]  # Specifies the target host group. In this case, the first manager node.
+  hosts: manager  # Specifies the target manager host group.
+  order: shuffle  # Select a manager without always preferring the first inventory host.
   become: true       # Ensures the playbook runs with elevated privileges (e.g., sudo).
+  vars:
+    blog_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
-  roles:
-    - deploy         # References the "deploy" role, which contains the tasks required
-                     # to deploy the blog service. This role is expected to handle:
-                     # - Installing dependencies (e.g., Docker, docker-compose)
-                     # - Configuring the environment (e.g., directories, permissions)
-                     # - Deploying the blog service using Docker Swarm
-                     # - Cleaning up temporary files or resources after deployment
+  tasks:
+    - name: Deploy Blog stack
+      ansible.builtin.include_role:
+        name: deploy
+      when: inventory_hostname == blog_deploy_host

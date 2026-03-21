@@ -16,8 +16,18 @@
 #     often require elevated privileges on the host.
 
 - name: Deploy Paperless
-  hosts: manager[0]
+  hosts: manager
+  order: shuffle
   become: true
-  roles:
-    - check_nfs
-    - deploy_paperless
+  vars:
+    paperless_deploy_host: "{{ ansible_play_hosts_all | first }}"
+  tasks:
+    - name: Ensure Paperless NFS paths exist
+      ansible.builtin.include_role:
+        name: check_nfs
+      when: inventory_hostname == paperless_deploy_host
+
+    - name: Deploy Paperless stack
+      ansible.builtin.include_role:
+        name: deploy_paperless
+      when: inventory_hostname == paperless_deploy_host

@@ -1,6 +1,6 @@
 # DDNS Deployment
 
-[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Service-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) ![Dynamic DNS](https://img.shields.io/badge/Dynamic%20DNS-Automation-1F6FEB?style=flat-square) [![Cloudflare](https://img.shields.io/badge/Cloudflare-DNS%20API-F38020?logo=cloudflare&logoColor=white&style=flat-square)](https://developers.cloudflare.com/dns/)
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Service-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) ![Dynamic DNS](https://img.shields.io/badge/Dynamic%20DNS-Automation-1F6FEB?style=flat-square) [![Cloudflare](https://img.shields.io/badge/Cloudflare-DNS%20API-F38020?logo=cloudflare&logoColor=white&style=flat-square)](https://developers.cloudflare.com/dns/) ![cloudflare-ddns](https://img.shields.io/badge/cloudflare--ddns-v1.15.1-5C5C5C?style=flat-square)
 
 This project provides an automated solution for deploying and managing a **Dynamic DNS (DDNS)** service using Ansible. The deployment is designed to ensure seamless updates of DNS records for dynamic IP addresses, enabling reliable access to services hosted on networks with non-static IPs.
 

@@ -1,6 +1,6 @@
 # NFS Backup Solution
 
-[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Scheduled%20Jobs-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Restic](https://img.shields.io/badge/Restic-Encrypted%20Backups-0F7B0F?style=flat-square)](https://restic.net/) [![S3](https://img.shields.io/badge/S3-Object%20Storage-569A31?logo=amazons3&logoColor=white&style=flat-square)](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Scheduled%20Jobs-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Restic](https://img.shields.io/badge/Restic-Encrypted%20Backups-0F7B0F?style=flat-square)](https://restic.net/) [![S3](https://img.shields.io/badge/S3-Object%20Storage-569A31?logo=amazons3&logoColor=white&style=flat-square)](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) ![Restic](https://img.shields.io/badge/restic-v1.8.2-5C5C5C?style=flat-square)
 
 A comprehensive S3-backed encrypted backup solution for Docker Swarm NFS shared volumes using Restic.
 

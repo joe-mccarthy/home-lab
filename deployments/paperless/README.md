@@ -1,6 +1,6 @@
 # Paperless (paperless-ngx) Ansible Deployment
 
-[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Routing-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![NFS](https://img.shields.io/badge/NFS-Persistent%20Storage-2C3E50?style=flat-square)](https://documentation.ubuntu.com/server/how-to/networking/install-nfs/)
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Routing-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![NFS](https://img.shields.io/badge/NFS-Persistent%20Storage-2C3E50?style=flat-square)](https://documentation.ubuntu.com/server/how-to/networking/install-nfs/) ![paperless-ngx](https://img.shields.io/badge/paperless--ngx-v2.20.13-5C5C5C?style=flat-square)
 
 This directory contains an Ansible-based deployment for **Paperless-ngx** using Docker Swarm, Traefik for ingress routing, and NFS-backed persistent storage.
 

@@ -75,6 +75,28 @@ This directory includes deployments for a variety of services, ranging from pers
   - **immich-machine-learning**: AI processing for smart features
 - **Use Case**: Ideal for users looking to manage and organize their photo and video collections with advanced AI capabilities.
 
+## Service Versions
+
+| Service | Component | Version |
+|---------|-----------|:-------:|
+| [Cioban](cioban/README.md) | cioban | `0.17.14` |
+| [DDNS](ddns/README.md) | cloudflare-ddns | `1.15.1` |
+| [Gitea](gitea/README.md) | server | `1.25.5` |
+| [Gitea](gitea/README.md) | act_runner | `0.2.12` |
+| [Home Assistant](home-assistant/README.md) | home-assistant | `2026.3.3` |
+| [Home Assistant](home-assistant/README.md) | zigbee2mqtt | `2.9.1` |
+| [Home Assistant](home-assistant/README.md) | mosquitto | `2.1.2` |
+| [Immich](immich/README.md) | immich-server | `v2.6.1` |
+| [Immich](immich/README.md) | immich-machine-learning | `v2.6.1` |
+| [NFS Backup](nfs-backup/README.md) | restic | `1.8.2` |
+| [Paperless](paperless/README.md) | paperless-ngx | `2.20.13` |
+| [Paperless](paperless/README.md) | redis | `8.6.1` |
+| [Paperless](paperless/README.md) | gotenberg | `8.28.0` |
+| [Paperless](paperless/README.md) | tika | `3.2.3.0` |
+| [Portainer](portainer/README.md) | portainer-ce | `2.39.1` |
+| [Portainer](portainer/README.md) | portainer-agent | `2.39.1` |
+| [Traefik](traefik/README.md) | traefik | `3.6.11` |
+
 ## Prerequisites
 
 Before deploying any services, ensure the following:

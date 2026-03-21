@@ -1,6 +1,6 @@
 # Immich Photo Management Deployment
 
-[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) ![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Enabled-8A2BE2?style=flat-square)
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) ![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Enabled-8A2BE2?style=flat-square) ![Immich](https://img.shields.io/badge/Immich-v2.6.1-5C5C5C?style=flat-square)
 
 A comprehensive Docker Swarm deployment for Immich, a high-performance self-hosted photo and video management solution. This deployment provides a complete alternative to Google Photos with AI-powered features including face recognition, object detection, and intelligent search capabilities.
 

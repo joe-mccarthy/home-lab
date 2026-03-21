@@ -10,7 +10,7 @@
 
 - name: Deploy Services
   community.docker.docker_stack:
-    name: "{{ stack_name }}"
+    name: "{{ copy_and_deploy_stack_name }}"
     compose:
       - /home/docker-compose/docker-compose.yaml
     state: present

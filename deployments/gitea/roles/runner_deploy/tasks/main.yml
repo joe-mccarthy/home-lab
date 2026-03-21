@@ -10,14 +10,14 @@
     docker_prereqs_and_stop_services_to_stop:
       - gitea_runner
   # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
-  # It also removes any existing Docker Swarm services related to Gitea runners to ensure 
+  # It also removes any existing Docker Swarm services related to Gitea runners to ensure
 
 - name: Deploy Services
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: gitea_runner
-      
+    copy_and_deploy_stack_name: gitea_runner
+
 - name: Clean up compose directory
   ansible.builtin.include_role:
     name: cleanup

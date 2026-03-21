@@ -20,7 +20,7 @@
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: nfs_backup_restic
+    copy_and_deploy_stack_name: nfs_backup_restic
 
 - name: Clean up compose directory
   ansible.builtin.include_role:

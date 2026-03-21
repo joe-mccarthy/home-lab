@@ -16,7 +16,7 @@
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: ddns
+    copy_and_deploy_stack_name: ddns
 
 - name: Clean up compose directory
   ansible.builtin.include_role:

@@ -30,7 +30,7 @@
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: portainer
+    copy_and_deploy_stack_name: portainer
 
 - name: Clean up compose directory
   ansible.builtin.include_role:

@@ -31,14 +31,14 @@
       - homeassistant_homeassistant
       - homeassistant_zigbee2mqtt
       - homeassistant_mqtt
-  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.    
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
   # It also removes any existing Docker Swarm services related to Home Assistant to ensure a clean deployment.
 
 - name: Deploy Services
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: home_assistant
+    copy_and_deploy_stack_name: home_assistant
 
 # ============================================================================
 # Cleanup and Maintenance

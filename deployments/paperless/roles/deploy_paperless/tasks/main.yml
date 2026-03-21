@@ -37,7 +37,7 @@
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: paperless
+    copy_and_deploy_stack_name: paperless
 
 - name: Clean up compose directory
   ansible.builtin.include_role:

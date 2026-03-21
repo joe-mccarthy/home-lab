@@ -12,14 +12,14 @@
       - immich_immich-machine-learning
       - immich_immich-redis
       - immich_immich-server
-  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.  
+  # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
   # It also removes any existing Docker Swarm services related to Immich to ensure a clean deployment.
 
 - name: Deploy Services
   ansible.builtin.include_role:
     name: copy_and_deploy
   vars:
-      stack_name: immich
+    copy_and_deploy_stack_name: immich
 
 - name: Clean up compose directory
   ansible.builtin.include_role:

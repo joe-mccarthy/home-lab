@@ -13,7 +13,6 @@
   # The `0777` permissions are very permissive and should be used cautiously, especially in production environments.
 
 
-
 # Notes:
 # - The `0777` permissions for the NFS directory are very permissive and allow full access to all users.
 #   Use caution when setting such permissions, especially in production environments.

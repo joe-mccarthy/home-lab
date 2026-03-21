@@ -76,7 +76,7 @@ services:
         # Ensures that the original `Host` header is passed to the Gitea service.
         - "traefik.docker.network=proxy"
         # Specifies the Docker network (`proxy`) that Traefik should use to communicate with the service.
-        
+
         # SSH routing configuration
         - "traefik.tcp.routers.git-ssh.entrypoints=ssh"
         # Defines the SSH entry point (port 2222) for the `git-ssh` router.

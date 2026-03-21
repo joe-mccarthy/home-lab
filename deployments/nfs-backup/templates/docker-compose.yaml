@@ -22,44 +22,44 @@ services:
       # Startup configuration
       RUN_ON_STARTUP: "false"    # Prevents immediate backup on container start
       SKIP_INIT: "false"         # Initializes repository on first run if needed
-      
+
       # Automated backup schedule (hourly at minute 0)
-      BACKUP_CRON: "0 0/1 * * *" 
-      
+      BACKUP_CRON: "0 0/1 * * *"
+
       # Repository configuration
       RESTIC_REPOSITORY: "{{ nfs_backup.s3.bucket }}"      # S3 bucket URL from Ansible variable
       AWS_DEFAULT_REGION: "{{ nfs_backup.s3.region }}"     # AWS region for S3 bucket
       AWS_ACCESS_KEY_ID: "{{ nfs_backup.s3.key_id }}"      # S3 access credentials
       AWS_SECRET_ACCESS_KEY: "{{ nfs_backup.s3.access_key }}"
-      
+
       # Encryption password (from Ansible vault)
       RESTIC_PASSWORD: "{{ nfs_backup.encryption_key }}"
-      
+
       # Backup source configuration
       RESTIC_BACKUP_SOURCES: /exports/docker        # Directory to be backed up
-      
+
       # Performance and optimization settings
       RESTIC_COMPRESSION: max                       # Maximum compression to save storage
-      
+
       # Additional backup parameters
       # Tag for identifying this backup set
       # Detailed logging for monitoring
       RESTIC_BACKUP_ARGS: >-
-        --tag nfs-backup                            
-        --verbose                                   
-      
+        --tag nfs-backup
+        --verbose
+
       # Container environment settings
       TZ: Europe/London                             # Timezone for consistent logging
-    
+
     # Volume mounts for data access
     volumes:
       - /restore:/restore                           # Mount point for restore operations
       - /exports/docker:/exports/docker:ro          # Source data (read-only for safety)
-    
+
     # Security configuration
     security_opt:
       - no-new-privileges:true                      # Prevents privilege escalation attacks
-    
+
     # Deployment configuration for Docker Swarm
     deploy:
       mode: replicated                              # Standard deployment mode
@@ -82,17 +82,17 @@ services:
       # Execution configuration
       RUN_ON_STARTUP: "false"                       # Only run on schedule, not at startup
       SKIP_INIT: "true"                             # Repository already initialized by backup service
-      
-      # Retention policy configuration 
-      RESTIC_FORGET_ARGS: >- 
-        --keep-last 24                              
-        --keep-daily 7                              
-        --verbose                                   
-        --group-by host                             
+
+      # Retention policy configuration
+      RESTIC_FORGET_ARGS: >-
+        --keep-last 24
+        --keep-daily 7
+        --verbose
+        --group-by host
 
       # Schedule pruning operations (daily at 3:30 AM)
       PRUNE_CRON: "30 3 * * *"
-      
+
       # Repository access configuration (matching backup service)
       RESTIC_REPOSITORY: "{{ nfs_backup.s3.bucket }}"
       RESTIC_PASSWORD: "{{ nfs_backup.encryption_key }}"
@@ -101,11 +101,11 @@ services:
       AWS_DEFAULT_REGION: "{{ nfs_backup.s3.region }}"
       AWS_ACCESS_KEY_ID: "{{ nfs_backup.s3.key_id }}"
       AWS_SECRET_ACCESS_KEY: "{{ nfs_backup.s3.access_key }}"
-    
+
     # Security configuration
     security_opt:
       - no-new-privileges:true                      # Prevents privilege escalation attacks
-        
+
     # Deployment configuration
     deploy:
       mode: replicated
@@ -125,13 +125,13 @@ services:
       # Execution configuration
       SKIP_INIT: "true"                             # Repository initialized by backup service
       RUN_ON_STARTUP: "false"                       # Only run on schedule
-      
+
       # Schedule repository checks (M/W/F at 8:30 AM)
       CHECK_CRON: "30 8 * * 1,3,5"
-      
+
       # Check configuration parameters
       RESTIC_CHECK_ARGS: --read-data-subset=10%     # Sample 10% of data for efficiency
-      
+
       # Repository access configuration
       RESTIC_REPOSITORY: "{{ nfs_backup.s3.bucket }}"
       AWS_DEFAULT_REGION: "{{ nfs_backup.s3.region }}"
@@ -139,11 +139,11 @@ services:
       AWS_SECRET_ACCESS_KEY: "{{ nfs_backup.s3.access_key }}"
       RESTIC_PASSWORD: "{{ nfs_backup.encryption_key }}"
       TZ: Europe/London
-    
+
     # Security configuration
     security_opt:
       - no-new-privileges:true
-      
+
     # Deployment configuration
     deploy:
       mode: replicated

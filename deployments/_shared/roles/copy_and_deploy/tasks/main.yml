@@ -17,4 +17,3 @@
   register: copy_and_deploy_swarm_check # Store the output of the command for debugging or logging purposes.
   changed_when: false  # Keeps output stable for repeated deploy runs.
   # Deploy or update the stack on the Swarm manager.
-  

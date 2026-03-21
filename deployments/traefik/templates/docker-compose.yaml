@@ -30,9 +30,9 @@ services:
       # Enables the Traefik dashboard.
       - "--api.debug=true"
       # Enables debug mode for the API.
-      
+
       - "--log.level=DEBUG"
-      - "--log.filePath=/logs/traefik.log" 
+      - "--log.filePath=/logs/traefik.log"
 
       # Entry points
       - "--entrypoints.web.address=:80"

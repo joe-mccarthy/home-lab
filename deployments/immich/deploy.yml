@@ -17,12 +17,14 @@
   # Enables privilege escalation to run tasks as root when necessary.
   # Required for creating directories, managing Docker services, and setting file permissions.
   # Many Docker and file system operations require elevated privileges.
+  vars:
+    immich_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
   tasks:
     - name: Prepare Immich NFS storage
       ansible.builtin.include_role:
         name: check_nfs
-      run_once: true
+      when: inventory_hostname == immich_deploy_host
     # First role: Prepares the NFS storage infrastructure for Immich.
     # Creates all required directories with proper permissions and ownership.
     # Ensures persistent storage is ready before deploying application containers.
@@ -34,7 +36,7 @@
     - name: Deploy Immich stack
       ansible.builtin.include_role:
         name: deploy
-      run_once: true
+      when: inventory_hostname == immich_deploy_host
     # Second role: Handles the actual application deployment to Docker Swarm.
     # Processes templates, manages existing services, and deploys the new stack.
     # Ensures clean deployment by removing old services before creating new ones.

@@ -7,9 +7,11 @@
   hosts: manager  # Specifies the target manager host group.
   order: shuffle  # Select a manager without always preferring the first inventory host.
   become: true       # Ensures the playbook runs with elevated privileges (e.g., sudo).
+  vars:
+    blog_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
   tasks:
     - name: Deploy Blog stack
       ansible.builtin.include_role:
         name: deploy
-      run_once: true
+      when: inventory_hostname == blog_deploy_host

@@ -13,6 +13,8 @@
   order: shuffle  # Select a manager without always preferring the first inventory host.
   become: true       # Execute tasks with elevated privileges (sudo)
                      # Required for Docker operations and filesystem access
+  vars:
+    nfs_backup_deploy_host: "{{ ansible_play_hosts_all | first }}"
 
   # Pre-deployment checks could be added here
   # Examples:
@@ -24,7 +26,7 @@
     - name: Deploy backup services
       ansible.builtin.include_role:
         name: deploy_backup
-      run_once: true
+      when: inventory_hostname == nfs_backup_deploy_host
 
 # ==============================================================================
 # DEPLOYMENT PROCESS:

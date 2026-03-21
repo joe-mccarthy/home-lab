@@ -1,0 +1,26 @@
+name: ansible-lint
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.yml'
+      - '**/*.yaml'
+      - 'ansible.cfg'
+      - '.ansible-lint'
+      - '.github/workflows/ansible-lint.yml'
+
+jobs:
+  lint:
+    name: Ansible Lint
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v26.3.0
+        with:
+          requirements_file: requirements.yml

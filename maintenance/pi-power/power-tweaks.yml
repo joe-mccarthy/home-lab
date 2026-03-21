@@ -153,8 +153,13 @@
       notify: reboot rpi
       tags: [nvme, usb]
 
+    - name: Reload udev rules
+      ansible.builtin.command: udevadm control --reload-rules
+      changed_when: false
+      tags: [nvme, usb]
+
     - name: Trigger udev so autosuspend rule takes effect
-      ansible.builtin.command: udevadm control --reload-rules && udevadm trigger
+      ansible.builtin.command: udevadm trigger
       changed_when: false
       tags: [nvme, usb]
 

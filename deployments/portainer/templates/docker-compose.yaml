@@ -42,8 +42,6 @@ services:
       # Specifies the path to the Docker secret containing the admin password.
       - '--no-analytics'
       # Disables analytics to prevent sending usage data to Portainer.
-      - '--tlsverify'
-      # Enables TLS verification for secure communication.
 
     secrets:
       - portainer_admin_password

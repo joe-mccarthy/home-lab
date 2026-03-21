@@ -1,71 +1,74 @@
 ---
-# This playbook configures new or existing machines in the home lab cluster.
-# It handles SSH key management, system updates, essential package installation,
-# and performs necessary system maintenance tasks.
+# Configure baseline tooling and access for homelab hosts.
+# The play handles SSH access, package updates, optional reboot handling,
+# core utility installation, and a final systemd reload.
 
 - name: Set up machine
-  hosts: all  # Target all hosts defined in the inventory
-  become: true  # Execute tasks with elevated privileges (sudo)
+  hosts: all  # Apply to all inventory hosts.
+  become: true  # Most operations require elevated privileges.
   vars:
-    user_keys: "{{ lookup('env', 'USER') }}"  # Get current username from environment
-    # This variable determines which user account will receive the SSH authorized key
+    user_keys: "{{ lookup('env', 'USER') }}"  # Local username used as the target account on managed hosts.
 
   tasks:
-    # Task 1: Configure SSH key-based authentication
+    # Configure SSH key-based authentication.
     - name: "Setting authorized key for user {{ user_keys }}"
       ansible.posix.authorized_key:
-        user: "{{ user_keys }}"  # Target user account
-        state: present  # Ensure key exists in authorized_keys
-        key: "{{ lookup('file', lookup('env', 'HOME') + public_key) }}"  # Read public key from file
-      # This enables password-less SSH access to the target machine
-      # Note: The public_key variable should be defined in group_vars or command line
+        user: "{{ user_keys }}"  # Account that will receive the key.
+        state: present  # Ensure the key is present in authorized_keys.
+        key: "{{ lookup('file', lookup('env', 'HOME') + public_key) }}"  # Read local public key file.
+      # `public_key` should be defined in vars/group_vars/extra vars.
 
-    # Task 2: Update all system packages
+    # Update Debian-family hosts.
     - name: Update system packages
-      when: ansible_facts['os_family'] == 'Debian'  # Only for Debian/Ubuntu systems
+      when: ansible_facts['os_family'] == 'Debian'
       ansible.builtin.apt:
-        upgrade: dist  # Full distribution upgrade (equivalent to apt dist-upgrade)
-        update_cache: true  # Update package index before upgrading (equivalent to apt update)
-      # This ensures all packages are updated to their latest versions, including security patches
+        upgrade: dist  # Equivalent to `apt dist-upgrade`.
+        update_cache: true  # Refresh package index before upgrade.
 
-    # Task 3: Detect if system requires reboot
+    # Detect whether the host needs a reboot after upgrades.
     - name: Check if system requires reboot
       when: ansible_facts['os_family'] == 'Debian'
       ansible.builtin.stat:
-        path: /var/run/reboot-required  # File created by package manager when reboot needed
-      register: ubuntu_reboot_required  # Store result for conditional use in next task
-      # Many kernel updates and critical system packages require a reboot to take effect
+        path: /var/run/reboot-required  # Created by apt when restart is required.
+      register: ubuntu_reboot_required  # Used by the conditional reboot task below.
 
-    # Task 4: Perform system reboot if needed
+    # Reboot only when required.
     - name: Reboot system if required
-      when: ubuntu_reboot_required.stat.exists | default(false)  # Only reboot when file exists
+      when: ubuntu_reboot_required.stat.exists | default(false)
       ansible.builtin.reboot:
-        reboot_timeout: 600  # Wait up to 10 minutes for system to come back online
-      # This task ensures system changes are properly applied and avoids unexpected downtime
-      # by performing controlled reboots only when necessary
+        reboot_timeout: 600  # Wait up to 10 minutes for host to return.
 
-    # Task 5: Install essential system utilities
+    # Install baseline administration and troubleshooting tools.
     - name: Install core packages
       ansible.builtin.apt:
-        name: "{{ item }}"  # Install packages one by one
-        state: present  # Ensure packages are installed
+        name: "{{ item }}"  # Install from curated package list.
+        state: present
       loop:
-        - htop          # Interactive process viewer and system monitor
-        - curl          # Command-line tool for data transfer with URL syntax
-        - wget          # Non-interactive network downloader
-        - git           # Distributed version control system
-        - unzip         # Extract ZIP archives
-        - zip           # Create ZIP archives
-        - lm-sensors    # Hardware health monitoring utilities
-        - net-tools     # Network configuration tools (ifconfig, netstat, etc.)
-        - dnsutils      # DNS utilities (dig, nslookup, etc.)
-        - nfs-common    # NFS client utilities for mounting network shares
-      # These packages provide essential functionality for system administration,
-      # monitoring, network diagnostics, and integration with the home lab environment
+        - htop
+        - curl
+        - wget
+        - git
+        - unzip
+        - zip
+        - lm-sensors
+        - net-tools
+        - dnsutils
+        - nfs-common
+      # Includes monitoring, network diagnostics, and NFS client support.
 
-    # Task 6: Refresh systemd configuration
+    # Ensure Python dependencies for Ansible's Docker modules are installed.
+    - name: Ensure Python dependencies are installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - python3-jsondiff  # Diff helper used by community.docker.docker_stack.
+        - python3-docker    # Docker SDK for Python used by Docker-focused automation.
+        - python3-requests  # HTTP client library for API-driven scripts and modules.
+        - python3-yaml      # YAML parser/emitter for config processing in Python utilities.
+      # Baseline Python packages for current and future automation tasks.
+
+    # Refresh systemd after package and service changes.
     - name: Reload systemd configuration
       ansible.builtin.systemd:
-        daemon_reload: true  # Reload unit files and systemd configuration
-      # This ensures any systemd service changes are recognized by the system
-      # Important after package installations that add new system services
+        daemon_reload: true  # Reload unit files from disk.

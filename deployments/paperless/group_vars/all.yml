@@ -10,11 +10,11 @@
 paperless:
   volumes:
     paperless:
-      media: "{{ vault_paperless.volumes.paperless.media }}"
-      data: "{{ vault_paperless.volumes.paperless.data }}"
-      consume: "{{ vault_paperless.volumes.paperless.consume }}"
-      export: "{{ vault_paperless.volumes.paperless.export }}"
-    broker: "{{ vault_paperless.volumes.broker }}"
+      media: "{{ vault.services.paperless.volumes.paperless.media }}"
+      data: "{{ vault.services.paperless.volumes.paperless.data }}"
+      consume: "{{ vault.services.paperless.volumes.paperless.consume }}"
+      export: "{{ vault.services.paperless.volumes.paperless.export }}"
+    broker: "{{ vault.services.paperless.volumes.broker }}"
 
   # Pinned image tags for reproducible deployments
   versions:

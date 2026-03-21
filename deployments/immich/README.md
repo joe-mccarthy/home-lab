@@ -87,7 +87,7 @@ ansible-vault encrypt vault.yml
 
 ### 2. Domain Configuration
 
-Set `general.domain` in your vault or inventory `all.vars`. See [`vault.template.yml`](../../vault.template.yml) for the expected key.
+Set `vault.shared.general.domain` in your vault or inventory `all.vars`. See [`vault.template.yml`](../../vault.template.yml) for the expected key.
 
 ```yaml
 general:

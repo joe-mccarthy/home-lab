@@ -2,8 +2,8 @@
 immich:
   # Database credentials (from Ansible Vault)
   database:
-    user: "{{ vault_immich_user }}"
-    password: "{{ vault_immich_password }}"
+    user: "{{ vault.services.immich.database.user }}"
+    password: "{{ vault.services.immich.database.password }}"
 
   # Pinned image tags for reproducible deployments
   versions:
@@ -13,5 +13,5 @@ immich:
     database: "14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
 
 # Notes:
-# - vault_immich_user and vault_immich_password must be defined and encrypted in Ansible Vault.
+# - vault.services.immich.database.user and vault.services.immich.database.password must be defined and encrypted in Ansible Vault.
 # - To edit encrypted variables: ansible-vault edit group_vars/all.yml

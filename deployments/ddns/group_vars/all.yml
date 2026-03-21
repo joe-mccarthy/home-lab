@@ -1,15 +1,15 @@
 ---
 ddns:
   # Cloudflare API token — scoped to DNS edit permissions only (from Ansible Vault)
-  cf_token: "{{ vault_cf_token }}"
+  cf_token: "{{ vault.shared.cloudflare.token }}"
 
   # Comma-separated list of domains to keep updated (from Ansible Vault)
-  dns_domains: "{{ vault_dns_domains }}"
+  dns_domains: "{{ vault.services.ddns.dns_domains }}"
 
   # Pinned image tag for reproducible deployments
   version: "1.15.1"
 
 # Notes:
-# - vault_cf_token and vault_dns_domains must be defined in Ansible Vault.
+# - vault.shared.cloudflare.token and vault.services.ddns.dns_domains must be defined in Ansible Vault.
 # - cf_token should be scoped to the minimum required permissions (DNS zone edit).
 # - This file must not contain plaintext secrets. Use: ansible-vault edit group_vars/all.yml

@@ -74,7 +74,7 @@ services:
         # Enables Traefik integration for this service.
         - "traefik.http.routers.portainer.entrypoints=web"
         # Defines the entry point for HTTP traffic (port 80) for the `portainer` router.
-        - "traefik.http.routers.portainer.rule=Host(`portainer.{{ general.domain }}`)"
+        - "traefik.http.routers.portainer.rule=Host(`portainer.{{ vault.shared.general.domain }}`)"
         # Specifies the routing rule for HTTP traffic. Requests to `portainer.<domain>` are routed to this service.
         - "traefik.http.middlewares.portainer-https-redirect.redirectscheme.scheme=https"
         # Redirects HTTP traffic to HTTPS for secure communication.
@@ -82,7 +82,7 @@ services:
         # Applies the HTTPS redirection middleware to the `portainer` router.
         - "traefik.http.routers.portainer-secure.entrypoints=websecure"
         # Defines the entry point for HTTPS traffic (port 443) for the `portainer-secure` router.
-        - "traefik.http.routers.portainer-secure.rule=Host(`portainer.{{ general.domain }}`)"
+        - "traefik.http.routers.portainer-secure.rule=Host(`portainer.{{ vault.shared.general.domain }}`)"
         # Specifies the routing rule for HTTPS traffic. Requests to `portainer.<domain>` are routed to this service.
         - "traefik.http.routers.portainer-secure.tls=true"
         # Enables TLS (HTTPS) for the `portainer-secure` router.

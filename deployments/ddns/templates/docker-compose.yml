@@ -35,7 +35,7 @@ services:
       # A comma-separated list of domains for which DNS records need to be updated.
       # This value is securely stored in Ansible Vault and injected at runtime.
 
-      - ZONE_ID={{ general.domain }}
+      - ZONE_ID={{ vault.shared.general.domain }}
       # The Cloudflare Zone ID associated with the domains.
       # This value is securely stored in Ansible Vault and injected at runtime.
 
@@ -58,7 +58,7 @@ services:
         # Disables Traefik integration for this service. Set to `true` if Traefik should manage routing for this service.
 
 # Notes:
-# - Ensure that `ddns.cf_token`, `ddns.dns_domains`, and `general.domain` are defined and encrypted in Ansible Vault.
+# - Ensure that `ddns.cf_token`, `ddns.dns_domains`, and `vault.shared.general.domain` are defined and encrypted in Ansible Vault.
 # - Image version is pinned to reduce unexpected changes during future deploys.
 # - The `read_only`, `cap_drop`, and `security_opt` settings are security best practices and should be retained unless specific write access or privileges are required.
 # - If Traefik is used for routing, set `traefik.enable` to `true` and configure additional labels for routing rules.

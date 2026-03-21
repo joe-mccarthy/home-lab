@@ -57,7 +57,7 @@ The Ansible playbooks automate these tasks, ensuring consistency and reliability
 ## Configuration
 
 ### Required Variables
-- `general.domain`: Your domain name for the Gitea instance
+- `vault.shared.general.domain`: Your domain name for the Gitea instance
 - `gitea.runner_token`: Registration token for connecting runners to Gitea (required for worker deployment)
 
 ### Group Variables

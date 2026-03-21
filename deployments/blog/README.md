@@ -62,11 +62,11 @@ This deployment includes the following labels for Traefik and auto-update functi
 labels:
   - "traefik.enable=true"  # Enable Traefik for this service.
   - "traefik.http.routers.blog.entrypoints=web"  # Define the HTTP entry point for the router.
-  - "traefik.http.routers.blog.rule=Host(`blog.{{ general.domain }}`)"  # Define the routing rule based on the host.
+  - "traefik.http.routers.blog.rule=Host(`blog.{{ vault.shared.general.domain }}`)"  # Define the routing rule based on the host.
   - "traefik.http.middlewares.blog-https-redirect.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS.
   - "traefik.http.routers.blog.middlewares=blog-https-redirect"  # Apply the HTTPS redirect middleware.
   - "traefik.http.routers.blog-secure.entrypoints=websecure"  # Define the HTTPS entry point for the secure router.
-  - "traefik.http.routers.blog-secure.rule=Host(`blog.{{ general.domain }}`)"  # Define the secure routing rule based on the host.
+  - "traefik.http.routers.blog-secure.rule=Host(`blog.{{ vault.shared.general.domain }}`)"  # Define the secure routing rule based on the host.
   - "traefik.http.routers.blog-secure.tls=true"  # Enable TLS for the secure router.
   - "traefik.http.routers.blog-secure.service=blog"  # Link the secure router to the blog service.
   - "traefik.http.routers.blog-secure.tls.certresolver=letsencrypt"  # Use Let's Encrypt for TLS certificates.

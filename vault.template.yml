@@ -20,38 +20,21 @@ vault:
       image: ""
       port: ""
 
-    cioban:
-      version: "0.17.14"
-
     ddns:
-      cf_token: ""
       dns_domains: ""
-      version: "1.15.1"
 
     gitea:
       runner_token: ""
-      versions:
-        server: "1.25.5"
-        runner: "0.2.12"
 
     home_assistant:
       proxy: ""
       mqtt_server: ""
       zigbee_serial_port: ""
-      versions:
-        homeassistant: "2026.3.3"
-        zigbee2mqtt: "2.9.1"
-        mqtt: "2.1-alpine"
 
     immich:
       database:
         user: ""
         password: ""
-      versions:
-        server: "v2.6.1"
-        machine_learning: "v2.6.1"
-        redis: "9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6"
-        database: "14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
 
     nfs_backup:
       encryption_key: ""
@@ -60,7 +43,6 @@ vault:
         region: ""
         key_id: ""
         access_key: ""
-      version: "1.8.2"
 
     paperless:
       volumes:
@@ -70,22 +52,11 @@ vault:
           consume: ""
           export: ""
         broker: ""
-      versions:
-        broker: "8.6.1"
-        app: "2.20.13"
-        gotenberg: "8.28.0"
-        tika: "3.2.3.0"
 
     portainer:
       admin_password: ""
-      versions:
-        agent: "2.39.1"
-        server: "2.39.1"
 
     traefik:
-      cf_token: ""
-      cf_email: ""
-      version: "3.6.11"
       ports:
         web: "80"
         websecure: "443"

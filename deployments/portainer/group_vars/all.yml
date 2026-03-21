@@ -1,7 +1,7 @@
 ---
 portainer:
   # Admin password injected as a Docker Swarm secret (from Ansible Vault)
-  admin_password: "{{ vault_portainer_admin_password }}"
+  admin_password: "{{ vault.services.portainer.admin_password }}"
 
   # Pinned image tags for reproducible deployments
   versions:
@@ -9,6 +9,6 @@ portainer:
     server: "2.39.1"
 
 # Notes:
-# - vault_portainer_admin_password must be defined and encrypted in Ansible Vault.
+# - vault.services.portainer.admin_password must be defined and encrypted in Ansible Vault.
 # - To edit encrypted variables: ansible-vault edit group_vars/all.yml
 # - The admin password is delivered to the container via a Docker Swarm secret.

@@ -51,7 +51,7 @@
 # - Ensure that Docker and Docker Swarm are properly configured on the target system before running this playbook.
 # - The `docker-compose.yml` template should define the Gitea act_runner service with proper environment variables.
 # - The runner requires GITEA_INSTANCE_URL and GITEA_RUNNER_REGISTRATION_TOKEN to be configured in group_vars.
-# - The registration token should be encrypted in vault_gitea.runner_token and referenced in group_vars/all.yml.
+# - The registration token should be encrypted in vault.services.gitea.runner_token and referenced in group_vars/all.yml.
 # - The cleanup step (`delete compose directory`) is optional and can be removed if the compose files need to be retained.
 # - Use caution when setting permissions (`0755`) and ownership (`nobody:nogroup`) to avoid security risks.
 # - The runner connects to the main Gitea instance to provide CI/CD capabilities for repositories.

@@ -83,7 +83,7 @@ services:
           # Defines the entry point for HTTP traffic (port 80) for the `immich` router.
           # Creates a router for insecure HTTP traffic.
           
-          - "traefik.http.routers.immich.rule=Host(`immich.{{ general.domain }}`)"
+          - "traefik.http.routers.immich.rule=Host(`immich.{{ vault.shared.general.domain }}`)"
           # Specifies the routing rule for HTTP traffic. Requests to `immich.<domain>` are routed to this service.
           # Uses Ansible templating to inject the domain from variables.
           
@@ -99,7 +99,7 @@ services:
           # Defines the entry point for HTTPS traffic (port 443) for the `immich-secure` router.
           # Creates a router for secure HTTPS traffic.
           
-          - "traefik.http.routers.immich-secure.rule=Host(`immich.{{ general.domain }}`)"
+          - "traefik.http.routers.immich-secure.rule=Host(`immich.{{ vault.shared.general.domain }}`)"
           # Specifies the routing rule for HTTPS traffic. Requests to `immich.<domain>` are routed to this service.
           # Matches the same domain as HTTP but for secure traffic.
           

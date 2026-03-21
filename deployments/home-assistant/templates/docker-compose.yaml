@@ -132,7 +132,7 @@ services:
         # HTTP to HTTPS redirection configuration
         - "traefik.http.routers.homeassistant.entrypoints=web"
         # HTTP entry point (port 80) for initial requests.
-        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.{{ general.domain }}`)"
+        - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.{{ vault.shared.general.domain }}`)"
         # Domain-based routing rule. Template variable populated during deployment.
         - "traefik.http.middlewares.homeassistant-https-redirect.redirectscheme.scheme=https"
         # Middleware to redirect HTTP traffic to HTTPS automatically.
@@ -142,7 +142,7 @@ services:
         # HTTPS (secure) router configuration
         - "traefik.http.routers.homeassistant-secure.entrypoints=websecure"
         # HTTPS entry point (port 443) for secure connections.
-        - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.{{ general.domain }}`)"
+        - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.{{ vault.shared.general.domain }}`)"
         # Domain-based routing for HTTPS traffic.
         - "traefik.http.routers.homeassistant-secure.tls=true"
         # Enables TLS/SSL encryption for secure communications.
@@ -224,13 +224,13 @@ services:
 
         # HTTP configuration and HTTPS redirection
         - "traefik.http.routers.zigbee2mqtt.entrypoints=web"
-        - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.{{ general.domain }}`)"
+        - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.{{ vault.shared.general.domain }}`)"
         - "traefik.http.middlewares.zigbee2mqtt-https-redirect.redirectscheme.scheme=https"
         - "traefik.http.routers.zigbee2mqtt.middlewares=zigbee2mqtt-https-redirect"
 
         # HTTPS configuration with automatic SSL
         - "traefik.http.routers.zigbee2mqtt-secure.entrypoints=websecure"
-        - "traefik.http.routers.zigbee2mqtt-secure.rule=Host(`zigbee2mqtt.{{ general.domain }}`)"
+        - "traefik.http.routers.zigbee2mqtt-secure.rule=Host(`zigbee2mqtt.{{ vault.shared.general.domain }}`)"
         - "traefik.http.routers.zigbee2mqtt-secure.tls=true"
         - "traefik.http.routers.zigbee2mqtt-secure.service=zigbee2mqtt"
         - "traefik.http.routers.zigbee2mqtt-secure.tls.certresolver=letsencrypt"

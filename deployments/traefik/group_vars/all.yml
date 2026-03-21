@@ -1,22 +1,22 @@
 ---
 traefik:
   # Cloudflare credentials for DNS-01 ACME challenge (delivered as Docker Swarm secrets)
-  cf_token: "{{ vault_cf_token }}"   # API token — scoped to DNS zone edit only
-  cf_email: "{{ vault_cf_email }}"   # Cloudflare account email
+  cf_token: "{{ vault.shared.cloudflare.token }}"   # API token — scoped to DNS zone edit only
+  cf_email: "{{ vault.shared.cloudflare.email }}"   # Cloudflare account email
 
   # Published host ports
   ports:
-    web: "{{ (vault_traefik_ports | default({})).web | default('80') }}"
-    websecure: "{{ (vault_traefik_ports | default({})).websecure | default('443') }}"
-    dashboard_internal: "{{ (vault_traefik_ports | default({})).dashboard_internal | default('8080') }}"
-    dashboard: "{{ (vault_traefik_ports | default({})).dashboard | default('8080') }}"
-    ssh: "{{ (vault_traefik_ports | default({})).ssh | default('2222') }}"
+    web: "{{ ((vault.services.traefik | default({})).ports | default({})).web | default('80') }}"
+    websecure: "{{ ((vault.services.traefik | default({})).ports | default({})).websecure | default('443') }}"
+    dashboard_internal: "{{ ((vault.services.traefik | default({})).ports | default({})).dashboard_internal | default('8080') }}"
+    dashboard: "{{ ((vault.services.traefik | default({})).ports | default({})).dashboard | default('8080') }}"
+    ssh: "{{ ((vault.services.traefik | default({})).ports | default({})).ssh | default('2222') }}"
 
   # Pinned image tag for reproducible deployments
   version: "3.6.11"
 
 # Notes:
-# - vault_cf_token and vault_cf_email must be defined and encrypted in Ansible Vault.
+# - vault.services.traefik.cf_token and vault.services.traefik.cf_email must be defined and encrypted in Ansible Vault.
 # - To edit encrypted variables: ansible-vault edit group_vars/all.yml
 # - cf_token should have minimum required permissions (DNS zone edit) only.
 # - Credentials are injected as Docker Swarm secrets, not environment variables.

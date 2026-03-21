@@ -60,7 +60,7 @@ To execute a playbook, use the appropriate command for the desired playbook.
 
 1. Always back up critical configuration files (e.g., `/etc/exports` for NFS) before running destructive playbooks.
 2. Test the playbooks in a non-production environment before deploying to production.
-3. Store sensitive information (e.g., SSH keys, Docker registry credentials) securely using Ansible Vault.
+3. Store sensitive information (e.g., SSH keys, Docker registry credentials) securely using [Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html). See [`vault.template.yml`](../vault.template.yml) at the repo root for the full variable reference.
 
 ## Troubleshooting
 

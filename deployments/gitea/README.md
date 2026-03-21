@@ -25,13 +25,13 @@ Both deployments include tasks for preparing the environment, managing persisten
 
 ### Main Gitea Server
 ```bash
-ansible-playbook -i inventory deploy.yml
+ansible-playbook -i ../../inventory.yml deploy.yml
 ```
 This deploys the main Gitea service with web interface and Git functionality.
 
 ### Gitea CI/CD Runners
 ```bash
-ansible-playbook -i inventory deploy-runners.yml
+ansible-playbook -i ../../inventory.yml deploy-runners.yml
 ```
 This deploys Gitea runners (act_runner) that connect to your Gitea instance to provide CI/CD capabilities.
 

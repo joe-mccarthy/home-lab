@@ -26,16 +26,16 @@ This directory contains an Ansible-based deployment for **Paperless-ngx** using 
 
 1. **Docker Swarm cluster already initialized** (at least one manager).
 2. **Traefik stack deployed**, providing an external overlay network named `proxy`.
-3. **Ansible control node** with access to inventory and Vault secrets.
+3. **Ansible control node** with access to `inventory.yml` (see [`inventory.example.yml`](../../inventory.example.yml)) and Vault secrets (see [`vault.template.yml`](../../vault.template.yml)).
 4. **NFS volume mounted** on target host(s) (default is `/mnt/nfs`).
 
 ## Deployment steps
 
-1. Ensure you have the required Vault values defined (see next section).
+1. Ensure you have the required Vault values defined. See [`vault.template.yml`](../../vault.template.yml) at the repo root for the full variable reference.
 2. Run the playbook:
 
 ```sh
-ansible-playbook -i inventory deployments/paperless/deploy.yml
+ansible-playbook -i inventory.yml deployments/paperless/deploy.yml
 ```
 
 ## Vault / configuration variables

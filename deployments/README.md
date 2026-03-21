@@ -108,7 +108,7 @@ Before deploying any services, ensure the following:
    - Deploy Traefik first to handle proxying and certificate management for other services.
 
 3. **Ansible Inventory**:
-   - Ensure the inventory file defines all nodes in the cluster and groups them appropriately.
+   - Ensure [`inventory.yml`](../inventory.example.yml) defines all nodes in the cluster and groups them appropriately. Use [`inventory.example.yml`](../inventory.example.yml) at the repo root as a starting point.
 
 4. **DNS Configuration**:
    - Set up DNS records for the services you plan to deploy. Use Dynamic DNS if your public IP address changes frequently.

@@ -25,14 +25,14 @@ This file defines the group variables used by the `docker-login` playbook. It in
 - `registry_password`: The password for the Docker registry.
 - `registry_url`: The URL of the Docker registry.
 
-These variables are securely stored in an Ansible Vault to protect sensitive information. For more details, refer to the [group_vars/all.yml file](./group_vars/all.yml).
+These variables are securely stored in an Ansible Vault to protect sensitive information. See [`vault.template.yml`](../../vault.template.yml) at the repo root for the expected variable names. For more details on the group vars, refer to the [group_vars/all.yml file](./group_vars/all.yml).
 
 ## Prerequisites
 
 Before running the `docker-login` playbook, ensure the following:
-1. **Ansible Vault Setup**: The credentials (`vault_registry_user`, `vault_registry_password`, and `vault_registry_url`) must be stored in an Ansible Vault.
+1. **Ansible Vault Setup**: The credentials (`vault_registry_user`, `vault_registry_password`, and `vault_registry_url`) must be stored in an Ansible Vault — use [`vault.template.yml`](../../vault.template.yml) as a starting point.
    - For more information on using Ansible Vault, refer to the [Ansible Vault documentation](https://docs.ansible.com/ansible/latest/vault_guide/index.html).
-2. **Cluster Inventory**: The `cluster` group must be defined in your Ansible inventory file, listing all nodes that require Docker login.
+2. **Cluster Inventory**: The `cluster` group must be defined in your `inventory.yml` (see [`inventory.example.yml`](../../inventory.example.yml)), listing all nodes that require Docker login.
 
 ## Usage
 

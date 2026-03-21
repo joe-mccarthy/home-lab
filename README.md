@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/releases)
 [![Last commit](https://img.shields.io/github/last-commit/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/commits/main)
 [![License](https://img.shields.io/github/license/joe-mccarthy/homelab?style=flat-square)](LICENSE)
-[![ansible-lint](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml/badge.svg?style=flat-square)](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml)
+[![ansible-lint](https://img.shields.io/github/actions/workflow/status/joe-mccarthy/homelab/ansible-linter.yml?style=flat-square&label=ansible%20lint)](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml)
 
 
 The purpose of this repository is to create and manage a simple [home lab](https://linuxhandbook.com/homelab/) built around clusters of [Raspberry Pi's](https://www.raspberrypi.com/) using [Docker Swarm](https://docs.docker.com/engine/swarm/) for container deployment and management. The primary tool for managing the home lab is [Ansible](https://docs.ansible.com/ansible/latest/index.html). 

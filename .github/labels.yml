@@ -1,0 +1,27 @@
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "feature"
+  color: "0075ca"
+  description: "New feature or request"
+
+- name: "chore"
+  color: "e4e669"
+  description: "Maintenance tasks, refactoring, or non-functional changes"
+
+- name: "documentation"
+  color: "0052cc"
+  description: "Improvements or additions to documentation"
+
+- name: "dependencies"
+  color: "0366d6"
+  description: "Pull requests that update a dependency"
+
+- name: "breaking change"
+  color: "b60205"
+  description: "Introduces a breaking change"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "An improvement to an existing feature"

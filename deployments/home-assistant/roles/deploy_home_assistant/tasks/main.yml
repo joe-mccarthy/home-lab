@@ -21,80 +21,16 @@
 # ============================================================================
 
 # ============================================================================
-# Docker Environment Prerequisites
+# Shared Docker prerequisites and service cleanup
 # ============================================================================
-- name: Ensure Docker Compose is installed
-  ansible.builtin.package:
-    name: docker-compose
-    state: present
-  # Installs Docker Compose on the target system if not already present.
-  # Docker Compose is required for defining and managing multi-container
-  # applications, even though we're deploying to Docker Swarm.
-  #
-  # Note: While Docker Swarm uses stack files, docker-compose may be needed
-  # for local development, testing, or compatibility with existing tooling.
-
-- name: Ensure Docker daemon is running and enabled
-  ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: true
-  # Ensures the Docker daemon is active and configured to start automatically.
-  # This is critical for Docker Swarm functionality and container orchestration.
-  #
-  # Service Configuration:
-  # - started: Activates the Docker daemon immediately
-  # - enabled: Configures automatic startup on system boot
-  #
-  # Failure Impact: Without a running Docker daemon, all subsequent
-  # containerized operations will fail.
-
-# ============================================================================
-# Service Cleanup and Preparation
-# ============================================================================
-- name: Remove existing Home Assistant core service
-  community.docker.docker_swarm_service:
-    name: homeassistant_homeassistant
-    state: absent
-  failed_when: false
-  # Removes any existing Home Assistant core service from Docker Swarm.
-  # This ensures a clean deployment without conflicts from previous versions.
-  #
-  # Service Naming Convention: [stack_name]_[service_name]
-  # - homeassistant: Stack name
-  # - homeassistant: Service name (core Home Assistant container)
-  #
-  # Error Handling: failed_when prevents deployment failure if the
-  # service doesn't exist or is already removed.
-
-- name: Remove existing Zigbee2MQTT service
-  community.docker.docker_swarm_service:
-    name: homeassistant_zigbee2mqtt
-    state: absent
-  failed_when: false
-  # Removes the Zigbee2MQTT bridge service for clean redeployment.
-  # Zigbee2MQTT requires careful handling due to its hardware dependencies
-  # and persistent device database.
-  #
-  # Critical Considerations:
-  # - Device pairings and network topology are preserved in NFS storage
-  # - USB device access permissions must be maintained
-  # - Coordinator backup should be verified before service removal
-
-- name: Remove existing MQTT broker service
-  community.docker.docker_swarm_service:
-    name: homeassistant_mqtt
-    state: absent
-  failed_when: false
-  # Removes the Mosquitto MQTT broker service for clean redeployment.
-  # MQTT is the communication backbone for IoT devices and Home Assistant.
-  #
-  # Service Dependencies:
-  # - Home Assistant relies on MQTT for device state management
-  # - Zigbee2MQTT publishes all device data through MQTT
-  # - Other IoT integrations may depend on this broker
-  #
-  # Impact: Temporary loss of device communication during redeployment
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - homeassistant_homeassistant
+      - homeassistant_zigbee2mqtt
+      - homeassistant_mqtt
 
 # ============================================================================
 # Local Infrastructure Setup

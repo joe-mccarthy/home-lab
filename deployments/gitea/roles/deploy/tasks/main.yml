@@ -3,25 +3,12 @@
 # It ensures that Docker and docker-compose are installed and running, removes any existing services,
 # sets up the required directory structure, deploys the stack, and cleans up temporary files.
 
-- name: Ensure docker-compose is installed
-  ansible.builtin.package:
-    name: docker-compose  # The package name for docker-compose.
-    state: present  # Ensure docker-compose is installed on the target system.
-  # This task ensures that docker-compose is available for managing Docker-based applications.
-
-- name: Ensure Docker service is running
-  ansible.builtin.service:
-    name: docker  # The name of the Docker service.
-    state: started  # Ensure the Docker service is running.
-    enabled: true  # Ensure the Docker service starts on boot.
-  # This task ensures that the Docker daemon is active and ready to manage containers.
-
-- name: Remove service
-  community.docker.docker_swarm_service:
-    name: gitea_server  # The name of the Docker Swarm service to remove.
-    state: absent  # Ensure the service is removed.
-  failed_when: false  # Allow the playbook to continue even if this task fails.
-  # This task removes any existing instance of the Gitea service to avoid conflicts during deployment.
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - gitea_server
 
 - name: Setup Gitea directory
   ansible.builtin.file:

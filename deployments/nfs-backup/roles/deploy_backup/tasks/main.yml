@@ -3,48 +3,15 @@
 # The deployment includes backup, prune, and check services that work together
 # to create a complete backup solution for NFS-shared data
 
-# Install required dependencies for deployment
-- name: Ensure docker-compose is installed
-  ansible.builtin.package:
-    name: docker-compose     # Install Docker Compose package
-    state: present           # Ensure it's installed but don't upgrade if present
-  # Docker Compose is needed for parsing the stack template file
-  # Even though we deploy to Swarm, docker-compose package helps process the YAML
-
-# Verify Docker service status before proceeding
-- name: Ensure Docker service is running
-  ansible.builtin.service:
-    name: docker             # Target the Docker daemon service
-    state: started           # Make sure Docker is actively running
-    enabled: true            # Ensure Docker starts on system boot
-  # This check prevents deployment failures due to Docker being stopped
-  # All subsequent Docker operations depend on this service being available
-
-# Clean up any existing services before redeployment
-# This prevents conflicts and ensures clean state for new services
-- name: Remove backup service
-  community.docker.docker_swarm_service:
-    name: nfs_backup_restic_backup  # Service name in format: stack_service
-    state: absent                   # Remove the service if it exists
-  failed_when: false               # Continue even if service doesn't exist
-  # The main backup service that creates periodic backups of the NFS share
-  # Removing it ensures we don't have duplicate services or configuration conflicts
-
-- name: Remove prune service
-  community.docker.docker_swarm_service:
-    name: nfs_backup_restic_prune   # Service name in format: stack_service
-    state: absent                   # Remove the service if it exists
-  failed_when: false               # Continue even if service doesn't exist
-  # The prune service that handles backup retention policy enforcement
-  # This service removes old backups according to defined retention policies
-
-- name: Remove check service
-  community.docker.docker_swarm_service:
-    name: nfs_backup_restic_check   # Service name in format: stack_service
-    state: absent                   # Remove the service if it exists
-  failed_when: false               # Continue even if service doesn't exist
-  # The check service that verifies backup repository integrity
-  # Regular checks help ensure backups can be restored when needed
+# Run common Docker prerequisites and remove old services before redeploying.
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - nfs_backup_restic_backup
+      - nfs_backup_restic_prune
+      - nfs_backup_restic_check
 
 # Prepare local directory structure for deployment files
 - name: Setup restic directory

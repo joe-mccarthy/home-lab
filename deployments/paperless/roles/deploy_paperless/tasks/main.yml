@@ -21,16 +21,15 @@
 #   - The directory `/home/docker-compose/paperless` is used as a working location.
 #     It is removed at the end to avoid leaving artifacts.
 
-- name: Ensure Docker Compose is installed
-  ansible.builtin.package:
-    name: docker-compose
-    state: present
-
-- name: Ensure Docker daemon is running and enabled
-  ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: true
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - paperless_paperless
+      - paperless_paperless-broker
+      - paperless_paperless-tika
+      - paperless_paperless-gotenberg
 
 - name: Create local deployment directory
   ansible.builtin.file:
@@ -51,16 +50,7 @@
 # The following task removes any existing Docker Swarm services that overlap with
 # the ones defined in our compose file. This avoids issues where the stack deploy would
 # otherwise try to update services that are already in a conflicting state.
-- name: Remove existing Paperless services
-  community.docker.docker_swarm_service:
-    name: paperless_{{ item }}
-    state: absent
-  failed_when: false
-  loop:
-    - paperless
-    - paperless-broker
-    - paperless-tika
-    - paperless-gotenberg
+
 
 # Deploy the stack. Using a plain command to allow more control over how results
 # are interpreted and to avoid Ansible trying to parse json output (as some Docker

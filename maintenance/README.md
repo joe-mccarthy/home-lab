@@ -50,7 +50,7 @@ For more details, refer to the [shutdown-cluster.yml file](./shutdown-cluster.ym
 
 Before running any maintenance playbooks, ensure the following:
 1. **Ansible Inventory**:
-   - The inventory file must define all nodes in the cluster and group them appropriately (e.g., `all`, `cluster`).
+   - `inventory.yml` must define all nodes in the cluster and group them appropriately (e.g., `all`, `cluster`). See [`inventory.example.yml`](../inventory.example.yml) at the repo root as a reference.
 
 2. **SSH Access**:
    - Ensure passwordless SSH access is configured for all nodes, or be prepared to provide the SSH password using the `--ask-pass` option.
@@ -59,7 +59,7 @@ Before running any maintenance playbooks, ensure the following:
    - Verify that the user running the playbooks has sudo privileges on the target machines. Use the `--ask-become-pass` option if required.
 
 4. **Ansible Vault**:
-   - Sensitive information such as Docker registry credentials must be securely stored in an Ansible Vault.
+   - Sensitive information such as Docker registry credentials must be securely stored in an Ansible Vault. See [`vault.template.yml`](../vault.template.yml) at the repo root for the full list of expected vault variables.
 
 ## Usage
 

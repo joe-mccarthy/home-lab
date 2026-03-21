@@ -42,31 +42,15 @@ Before deploying services to Docker Swarm, the cluster must be defined, machines
 
 ### Defining Hosts
 
-Ansible uses an inventory file to define the hosts it manages. In this project, the inventory is referenced externally using [Ansible configuration](https://docs.ansible.com/ansible/latest/reference_appendices/config.html). Below is an example inventory structure:
+Ansible uses an inventory file to define the hosts it manages. In this project, the inventory is referenced externally using [Ansible configuration](https://docs.ansible.com/ansible/latest/reference_appendices/config.html). A ready-to-use example is provided at [`inventory.example.yml`](inventory.example.yml). Copy it and populate it with your own IPs and hostnames:
 
-```yml
-cluster:
-  children:
-    docker:
-    manager:
-
-nfs_servers:
-  hosts:
-    nfs:
-
-docker:
-    hosts:
-      docker-[01:06]:
-
-manager:
-    hosts:      
-      manager-[01:02]:
-      nfs:
+```bash
+cp inventory.example.yml inventory.yml
 ```
 
-The first block is the definition of the cluster itself so it can be referenced directly for common actions. This definition is a group that doesn't reference actual hosts, but it references other groups. The two groups that it references are __docker__ and __manager__, which correspond to their roles within the cluster. It's important to consider the number of managers you have for the size and reliability of the cluster[^1].
+The inventory defines three Ansible groups: `nfs_servers` (the NFS host, which can double as a Swarm manager), `manager` (all Swarm manager nodes), and `docker` (Swarm worker nodes). Both `manager` and `docker` are children of `cluster`, which lets maintenance playbooks target all nodes at once. The example uses Norse mythology names — `odin` as the primary manager and NFS server, `thor` and `loki` as additional managers, and `freyr`, `tyr`, `heimdall`, `baldur`, `frigg`, and `skadi` as workers.
 
-The machines have also been configured to have hostnames that define their role within the cluster. For instance, docker-01 through docker-06 will be considered worker nodes, while all hosts under the manager group would be managers within the cluster. This includes the host nfs. 
+It's important to consider the number of managers you have for the size and reliability of the cluster[^1].
 
 ### Setting Up Machines
 
@@ -78,39 +62,42 @@ Other than this configuration, all other management will be done through Ansible
 
 ### Keeping Secrets Secure with Vaults
 
-Within this repository, there are deployments and configurations that require sensitive information in order to work. For example, the Cloudflare API token for setting the Dynamic DNS records that you wish. For this reason, the use of [Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html) is leaned on in order to keep these sensitive credentials safe. 
+Within this repository, there are deployments and configurations that require sensitive information in order to work. For example, the Cloudflare API token for setting the Dynamic DNS records that you wish. For this reason, the use of [Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html) is leaned on in order to keep these sensitive credentials safe.
 
-That being said, the variables are referenced within each of the deployments as group vars, and these group vars look up the same variable within the Ansible Vault, so feel free to replace the vault lookup with your actual data. Here is an example below for setting the Cloudflare email and token.
+A complete reference of every vault variable expected across all deployments is documented in [`vault.template.yml`](vault.template.yml) at the root of this repository. Copy it, fill in your real values, and encrypt it:
+
+```bash
+cp vault.template.yml vault.yml
+# edit vault.yml with real values
+ansible-vault encrypt vault.yml
+```
+
+The variables are referenced within each deployment's `group_vars/all.yml`, which maps vault lookups to the variables used in templates. If you prefer not to use vaults, you can replace the vault lookup with your actual data directly — for example:
 
 ```yml
-cf_token: "{{ vault_cf_token }}" # Cloudflare API token
-cf_email: "{{ vault_cf_email }}" # Cloudflare email
-``` 
-The above defines a variable to be used within the context of the Ansible run, however, it calls on another variable which is actually held within a vault. To amend this and not use vaults, change it to the following, however, be careful and remember not to share it.
+# With vault (recommended)
+cf_token: "{{ vault_cf_token }}"
 
-```yml
-cf_token: compromisedToken # Cloudflare API token
-cf_email: compromisedEmail # Cloudflare email
-``` 
+# Without vault (keep the file private)
+cf_token: your-actual-token
+```
 
 #### Domain Name Information
 
-There is one other location where there is a vault variable being used, which is within the hosts inventory file itself. This is the group vars to define the domain for all the proxy information. This was included within the inventory because it applies to all machines, well it does in my instance. This information is used with [Traefik](https://doc.traefik.io/traefik/) to define what it's listening for and where it will forward to and required to issue certificates for secure connections.
+There is one other vault variable used in the inventory itself — the base domain for all proxy routing. This is consumed by [Traefik](https://doc.traefik.io/traefik/) to define what it listens for, where it forwards traffic, and which domain to issue certificates for. It is documented in [`vault.template.yml`](vault.template.yml) under `general.domain`.
 
 ```yml
-all:
-  vars:
-    general:
-      domain: ".something.com"
+general:
+   domain: "example.com"
 ```
 
-The above can be added to the top of the inventory file that you're using, it can be left as plain text if you wish, however sharing less is always better so I've encrypted mine using [Ansible Vault Strings](https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#encrypting-individual-variables-with-ansible-vault). 
+This value can sit in `all.vars` of your `inventory.yml` as plain text, or be encrypted using [Ansible Vault Strings](https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#encrypting-individual-variables-with-ansible-vault) — sharing less is always better.
 
 ---
 
 ## Getting Started
 
-Assuming that you've created an inventory file like stated above, along with actually installing an Operating System and setting up the initial Hardware, I recommend the following steps. 
+Assuming that you've created an `inventory.yml` from [`inventory.example.yml`](inventory.example.yml) as described above, along with actually installing an Operating System and setting up the initial Hardware, I recommend the following steps.
 
 1. **Create an SSH Key Pair**:
    - Generate a private/public key pair for the cluster:

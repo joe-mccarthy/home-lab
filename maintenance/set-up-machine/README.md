@@ -48,7 +48,7 @@ Before running the `set-up-machine` playbook, ensure the following:
    - Update the `public_key` variable in `group_vars/all.yml` to point to the public key file (e.g., `~/.ssh/homelab.pub`).
 
 2. **Ansible Inventory**:
-   - Ensure the `all` group in your inventory file includes all the machines you want to configure.
+   - Ensure the `all` group in your `inventory.yml` (see [`inventory.example.yml`](../../inventory.example.yml)) includes all the machines you want to configure.
 
 3. **Sudo Access**:
    - Verify that the user running the playbook has sudo privileges on the target machines.

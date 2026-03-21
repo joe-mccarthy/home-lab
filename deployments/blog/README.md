@@ -117,7 +117,7 @@ ansible-playbook deploy.yml
 
 3. **Deployment Failures**:
    - Verify that the target nodes are reachable via SSH.
-   - Check the Ansible inventory file for correct group and host definitions.
+   - Check [`inventory.yml`](../../inventory.example.yml) for correct group and host definitions.
 
 ## Related Areas
 

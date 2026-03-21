@@ -77,25 +77,21 @@ The deployment consists of four interconnected services:
 
 ### 1. Ansible Vault Setup
 
-Create and encrypt sensitive variables:
+All sensitive variables are documented in [`vault.template.yml`](../../vault.template.yml) at the repo root. Copy it, populate the Immich section, and encrypt it:
 
 ```bash
-# Create vault file
-ansible-vault create group_vars/vault.yml
-
-# Add the following content:
-vault_immich_user: "immich_user"
-vault_immich_password: "secure_random_password"
+cp ../../vault.template.yml vault.yml
+# fill in vault_immich_user and vault_immich_password
+ansible-vault encrypt vault.yml
 ```
 
 ### 2. Domain Configuration
 
-Update your main variables file to include your domain:
+Set `general.domain` in your vault or inventory `all.vars`. See [`vault.template.yml`](../../vault.template.yml) for the expected key.
 
 ```yaml
-# In ../../vars/general.yml
 general:
-  domain: "yourdomain.com"
+   domain: "yourdomain.com"
 ```
 
 ### 3. Storage Planning
@@ -116,7 +112,7 @@ Ensure adequate NFS storage for:
 cd /home/joseph/projects/homelab-private/deployments/immich
 
 # Deploy the entire stack
-ansible-playbook -i ../../inventory deploy.yml --ask-vault-pass
+ansible-playbook -i ../../inventory.yml deploy.yml --ask-vault-pass
 ```
 
 ### Step-by-Step Deployment
@@ -132,12 +128,12 @@ ansible-playbook -i ../../inventory deploy.yml --ask-vault-pass
 
 2. **Run NFS Preparation**
    ```bash
-   ansible-playbook -i ../../inventory deploy.yml --tags check_nfs --ask-vault-pass
+   ansible-playbook -i ../../inventory.yml deploy.yml --tags check_nfs --ask-vault-pass
    ```
 
 3. **Deploy Application**
    ```bash
-   ansible-playbook -i ../../inventory deploy.yml --tags deploy --ask-vault-pass
+   ansible-playbook -i ../../inventory.yml deploy.yml --tags deploy --ask-vault-pass
    ```
 
 ### Deployment Process

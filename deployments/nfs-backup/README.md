@@ -34,7 +34,7 @@ The system runs as a stack on Docker Swarm with the following components:
 
 ### Environment Variables
 
-All configuration is managed through Ansible variables with sensitive data stored in Ansible Vault:
+All configuration is managed through Ansible variables with sensitive data stored in Ansible Vault. See [`vault.template.yml`](../../vault.template.yml) at the repo root for the full list of expected vault variables for this deployment.
 
 - **S3 Configuration**:
   - `nfs_backup.s3.bucket`: S3 bucket URL
@@ -86,13 +86,13 @@ Deploy using Ansible:
 
 ```bash
 # Regular deployment
-ansible-playbook -i inventory/hosts deploy.yml
+ansible-playbook -i ../../inventory.yml deploy.yml
 
 # With verbose output
-ansible-playbook -i inventory/hosts deploy.yml -v
+ansible-playbook -i ../../inventory.yml deploy.yml -v
 
 # To view changes without applying
-ansible-playbook -i inventory/hosts deploy.yml --check
+ansible-playbook -i ../../inventory.yml deploy.yml --check
 ```
 
 The playbook targets the `manager` group and executes deployment tasks on one selected manager host to prevent duplicate deployment commands.

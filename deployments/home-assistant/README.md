@@ -162,23 +162,17 @@ vault_zigbee_serial_port: "/dev/ttyUSB0"
 
 ### 3. Update Inventory
 ```bash
-# Edit your inventory file
+# Copy the example inventory and edit it with your host details
+cp inventory.example.yml inventory.yml
 vim inventory.yml
 ```
 
-```yaml
-all:
-  hosts:
-    swarm-node-1:
-      ansible_host: 192.168.1.10
-    swarm-node-2:
-      ansible_host: 192.168.1.11
-```
+See [`inventory.example.yml`](../../inventory.example.yml) at the repo root for the full reference structure.
 
 ### 4. Deploy
 ```bash
 # Run the deployment playbook
-ansible-playbook -i inventory.yml deploy.yml --ask-vault-pass
+ansible-playbook -i ../../inventory.yml deploy.yml --ask-vault-pass
 ```
 
 ### 5. Verify Deployment
@@ -248,7 +242,7 @@ The main deployment playbook that orchestrates the entire process:
 
 2. **Run Deployment**
    ```bash
-   ansible-playbook -i inventory.yml deploy.yml --ask-vault-pass
+   ansible-playbook -i ../../inventory.yml deploy.yml --ask-vault-pass
    ```
 
 3. **Monitor Progress**
@@ -439,7 +433,7 @@ docker service inspect homeassistant_homeassistant
 ### Security Best Practices
 
 1. **Secrets Management**
-   - Use Ansible Vault for all sensitive data
+   - Use Ansible Vault for all sensitive data — see [`vault.template.yml`](../../vault.template.yml) for the full variable reference
    - Rotate vault passwords regularly
    - Never commit unencrypted secrets
 

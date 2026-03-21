@@ -22,7 +22,8 @@
 #     It is removed at the end to avoid leaving artifacts.
 
 - name: Run shared Docker prerequisites and cleanup
-  ansible.builtin.include_tasks: "{{ role_path }}/../../../_shared/roles/docker_prereqs_and_stop/tasks/main.yml"
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
   vars:
     docker_prereqs_and_stop_services_to_stop:
       - paperless_paperless

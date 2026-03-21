@@ -24,7 +24,8 @@
 # Shared Docker prerequisites and service cleanup
 # ============================================================================
 - name: Run shared Docker prerequisites and cleanup
-  ansible.builtin.include_tasks: "{{ role_path }}/../../../_shared/roles/docker_prereqs_and_stop/tasks/main.yml"
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
   vars:
     docker_prereqs_and_stop_services_to_stop:
       - homeassistant_homeassistant

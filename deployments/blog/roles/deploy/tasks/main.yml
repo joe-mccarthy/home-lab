@@ -53,6 +53,7 @@
     compose:
       - /home/docker-compose/blog/docker-compose.yaml
     state: present
+    with_registry_auth: true
   register: deploy_swarm_check                 # Registers the output of the command
   changed_when: false                   # Prevents marking the task as changed
   # This deploys the blog service stack to the Docker Swarm cluster.

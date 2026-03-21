@@ -108,17 +108,20 @@
   # Executes the Docker stack deployment using the processed compose file.
   # This creates all services defined in the compose file on the Docker Swarm cluster.
   # Services will be distributed across available swarm nodes based on constraints.
-  
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/immich/docker-compose.yaml immich
+
+  community.docker.docker_stack:
+    name: immich
+    compose:
+      - /home/docker-compose/immich/docker-compose.yaml
+    state: present
     # Command to deploy the stack to Docker Swarm.
     # -c specifies the compose file path
     # 'immich' is the stack name that prefixes all service names
-    
+
   register: swarm_check
   # Stores the command output in a variable for potential debugging.
   # Can be useful for troubleshooting deployment issues.
-  
+
   changed_when: false
   # Prevents this task from showing as 'changed' in Ansible output.
   # Stack deployment is considered an operational task rather than a configuration change.
@@ -127,9 +130,10 @@
   # Removes the temporary directory containing the processed compose file.
   # This cleanup step prevents accumulation of temporary files on the host.
   # Also removes any sensitive information that might be in the processed template.
-  
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose
+
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
     # Recursively removes the entire temporary directory and its contents.
     # This ensures complete cleanup regardless of directory structure.
 

@@ -48,15 +48,18 @@
 
 # Task 6: Deploy Blog stack
 - name: Deploy Blog stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/blog/docker-compose.yaml --with-registry-auth blog 
-    # Deploys the stack using the specified Docker Compose file
+  community.docker.docker_stack:
+    name: blog
+    compose:
+      - /home/docker-compose/blog/docker-compose.yaml
+    state: present
   register: swarm_check                 # Registers the output of the command
   changed_when: false                   # Prevents marking the task as changed
   # This deploys the blog service stack to the Docker Swarm cluster.
 
 # Task 7: Delete compose directory
 - name: delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Removes the temporary directory
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # This cleans up the temporary directory used for deployment to avoid clutter.

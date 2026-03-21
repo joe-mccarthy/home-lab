@@ -26,6 +26,8 @@
 # Swarm stack, service discovery happens via the service name, not the container
 # name; container_name is not required and may cause scheduling restrictions.
 
+version: '3.8'
+
 services:
 
   # Redis is used as the Paperless message broker (via redis://).

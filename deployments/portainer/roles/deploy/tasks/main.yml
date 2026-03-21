@@ -15,8 +15,11 @@
   # This task copies the docker-compose template to the target system, ensuring it is ready for deployment.
 
 - name: Deploy Portainer stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/portainer/docker-compose.yaml portainer
+  community.docker.docker_stack:
+    name: portainer
+    compose:
+      - /home/docker-compose/portainer/docker-compose.yaml
+    state: present
     # The `docker stack deploy` command deploys the stack using the specified compose file.
     # - `-c`: Specifies the path to the docker-compose file.
     # - `portainer`: The name of the stack to deploy.
@@ -25,8 +28,9 @@
   # This task deploys the Portainer stack to the Docker Swarm cluster.
 
 - name: delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # This task cleans up the temporary files and directories created during the deployment process.
 
 # Notes:

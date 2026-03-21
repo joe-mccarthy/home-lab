@@ -47,8 +47,11 @@
   # This task copies the docker-compose template to the target system, ensuring it is ready for deployment.
 
 - name: Deploy Traefik stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/traefik/docker-compose.yaml traefik
+  community.docker.docker_stack:
+    name: traefik
+    compose:
+      - /home/docker-compose/traefik/docker-compose.yaml
+    state: present
     # The `docker stack deploy` command deploys the stack using the specified compose file.
     # - `-c`: Specifies the path to the docker-compose file.
     # - `traefik`: The name of the stack to deploy.
@@ -57,8 +60,9 @@
   # This task deploys the Traefik stack to the Docker Swarm cluster.
 
 - name: Delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose  # Remove the temporary directory and its contents.
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # This task cleans up the temporary files and directories created during the deployment process.
 
 # Notes:

@@ -7,6 +7,8 @@
 # 2. prune - Manages retention policies to optimize storage usage
 # 3. check - Performs regular integrity verification of the backup repository
 
+version: '3.8'
+
 services:
   # =============================================================================
   # BACKUP SERVICE

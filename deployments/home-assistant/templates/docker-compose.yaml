@@ -9,7 +9,7 @@
 # Stack Architecture:
 # - Home Assistant Core: Main automation platform with web interface
 # - Zigbee2MQTT: Bridge between Zigbee devices and MQTT protocol
-# - Mosquitto MQTT: Message broker for device communication
+# - Mosquitto MQTT: Message broker for device-to-service communication
 # - Traefik Integration: Reverse proxy with automatic SSL certificates
 # - NFS Storage: Persistent storage for configurations and data
 #
@@ -22,6 +22,8 @@
 # - Isolated network segments for external and internal traffic
 # - Persistent storage on NFS for data protection
 # ============================================================================
+
+version: '3.8'
 
 services:
   # ==========================================================================

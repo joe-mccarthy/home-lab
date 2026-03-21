@@ -70,10 +70,14 @@
 
 # Deploy the stack to Docker Swarm
 - name: Deploy restic stack
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/restic/docker-compose.yaml nfs_backup_restic
+  community.docker.docker_stack:
+    name: nfs_backup_restic
+    compose:
+      - /home/docker-compose/restic/docker-compose.yaml
+    state: present
 
 # Clean up temporary deployment files
 - name: delete compose directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent

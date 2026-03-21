@@ -66,8 +66,10 @@
   # This step allows the current user to run Docker commands without using `sudo`.
 
 - name: docker login to registry
-  ansible.builtin.command:
-    cmd: docker login -u {{ registry_user }} -p {{ registry_password }} {{ registry_url }}
+  community.docker.docker_login:
+    username: "{{ registry_user }}"
+    password: "{{ registry_password }}"
+    registry_url: "{{ registry_url }}"
   # Log in to the private Docker registry using the provided credentials.
   # The `registry_user`, `registry_password`, and `registry_url` variables should be defined in group variables or an Ansible Vault.
 

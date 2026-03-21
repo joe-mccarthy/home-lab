@@ -66,8 +66,11 @@
 # are interpreted and to avoid Ansible trying to parse json output (as some Docker
 # versions emit non-json messages on stdout).
 - name: Deploy Paperless stack to Docker Swarm
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/paperless/docker-compose.yaml paperless
+  community.docker.docker_stack:
+    name: paperless
+    compose:
+      - /home/docker-compose/paperless/docker-compose.yaml
+    state: present
   register: swarm_deployment_result
   # The docker CLI can exit with 0 even when no changes occur. Mark this task as
   # not-changed so that the playbook doesn't always report changes just because
@@ -76,5 +79,6 @@
 
 # Clean up the temporary working directory so we don't leave host artifacts behind.
 - name: Remove temporary deployment directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent

@@ -150,8 +150,11 @@
 # Docker Swarm Stack Deployment
 # ============================================================================
 - name: Deploy Home Assistant stack to Docker Swarm
-  ansible.builtin.command:
-    cmd: docker stack deploy -c /home/docker-compose/home_assistant/docker-compose.yaml homeassistant
+  community.docker.docker_stack:
+    name: homeassistant
+    compose:
+      - /home/docker-compose/home_assistant/docker-compose.yaml
+    state: present
   register: swarm_deployment_result
   changed_when: false
   # Deploys the complete Home Assistant stack to the Docker Swarm cluster.
@@ -182,8 +185,9 @@
 # Cleanup and Maintenance
 # ============================================================================
 - name: Remove temporary deployment directory
-  ansible.builtin.command:
-    cmd: rm -rf /home/docker-compose
+  ansible.builtin.file:
+    path: /home/docker-compose
+    state: absent
   # Cleans up temporary deployment artifacts to maintain system hygiene.
   # The Docker Compose files are no longer needed after stack deployment
   # as Docker Swarm maintains the service state internally.

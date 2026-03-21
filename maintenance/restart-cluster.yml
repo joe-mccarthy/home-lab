@@ -9,14 +9,15 @@
 # - As part of scheduled maintenance procedures
 # - To apply kernel updates or configuration changes
 
-- hosts: cluster  # Target all hosts in the "cluster" group defined in the inventory.
+- name: Restart cluster
+  hosts: cluster  # Target all hosts in the "cluster" group defined in the inventory.
   become: true    # Run all tasks with elevated privileges (e.g., sudo) to allow system reboot.
 
   tasks:  # Define the list of tasks to execute.
 
     # Task 1: Reboot the system
     - name: Reboot system
-      reboot:
+      ansible.builtin.reboot:
         # The 'reboot' module handles the system restart and waits for it to come back online
         # Default parameters (which can be added explicitly if needed):
         # - msg: Optional message for users logged into the system
@@ -33,8 +34,8 @@
       # 4. Ansible has successfully reconnected to it
 
     # Task 2: Verify the reboot was successful
-    - name: Assert reboot succeeded  
-      assert:
+    - name: Assert reboot succeeded
+      ansible.builtin.assert:
         that:
           - reboot_result.rebooted == true  # Verify that the system was actually rebooted
         # This assertion fails if:

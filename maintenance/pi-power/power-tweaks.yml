@@ -15,9 +15,12 @@
     poe_fan_temp1: 65000
     poe_fan_temp2: 70000
     poe_fan_temp3: 75000   # full speed above this
+    poe_fan_overlay: >-
+      rpi-poe,poe_fan_temp0={{ poe_fan_temp0 }},poe_fan_temp1={{ poe_fan_temp1 }},
+      poe_fan_temp2={{ poe_fan_temp2 }},poe_fan_temp3={{ poe_fan_temp3 }}
 
   handlers:
-    - name: reboot rpi
+    - name: Reboot rpi
       ansible.builtin.reboot:
         msg: "Rebooting to apply power-tuning settings"
         connect_timeout: 30
@@ -72,7 +75,7 @@
           dtoverlay=disable-bt
 
           # --- PoE HAT fan tuning (less aggressive at low temps) ---
-          dtoverlay=rpi-poe,poe_fan_temp0={{ poe_fan_temp0 }},poe_fan_temp1={{ poe_fan_temp1 }},poe_fan_temp2={{ poe_fan_temp2 }},poe_fan_temp3={{ poe_fan_temp3 }}
+          dtoverlay={{ poe_fan_overlay | replace(', ', ',') }}
 
           # --- Optional mild underclock (safe defaults) ---
           # Uncomment if you want to cap max freq a bit
@@ -151,7 +154,8 @@
       tags: [nvme, usb]
 
     - name: Trigger udev so autosuspend rule takes effect
-      ansible.builtin.shell: udevadm control --reload-rules && udevadm trigger
+      ansible.builtin.command: udevadm control --reload-rules && udevadm trigger
+      changed_when: false
       tags: [nvme, usb]
 
     # --- MASK RFKILL SERVICES (belt & braces for WiFi/BT) ----
@@ -165,6 +169,5 @@
       loop:
         - wpa_supplicant.service
         - bluetooth.service
-      ignore_errors: true
+      failed_when: false
       tags: [wifi, bt]
-

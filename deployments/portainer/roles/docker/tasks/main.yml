@@ -17,14 +17,14 @@
   # This task ensures that the Docker daemon is active and ready to manage containers.
 
 - name: Remove service
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: portainer_portainer  # The name of the Docker Swarm service to remove.
     state: absent  # Ensure the service is removed.
-  ignore_errors: true  # Allow the playbook to continue even if this task fails.
+  failed_when: false  # Allow the playbook to continue even if this task fails.
   # This task removes any existing instance of the Portainer service to avoid conflicts during deployment.
 
 - name: Iterate over secrets defined in group variables
-  docker_secret:
+  community.docker.docker_secret:
     name: "{{ item.key }}"  # The name of the Docker secret, derived from the key in the `secrets` dictionary.
     data: "{{ item.value }}"  # The value of the Docker secret, derived from the value in the `secrets` dictionary.
     force: true  # Overwrite the secret if it already exists.

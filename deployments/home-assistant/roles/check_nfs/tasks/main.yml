@@ -25,11 +25,11 @@
     owner: nobody
     group: nogroup
   # Creates the primary NFS directory for Home Assistant persistent storage.
-  # 
+  #
   # Permissions Rationale:
   # - 0777: Allows full access for Docker containers running with different UIDs
   # - nobody/nogroup: Standard NFS ownership for shared storage across hosts
-  # 
+  #
   # Security Note: While 0777 is permissive, it's necessary for Docker containers
   # that may run with varying user IDs across different nodes in the cluster.
 
@@ -109,10 +109,11 @@
   ansible.builtin.file:
     path: "/mnt/nfs/docker/home_assistant/{{ item }}"
     state: touch
-  with_items:
-  - automations.yaml
-  - scenes.yaml
-  - scripts.yaml
+    mode: '0644'
+  loop:
+    - automations.yaml
+    - scenes.yaml
+    - scripts.yaml
   # Creates empty configuration files required by Home Assistant.
   # These files are created if they don't exist to prevent startup errors.
   #
@@ -131,6 +132,7 @@
   ansible.builtin.template:
     src: "templates/configuration.yaml"
     dest: "/mnt/nfs/docker/home_assistant/configuration.yaml"
+    mode: '0644'
     force: false
   # Deploys the main Home Assistant configuration from Jinja2 template.
   # This file contains core Home Assistant settings, integrations, and
@@ -149,6 +151,7 @@
   ansible.builtin.template:
     src: "templates/zigbee/configuration.yaml"
     dest: "/mnt/nfs/docker/home_assistant/zigbee2mqtt/data/configuration.yaml"
+    mode: '0644'
     force: false
   # Deploys Zigbee2MQTT configuration from template with environment-specific
   # settings such as MQTT broker address and Zigbee coordinator device path.

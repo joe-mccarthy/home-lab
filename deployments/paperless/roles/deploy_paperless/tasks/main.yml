@@ -52,10 +52,10 @@
 # the ones defined in our compose file. This avoids issues where the stack deploy would
 # otherwise try to update services that are already in a conflicting state.
 - name: Remove existing Paperless services
-  docker_swarm_service:
+  community.docker.docker_swarm_service:
     name: paperless_{{ item }}
     state: absent
-  ignore_errors: true
+  failed_when: false
   loop:
     - paperless
     - paperless-broker

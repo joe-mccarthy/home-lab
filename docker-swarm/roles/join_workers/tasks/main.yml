@@ -23,19 +23,19 @@
 - name: Join worker to Swarm
   ansible.builtin.command:
     argv:
-    - docker
-    - swarm
-    - join
-    - --token
-    - "{{ worker_token }}"  # Use the worker join token retrieved from the manager node.
-    - "{{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377"
+      - docker
+      - swarm
+      - join
+      - --token
+      - "{{ worker_token }}"  # Use the worker join token retrieved from the manager node.
+      - "{{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377"
     # The `docker swarm join` command adds the node to the Swarm as a worker.
     # - `--token {{ worker_token }}`: Specifies the worker join token.
     # - `{{ hostvars[groups['manager'][0]].ansible_default_ipv4.address }}:2377`: Specifies the IP address
     #   and port of the first manager node to connect to.
   when:
-  - worker_token is defined  # Ensure the worker join token is available.
-  - "'Swarm: inactive' in swarm_check.stdout"  # Ensure the node is not already part of a Swarm.
+    - worker_token is defined  # Ensure the worker join token is available.
+    - "'Swarm: inactive' in swarm_check.stdout"  # Ensure the node is not already part of a Swarm.
   changed_when: true  # Mark the task as "changed" if the node successfully joins the Swarm as a worker.
   # This task ensures that the node joins the Swarm as a worker only when it is not already part of a Swarm.
 

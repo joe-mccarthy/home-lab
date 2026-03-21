@@ -20,7 +20,7 @@ proxy: "{{ vault_proxy }}"
 # The reverse proxy configuration for Home Assistant external access.
 # This typically contains the external domain/URL that users will access
 # to reach the Home Assistant web interface (e.g., "https://homeassistant.yourdomain.com").
-# 
+#
 # Purpose:
 # - Enables external access to Home Assistant through a reverse proxy
 # - Configures SSL termination and routing rules

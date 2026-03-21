@@ -1,9 +1,10 @@
 ---
 # This playbook configures new or existing machines in the home lab cluster.
-# It handles SSH key management, system updates, essential package installation, 
+# It handles SSH key management, system updates, essential package installation,
 # and performs necessary system maintenance tasks.
 
-- hosts: all  # Target all hosts defined in the inventory
+- name: Set up machine
+  hosts: all  # Target all hosts defined in the inventory
   become: true  # Execute tasks with elevated privileges (sudo)
   vars:
     user_keys: "{{ lookup('env', 'USER') }}"  # Get current username from environment
@@ -15,7 +16,7 @@
       ansible.posix.authorized_key:
         user: "{{ user_keys }}"  # Target user account
         state: present  # Ensure key exists in authorized_keys
-        key: "{{ lookup('file', lookup('env','HOME') + public_key ) }}"  # Read public key from file
+        key: "{{ lookup('file', lookup('env', 'HOME') + public_key) }}"  # Read public key from file
       # This enables password-less SSH access to the target machine
       # Note: The public_key variable should be defined in group_vars or command line
 

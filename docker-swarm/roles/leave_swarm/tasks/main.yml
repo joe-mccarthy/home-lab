@@ -3,17 +3,16 @@
 # It uses the `docker swarm leave` command to ensure the node leaves the Swarm.
 # The `--force` flag is used to forcibly remove the node, even if it is a manager.
 
-- name: leave swarm
-  ansible.builtin.shell: docker swarm leave --force
+- name: Leave swarm
+  ansible.builtin.command: docker swarm leave --force
   # The `docker swarm leave` command removes the node from the Swarm cluster.
   # - `--force`: Ensures the node leaves the Swarm, even if it is a manager or part of an active cluster.
   # This is useful for resetting the node or reconfiguring it outside of the Swarm.
 
-  ignore_errors: yes
-  # The `ignore_errors` directive ensures that the playbook continues even if this task fails.
-  # This is useful in cases where the node is not part of a Swarm, as the command will fail in such scenarios.
-
+  failed_when: false
   changed_when: false
+  # The `failed_when` directive ensures that the playbook continues even if this task fails.
+  # This is useful in cases where the node is not part of a Swarm, as the command will fail in such scenarios.
   # The `changed_when` directive ensures that this task does not mark the playbook as "changed."
   # This is useful for idempotency, as leaving a Swarm does not necessarily indicate a configuration change.
 

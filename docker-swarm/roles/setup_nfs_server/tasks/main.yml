@@ -3,13 +3,13 @@
 # It installs the necessary dependencies, configures the NFS exports, creates the required directories,
 # and ensures that the NFS server is properly configured and running.
 
-- name: install nfs server dependencies
-  apt:
+- name: Install nfs server dependencies
+  ansible.builtin.apt:
     name: "{{ item }}"  # Install the specified NFS-related packages.
     state: present  # Ensure the packages are installed.
   with_items:
-  - nfs-kernel-server  # Provides the NFS server functionality.
-  - nfs-common  # Provides the NFS client utilities for mounting NFS shares.
+    - nfs-kernel-server  # Provides the NFS server functionality.
+    - nfs-common  # Provides the NFS client utilities for mounting NFS shares.
   # This task ensures that the required NFS packages are installed on the system.
 
 - name: Reload systemd to recognize NFS changes
@@ -34,7 +34,7 @@
     owner: nobody  # Set the file owner to `nobody`.
     group: nogroup  # Set the file group to `nogroup`.
   notify:
-  - Restart NFS Server  # Notify the handler to restart the NFS server after the configuration is updated.
+    - Restart NFS Server  # Notify the handler to restart the NFS server after the configuration is updated.
   # This task copies the NFS exports configuration file to the target system and ensures it has the correct permissions.
 
 # Notes:

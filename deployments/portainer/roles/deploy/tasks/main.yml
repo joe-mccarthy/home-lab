@@ -27,7 +27,7 @@
   changed_when: false  # Prevent this task from marking the playbook as "changed" to avoid unnecessary notifications.
   # This task deploys the Portainer stack to the Docker Swarm cluster.
 
-- name: delete compose directory
+- name: Delete compose directory
   ansible.builtin.file:
     path: /home/docker-compose
     state: absent

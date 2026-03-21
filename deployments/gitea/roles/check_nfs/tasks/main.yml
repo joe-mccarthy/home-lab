@@ -12,7 +12,7 @@
   # This task ensures that the NFS directory is available for use by the Gitea service.
 
 # Notes:
-# - The `0777` permissions are very permissive and allow full access to all users. 
+# - The `0777` permissions are very permissive and allow full access to all users.
 #   Use caution when setting such permissions, especially in production environments.
 # - The `nobody` user and `nogroup` group are commonly used for shared resources in NFS setups.
 #   Ensure that these settings align with your NFS server's configuration.

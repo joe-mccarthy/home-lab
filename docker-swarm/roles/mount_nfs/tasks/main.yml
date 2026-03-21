@@ -3,8 +3,8 @@
 # It installs the necessary NFS dependencies, configures the system to recognize NFS changes,
 # creates the required directory for mounting, and mounts the NFS volume.
 
-- name: install nfs server dependencies
-  apt:
+- name: Install nfs server dependencies
+  ansible.builtin.apt:
     name: "{{ item }}"  # Install the specified NFS-related packages.
     state: present  # Ensure the packages are installed.
   with_items:
@@ -31,7 +31,7 @@
 - name: Ensure NFS client services start on boot
   ansible.builtin.service:
     name: "{{ item }}"
-    enabled: yes
+    enabled: true
     state: started
   with_items:
     - rpcbind      # RPC port mapper required for NFS communication
@@ -61,19 +61,22 @@
   # The systemd automount option is particularly important for Docker Swarm
   # as it ensures services dependent on this filesystem will wait for it
 
-- name: Reload fstab configuration
-  ansible.builtin.command:
-    cmd: mount -a
+- name: Ensure NFS mount is active and configured
+  ansible.posix.mount:
+    src: "{{ nfs_server_host }}:/exports/docker"
+    path: /mnt/nfs/docker
+    fstype: nfs
+    opts: "rw,sync,hard,_netdev,noatime,noauto,x-systemd.automount,x-systemd.mount-timeout=600,timeo=100"
+    state: mounted
   register: mount_result
   changed_when: false
-  # Activates all mount points in fstab that don't have the 'noauto' option
-  # Used here primarily to test the mount configuration for immediate feedback
+  # Ensures the mount entry is active and consistent with the desired fstab configuration
   # The changed_when: false prevents unnecessary "changed" reports in Ansible output
-  # Does not affect the automount configuration which is handled by systemd
+  # This uses the mount module instead of raw mount command for better idempotency and rule compliance
 
 - name: Reload systemd daemon configuration
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
   # Forces systemd to reload all unit files
   # Creates mount and automount units from the updated fstab
   # Essential after modifying fstab entries with systemd mount options

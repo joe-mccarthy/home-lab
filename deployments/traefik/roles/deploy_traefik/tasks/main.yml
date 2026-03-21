@@ -19,13 +19,13 @@
 
 - name: Iterate over secrets defined in group variables
   community.docker.docker_secret:
-    name: "{{ item.key }}"  # The name of the Docker secret, derived from the key in the `secrets` dictionary.
-    data: "{{ item.value }}"  # The value of the Docker secret, derived from the value in the `secrets` dictionary.
-    force: true  # Overwrite the secret if it already exists.
-  with_dict: "{{ secrets }}"  # Iterate over the `secrets` dictionary defined in the group variables file.
-  no_log: true  # Prevent sensitive data from being logged to ensure security.
-  # This task creates Docker secrets from the `secrets` dictionary defined in the group variables file.
-  # Docker secrets provide a secure way to manage sensitive data in containerized environments.
+    name: "{{ item.key }}"
+    data: "{{ item.value }}"
+    force: true
+  with_dict:
+    cf_token: "{{ traefik.cf_token }}"
+    cf_email: "{{ traefik.cf_email }}"
+  no_log: true
 
 - name: Copy compose from template to host
   ansible.builtin.template:

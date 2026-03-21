@@ -40,19 +40,19 @@ mqtt:
     # - zigbee2mqtt/[device_name]/set (device commands)
     # - zigbee2mqtt/bridge/state (bridge status)
     
-    server: {{ mqtt_server }}
+    server: {{ home_assistant.mqtt_server }}
     # MQTT broker server address (templated from Ansible variables).
     # This should point to your MQTT broker (e.g., Mosquitto).
-    # The value is populated from the mqtt_server variable in group_vars.
+    # The value is populated from home_assistant.mqtt_server in group_vars.
 
 # ============================================================================
 # Zigbee Coordinator Hardware Configuration
 # ============================================================================
 serial:
-    port: {{ zigbee_serial_port }}
+    port: {{ home_assistant.zigbee_serial_port }}
     # USB serial port where the Zigbee coordinator is connected.
     # Common values: /dev/ttyUSB0, /dev/ttyACM0, /dev/serial/by-id/...
-    # The value is templated from Ansible variables for deployment flexibility.
+    # The value is templated from home_assistant.zigbee_serial_port in group_vars.
     
     baudrate: 115200
     # Communication speed between Zigbee2MQTT and the coordinator.

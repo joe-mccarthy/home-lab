@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   traefik:
-    image: "traefik:latest"
+    image: "traefik:{{ traefik.version }}"
     # Specifies the Docker image for Traefik, pulled from Docker Hub.
-    # Replace `latest` with a specific version tag for better stability and to avoid unexpected updates.
+    # Version is pinned to a stable release for reproducible deployments.
 
     networks:
       - proxy

@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   cioban:
-    image: registry.gitlab.com/ix.ai/cioban:latest
+    image: "registry.gitlab.com/ix.ai/cioban:{{ cioban_version }}"
     # The Docker image for the Cioban service, pulled from the GitLab container registry.
-    # Replace `latest` with a specific version tag for better stability in production environments.
+    # Version is pinned to a stable release for reproducible deployments.
 
     deploy:
       mode: replicated

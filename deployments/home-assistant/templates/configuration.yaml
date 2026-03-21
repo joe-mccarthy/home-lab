@@ -12,9 +12,9 @@ http:
   # This is useful when Home Assistant is behind a reverse proxy (e.g., Traefik or Nginx).
 
   trusted_proxies:
-    - {{ proxy }}
+    - {{ home_assistant.proxy }}
     # Specifies the IP address or CIDR range of trusted proxies.
-    # Replace `{{ proxy }}` with the IP address or range of your reverse proxy.
+    # Replace `{{ home_assistant.proxy }}` with the IP address or range of your reverse proxy.
     # This ensures that only requests from trusted proxies are allowed to use the `X-Forwarded-For` header.
 
 frontend:

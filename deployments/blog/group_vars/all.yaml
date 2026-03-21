@@ -1,1 +1,4 @@
 blog_image: "{{ vault_blog_image }}"
+
+# Optional explicit image pin for the blog service (override vault_blog_image if desired)
+# blog_image: "ghcr.io/<owner>/<repo>:<pinned-version>"

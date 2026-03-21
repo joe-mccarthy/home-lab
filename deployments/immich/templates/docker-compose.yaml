@@ -5,9 +5,9 @@ services:
     container_name: immich_server
     # Sets the container name to `immich_server` for easier identification and management.
 
-    image: ghcr.io/immich-app/immich-server:v2.5.6
+    image: "ghcr.io/immich-app/immich-server:{{ immich.versions.server }}"
     # Specifies the Docker image for Immich server from GitHub Container Registry.
-    # Version v2.5.6 is pinned for stability and reproducible deployments.
+    # Version is pinned to a stable release for reproducible deployments.
 
     volumes:
       - /mnt/nfs/docker/immich/upload:/usr/src/app/upload
@@ -36,11 +36,11 @@ services:
       - immich-database
 
     environment:
-      DB_USERNAME: "{{ database_user }}"
+      DB_USERNAME: "{{ immich.database.user }}"
       # Database username from Ansible vault for secure credential management.
       # Variable is defined in group_vars and encrypted in vault.
       
-      DB_PASSWORD: "{{ database_password }}"
+      DB_PASSWORD: "{{ immich.database.password }}"
       # Database password from Ansible vault for secure credential management.
       # Variable is defined in group_vars and encrypted in vault.
       
@@ -127,7 +127,7 @@ services:
     # Sets the container name for the machine learning service.
     # Handles AI features like face recognition, object detection, and image classification.
 
-    image: ghcr.io/immich-app/immich-machine-learning:v2.5.6
+    image: "ghcr.io/immich-app/immich-machine-learning:{{ immich.versions.machine_learning }}"
     # Specifies the machine learning Docker image from GitHub Container Registry.
     # Contains TensorFlow models and processing capabilities for AI features.
 
@@ -168,7 +168,7 @@ services:
     # Sets the container name for the Redis cache service.
     # Provides high-performance caching and session storage for the application.
 
-    image: docker.io/valkey/valkey:8-bookworm@sha256:ff21bc0f8194dc9c105b769aeabf9585fea6a8ed649c0781caeac5cb3c247884
+    image: "docker.io/valkey/valkey:{{ immich.versions.redis }}"
     # Uses Valkey (Redis fork) for caching and session management.
     # Version 8 based on Debian Bookworm with specific SHA256 hash for security.
 
@@ -204,7 +204,7 @@ services:
     # Sets the container name for the PostgreSQL database service.
     # Stores all application data including metadata, user accounts, and configurations.
 
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0@sha256:fa4f6e0971f454cd95fec5a9aaed2ed93d8f46725cc6bc61e0698e97dba96da1
+    image: "ghcr.io/immich-app/postgres:{{ immich.versions.database }}"
     # Custom PostgreSQL image with vector extensions for AI/ML features.
     # Includes pgvectors extension for similarity search and vectorchord for performance.
 
@@ -214,11 +214,11 @@ services:
       # Database should only be accessible by internal services.
 
     environment:
-      POSTGRES_PASSWORD: "{{ database_password }}"
+      POSTGRES_PASSWORD: "{{ immich.database.password }}"
       # Database password from Ansible vault for secure access.
       # Used by the postgres superuser account.
       
-      POSTGRES_USER: "{{ database_user }}"
+      POSTGRES_USER: "{{ immich.database.user }}"
       # Database username from Ansible vault.
       # Creates a custom user account with appropriate permissions.
       

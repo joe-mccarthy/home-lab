@@ -61,7 +61,11 @@ The Ansible playbooks automate these tasks, ensuring consistency and reliability
 - `gitea.runner_token`: Registration token for connecting runners to Gitea (required for worker deployment)
 
 ### Group Variables
-Configuration is managed through `group_vars/all.yml` which should contain encrypted secrets and deployment-specific settings.
+Configuration is managed through `group_vars/all.yml`.
+
+Key grouped variables:
+- `gitea.versions.server`: Gitea server image tag
+- `gitea.versions.runner`: Gitea act_runner image tag
 
 ## Security Considerations
 

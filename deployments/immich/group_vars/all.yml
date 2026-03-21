@@ -1,37 +1,17 @@
 ---
-# Immich Application Configuration Variables
-# This file contains all the configuration variables used by the Immich deployment.
-# Variables are organized by category and use Ansible vault for sensitive data.
+immich:
+  # Database credentials (from Ansible Vault)
+  database:
+    user: "{{ vault_immich_user }}"
+    password: "{{ vault_immich_password }}"
 
-# Database Configuration
-# These variables configure the PostgreSQL database connection and authentication.
-# The actual values are stored in an encrypted Ansible vault file for security.
+  # Pinned image tags for reproducible deployments
+  versions:
+    server: "v2.6.1"
+    machine_learning: "v2.6.1"
+    redis: "9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6"
+    database: "14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
 
-database_user: "{{ vault_immich_user }}"
-# Database username for the Immich application to connect to PostgreSQL.
-# This user will be created in the database and granted appropriate permissions.
-# The actual username is stored in vault_immich_user in the encrypted vault file.
-# Should follow PostgreSQL naming conventions (lowercase, no spaces).
-
-database_password: "{{ vault_immich_password }}"
-# Database password for the Immich application user account.
-# This password is used for authenticating the application to the database.
-# The actual password is stored in vault_immich_password in the encrypted vault file.
-# Should be a strong password with mixed case, numbers, and special characters.
-
-# Security Notes:
-# - All sensitive values are stored in Ansible vault for encryption at rest
-# - Vault files should be encrypted with ansible-vault and never committed in plain text
-# - Use 'ansible-vault edit' to modify encrypted values safely
-# - The vault password should be stored securely and not in version control
-
-# Usage Notes:
-# - These variables are automatically loaded when running Ansible playbooks
-# - Variables are templated into the Docker Compose file during deployment
-# - Changes to these variables require redeployment to take effect
-# - Database credentials are passed as environment variables to containers
-
-# Related Files:
-# - templates/docker-compose.yaml: Uses these variables in environment sections
-# - vault.yml: Contains the encrypted vault_* variables (not in version control)
-# - deploy.yml: Main playbook that processes these variables
+# Notes:
+# - vault_immich_user and vault_immich_password must be defined and encrypted in Ansible Vault.
+# - To edit encrypted variables: ansible-vault edit group_vars/all.yml

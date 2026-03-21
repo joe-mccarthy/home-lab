@@ -37,13 +37,16 @@ The system runs as a stack on Docker Swarm with the following components:
 All configuration is managed through Ansible variables with sensitive data stored in Ansible Vault:
 
 - **S3 Configuration**:
-  - `nfs_s3_bucket`: S3 bucket URL
-  - `nfs_s3_region`: AWS/S3 region
-  - `nfs_s3_key_id`: S3 access key ID
-  - `nfs_s3_access_key`: S3 secret access key
+  - `nfs_backup.s3.bucket`: S3 bucket URL
+  - `nfs_backup.s3.region`: AWS/S3 region
+  - `nfs_backup.s3.key_id`: S3 access key ID
+  - `nfs_backup.s3.access_key`: S3 secret access key
 
 - **Encryption**:
-  - `nfs_encryption_key`: Password for encrypting all backup data
+  - `nfs_backup.encryption_key`: Password for encrypting all backup data
+
+- **Image**:
+  - `nfs_backup.version`: Pinned restic image tag
 
 ### Backup Schedule
 

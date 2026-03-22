@@ -1,37 +1,46 @@
 version: '3.8'
 
 services:
+  # Omni Tools web application exposed through Traefik.
   omni:
     image: iib0011/omni-tools:latest
     container_name: omni-tools
     restart: unless-stopped
     networks:
-      proxy: 
+      # Attach to the shared Traefik ingress network.
+      proxy:
         aliases:
-          - omni.{{ vault.shared.general.domain }} 
-    deploy: 
+          - omni.{{ vault.shared.general.domain }}
+    deploy:
+      # Reduce downtime during image updates.
       update_config:
-        order: start-first 
+        order: start-first
+      # Keep app workloads on workers; managers handle control-plane duties.
       placement:
         constraints: [node.role == worker]
-      mode: replicated 
+      mode: replicated
       replicas: 1
-      labels: 
-        - "traefik.enable=true" 
-        - "traefik.http.routers.omni.entrypoints=web" 
-        - "traefik.http.routers.omni.rule=Host(`omni.{{ vault.shared.general.domain }}`)" 
-        - "traefik.http.middlewares.omni-https-redirect.redirectscheme.scheme=https" 
-        - "traefik.http.routers.omni.middlewares=omni-https-redirect" 
-        - "traefik.http.routers.omni-secure.entrypoints=websecure" 
-        - "traefik.http.routers.omni-secure.rule=Host(`omni.{{ vault.shared.general.domain }}`)" 
-        - "traefik.http.routers.omni-secure.tls=true" 
-        - "traefik.http.routers.omni-secure.service=omni" 
-        - "traefik.http.routers.omni-secure.tls.certresolver=letsencrypt" 
-        - "traefik.http.services.omni.loadbalancer.server.port=80" 
-        - "traefik.http.services.omni.loadbalancer.passhostheader=true" 
-        - "traefik.docker.network=proxy" 
-        - "ai.ix.auto-update=true" 
+      labels:
+        # Enable Traefik and expose HTTP for redirect middleware only.
+        - "traefik.enable=true"
+        - "traefik.http.routers.omni.entrypoints=web"
+        - "traefik.http.routers.omni.rule=Host(`omni.{{ vault.shared.general.domain }}`)"
+        - "traefik.http.middlewares.omni-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.omni.middlewares=omni-https-redirect"
+        # Secure router for real traffic over TLS.
+        - "traefik.http.routers.omni-secure.entrypoints=websecure"
+        - "traefik.http.routers.omni-secure.rule=Host(`omni.{{ vault.shared.general.domain }}`)"
+        - "traefik.http.routers.omni-secure.tls=true"
+        - "traefik.http.routers.omni-secure.service=omni"
+        - "traefik.http.routers.omni-secure.tls.certresolver=letsencrypt"
+        # Forward requests to Omni's internal HTTP listener.
+        - "traefik.http.services.omni.loadbalancer.server.port=80"
+        - "traefik.http.services.omni.loadbalancer.passhostheader=true"
+        - "traefik.docker.network=proxy"
+        # Enables Cioban-driven automated image updates.
+        - "ai.ix.auto-update=true"
 
 networks:
-  proxy: 
+  # External network created by Traefik deployment.
+  proxy:
     external: true

@@ -1,0 +1,13 @@
+
+- name: Deploy Omni  
+  hosts: manager  
+  order: shuffle  
+  become: true      
+  vars:
+    omni_deploy_host: "{{ ansible_play_hosts_all | first }}"
+
+  tasks:
+    - name: Deploy Omni stack
+      ansible.builtin.include_role:
+        name: deploy
+      when: inventory_hostname == omni_deploy_host

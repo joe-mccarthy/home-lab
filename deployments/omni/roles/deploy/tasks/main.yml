@@ -1,0 +1,19 @@
+---
+
+- name: Run shared Docker prerequisites and cleanup
+  ansible.builtin.include_role:
+    name: docker_prereqs_and_stop
+  vars:
+    docker_prereqs_and_stop_services_to_stop:
+      - omni_omni
+
+- name: Deploy Services
+  ansible.builtin.include_role:
+    name: copy_and_deploy
+  vars:
+    copy_and_deploy_stack_name: omni
+
+
+- name: Clean up compose directory
+  ansible.builtin.include_role:
+    name: cleanup

@@ -75,6 +75,11 @@ This directory includes deployments for a variety of services, ranging from pers
   - **immich-machine-learning**: AI processing for smart features
 - **Use Case**: Ideal for users looking to manage and organize their photo and video collections with advanced AI capabilities.
 
+### 11. [Omni Tools](omni/README.md)
+- **Description**: Deploys Omni Tools, a self-hosted browser-based collection of everyday utility tools. It provides a lightweight, privacy-friendly alternative to scattered online services.
+- **Use Case**: Ideal for users who want a single, self-hosted destination for common utility tasks without relying on third-party websites.
+- **Dependencies**: Requires Traefik for proxying and certificate management.
+
 ## Service Versions
 
 | Service | Component | Version |
@@ -95,6 +100,7 @@ This directory includes deployments for a variety of services, ranging from pers
 | [Paperless](paperless/README.md) | tika | `3.2.3.0` |
 | [Portainer](portainer/README.md) | portainer-ce | `2.39.1` |
 | [Portainer](portainer/README.md) | portainer-agent | `2.39.1` |
+| [Omni Tools](omni/README.md) | omni-tools | `latest` |
 | [Traefik](traefik/README.md) | traefik | `3.6.11` |
 
 ## Prerequisites

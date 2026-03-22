@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  omni:
+    image: iib0011/omni-tools:latest
+    container_name: omni-tools
+    restart: unless-stopped
+    networks:
+      proxy: 
+        aliases:
+          - omni.{{ vault.shared.general.domain }} 
+    deploy: 
+      update_config:
+        order: start-first 
+      placement:
+        constraints: [node.role == worker]
+      mode: replicated 
+      replicas: 1
+      labels: 
+        - "traefik.enable=true" 
+        - "traefik.http.routers.omni.entrypoints=web" 
+        - "traefik.http.routers.omni.rule=Host(`omni.{{ vault.shared.general.domain }}`)" 
+        - "traefik.http.middlewares.omni-https-redirect.redirectscheme.scheme=https" 
+        - "traefik.http.routers.omni.middlewares=omni-https-redirect" 
+        - "traefik.http.routers.omni-secure.entrypoints=websecure" 
+        - "traefik.http.routers.omni-secure.rule=Host(`omni.{{ vault.shared.general.domain }}`)" 
+        - "traefik.http.routers.omni-secure.tls=true" 
+        - "traefik.http.routers.omni-secure.service=omni" 
+        - "traefik.http.routers.omni-secure.tls.certresolver=letsencrypt" 
+        - "traefik.http.services.omni.loadbalancer.server.port=80" 
+        - "traefik.http.services.omni.loadbalancer.passhostheader=true" 
+        - "traefik.docker.network=proxy" 
+        - "ai.ix.auto-update=true" 
+
+networks:
+  proxy: 
+    external: true

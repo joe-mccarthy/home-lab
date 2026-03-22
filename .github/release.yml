@@ -6,6 +6,9 @@ changelog:
     - title: "🐛 Bug Fixes"
       labels:
         - "bug"
+    - title: "🚀 New Application"
+      labels:
+        - "deployment"
     - title: "✨ New Features"
       labels:
         - "feature"

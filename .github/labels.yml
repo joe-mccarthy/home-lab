@@ -25,3 +25,7 @@
 - name: "enhancement"
   color: "a2eeef"
   description: "An improvement to an existing feature"
+
+- name: "deployment"
+  color: "52a9e9"
+  description: "New Application Deployed

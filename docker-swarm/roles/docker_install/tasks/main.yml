@@ -66,11 +66,16 @@
     append: true  # Add to the docker group without removing existing groups.
   # This step allows the current user to run Docker commands without using `sudo`.
 
-- name: Docker login to registry
+- name: Docker login to private registries
   community.docker.docker_login:
-    username: "{{ registry_user }}"
-    password: "{{ registry_password }}"
-    registry_url: "{{ registry_url }}"
+    username: "{{ item.username }}"
+    password: "{{ item.password }}"
+    registry_url: "{{ item.registry_url }}"
+  loop: "{{ vault.docker_registries }}"
+  loop_control:
+    label: "{{ item.registry_url }}"
+  no_log: true
+  changed_when: false
   # Log in to the private Docker registry using the provided credentials.
   # The `registry_user`, `registry_password`, and `registry_url` variables should be defined in group variables or an Ansible Vault.
 # Notes:

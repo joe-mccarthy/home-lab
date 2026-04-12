@@ -7,9 +7,9 @@ home_assistant:
 
   # Pinned image tags for reproducible deployments
   versions:
-    homeassistant: "2026.3.3"
-    zigbee2mqtt: "2.9.1"
-    mqtt: "2.1-alpine"
+    homeassistant: "2026.4.1"
+    zigbee2mqtt: "2.9.2"
+    mqtt: "2.1.2-alpine"
 
 # Notes:
 # - All vault.services.home_assistant.* variables must be defined and encrypted in Ansible Vault.

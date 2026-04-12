@@ -82,6 +82,24 @@ serial:
         # Note: Actual maximum depends on coordinator hardware and regulations.
 
 # ============================================================================
+# Global Advanced Settings
+# ============================================================================
+advanced:
+    last_seen: ISO_8601_local
+    # Adds a last_seen timestamp to device payloads.
+    # ISO_8601_local is usually the nicest option for Home Assistant.
+
+# ============================================================================
+# Device Availability Monitoring
+# ============================================================================
+availability:
+    enabled: true
+    active:
+        timeout: 10
+    passive:
+        timeout: 1500
+
+# ============================================================================
 # Web Interface Configuration
 # ============================================================================
 frontend:

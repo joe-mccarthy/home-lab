@@ -1,6 +1,13 @@
 ---
 
 vault:
+  docker_registries:
+    - registry_url: "registry1.example.com"
+      username: ""
+      password: ""
+    - registry_url: "ghcr.io"
+      username: ""
+      password: ""
   shared:
     general:
       domain: "example.com"

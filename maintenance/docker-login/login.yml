@@ -10,11 +10,15 @@
   tasks:  # Define the list of tasks to execute.
 
     # Task 1: Log in to the private Docker registry
-    - name: Docker login to private registry
-      community.docker.docker_login:  # Use the Ansible `docker_login` module to log into the Docker registry.
-        username: "{{ registry_user }}"  # Specifies the username for the Docker registry.
-        password: "{{ registry_password }}"  # Specifies the password for the Docker registry.
-        registry_url: "{{ registry_url }}"  # Specifies the URL of the Docker registry.
+    - name: Docker login to private registries
+      community.docker.docker_login:
+        username: "{{ item.username }}"
+        password: "{{ item.password }}"
+        registry_url: "{{ item.registry_url }}"
+      loop: "{{ vault.docker_registries }}"
+      loop_control:
+        label: "{{ item.registry_url }}"
+      no_log: true
       changed_when: false
       # This task logs into the private Docker registry using the credentials and URL provided in the group variables.
       # The credentials (`registry_user` and `registry_password`) and the registry URL (`registry_url`) are securely

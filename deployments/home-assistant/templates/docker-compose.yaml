@@ -11,7 +11,6 @@
 # - Zigbee2MQTT: Bridge between Zigbee devices and MQTT protocol
 # - Mosquitto MQTT: Message broker for device-to-service communication
 # - Traefik Integration: Reverse proxy with automatic SSL certificates
-# - NFS Storage: Persistent storage for configurations and data
 #
 # Network Design:
 # - proxy: External network for Traefik reverse proxy communication
@@ -20,7 +19,6 @@
 # Security Features:
 # - Automatic HTTPS redirection and SSL certificate management
 # - Isolated network segments for external and internal traffic
-# - Persistent storage on NFS for data protection
 # ============================================================================
 
 version: '3.8'
@@ -74,9 +72,8 @@ services:
         # Zigbee2MQTT services within the stack.
 
     volumes:
-      - /mnt/nfs/docker/home_assistant:/config
-      # Primary configuration and data storage on NFS.
-      #
+      - /exports/docker/home_assistant:/config
+      # Persistent storage for Home Assistant configuration and state data.
       # Contains:
       # - configuration.yaml: Main Home Assistant configuration
       # - automations.yaml: Automation definitions
@@ -123,6 +120,9 @@ services:
       # Single instance deployment for Home Assistant.
       # Home Assistant doesn't support clustering, so only one instance
       # should run to prevent database conflicts and state inconsistencies.
+      placement:
+        constraints:
+          - node.labels.storage == true             # Target nodes with storage capabilities
 
       labels:
         # Traefik configuration labels for reverse proxy integration
@@ -169,7 +169,7 @@ services:
     container_name: zigbee2mqtt
     # Container identifier for service management and logging.
 
-    image: "koenkk/zigbee2mqtt:{{ home_assistant.versions.zigbee2mqtt }}"
+    image: "ghcr.io/koenkk/zigbee2mqtt:{{ home_assistant.versions.zigbee2mqtt }}"
     # Official Zigbee2MQTT container image.
     #
     # Version Considerations:
@@ -182,7 +182,7 @@ services:
     # Critical for maintaining Zigbee network coordinator connection.
 
     volumes:
-      - /mnt/nfs/docker/home_assistant/zigbee2mqtt/data:/app/data
+      - /exports/docker/home_assistant/zigbee2mqtt/data:/app/data
       # Persistent storage for Zigbee2MQTT configuration and device database.
       #
       # Critical Data:
@@ -216,6 +216,9 @@ services:
       replicas: 1
       # Single instance deployment required for Zigbee coordinator management.
       # Multiple instances would conflict for USB coordinator access.
+      placement:
+        constraints:
+          - node.labels.storage == true             # Target nodes with storage capabilities
 
       labels:
         # Traefik reverse proxy configuration for web interface
@@ -257,7 +260,7 @@ services:
     # Critical service as it's the communication backbone for IoT devices.
 
     volumes:
-      - "/mnt/nfs/docker/home_assistant/mosquitto:/mosquitto"
+      - "/exports/docker/home_assistant/mosquitto:/mosquitto"
       # Persistent storage for MQTT broker configuration and data.
       #
       # Directory Structure:
@@ -293,6 +296,9 @@ services:
       # Single broker instance for message consistency.
       # MQTT clustering requires additional configuration and is typically
       # not needed for home automation scenarios.
+      placement:
+        constraints:
+          - node.labels.storage == true             # Target nodes with storage capabilities
 
       labels:
         - "traefik.enable=false"
@@ -327,14 +333,11 @@ networks:
 # 1. Hardware Requirements:
 #    - Zigbee USB coordinator (e.g., CC2531, ConBee II, Sonoff Zigbee 3.0)
 #    - Sufficient RAM for Home Assistant database growth
-#    - Reliable network connectivity for NFS storage
-#    - UPS or reliable power for coordinator and NFS storage
 #
 # 2. Network Configuration:
 #    - Ensure proxy network exists before deployment
 #    - Configure DNS records for subdomains
 #    - Verify firewall rules allow necessary ports
-#    - Test NFS connectivity from all Swarm nodes
 #
 # 3. Security Considerations:
 #    - Enable MQTT authentication in production
@@ -344,7 +347,6 @@ networks:
 #    - Backup encryption for sensitive automation data
 #
 # 4. Backup Strategy:
-#    - Regular NFS storage backups including all service data
 #    - Zigbee coordinator backup before major changes
 #    - Configuration version control for disaster recovery
 #    - Test restore procedures in non-production environment
@@ -360,7 +362,6 @@ networks:
 #    - Home Assistant doesn't support horizontal scaling
 #    - MQTT broker can be clustered if needed
 #    - Consider load balancing for high-traffic scenarios
-#    - Monitor NFS performance under load
 #
 # 7. Troubleshooting:
 #    - Check service logs: docker service logs [service_name]

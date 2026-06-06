@@ -7,8 +7,8 @@ home_assistant:
 
   # Pinned image tags for reproducible deployments
   versions:
-    homeassistant: "2026.4.1"
-    zigbee2mqtt: "2.9.2"
+    homeassistant: "2026.6.1"
+    zigbee2mqtt: "2.11.0"
     mqtt: "2.1.2-alpine"
 
 # Notes:

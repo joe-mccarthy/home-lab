@@ -7,9 +7,9 @@ immich:
 
   # Pinned image tags for reproducible deployments
   versions:
-    server: "v2.6.1"
-    machine_learning: "v2.6.1"
-    redis: "9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6"
+    server: "v2.7.5"
+    machine_learning: "v2.7.5"
+    redis: "9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9"
     database: "14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
 
 # Notes:

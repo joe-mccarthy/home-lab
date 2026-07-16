@@ -94,9 +94,9 @@ This directory includes deployments for a variety of services, ranging from pers
 | [Dozzle](dozzle/README.md) | dozzle | `latest` |
 | [Gitea](gitea/README.md) | server | `1.25.5` |
 | [Gitea](gitea/README.md) | act_runner | `0.2.12` |
-| [Home Assistant](home-assistant/README.md) | home-assistant | `2026.3.3` |
-| [Home Assistant](home-assistant/README.md) | zigbee2mqtt | `2.9.1` |
-| [Home Assistant](home-assistant/README.md) | mosquitto | `2.1-alpine` |
+| [Home Assistant](home-assistant/README.md) | home-assistant | `2026.7.2` |
+| [Home Assistant](home-assistant/README.md) | zigbee2mqtt | `2.12.1` |
+| [Home Assistant](home-assistant/README.md) | mosquitto | `2.1.2-alpine` |
 | [Immich](immich/README.md) | immich-server | `v2.6.1` |
 | [Immich](immich/README.md) | immich-machine-learning | `v2.6.1` |
 | [NFS Backup](nfs-backup/README.md) | restic | `1.8.2` |

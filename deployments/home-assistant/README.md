@@ -1,590 +1,263 @@
-# Home Assistant Smart Home Stack Deployment
+# 🏡 Home Assistant Deployment
 
 [![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![MQTT](https://img.shields.io/badge/MQTT-IoT%20Messaging-660066?logo=eclipsemosquitto&logoColor=white&style=flat-square)](https://mqtt.org/) [![Zigbee](https://img.shields.io/badge/Zigbee-Device%20Network-EB0443?style=flat-square)](https://csa-iot.org/all-solutions/zigbee/) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.7.2-5C5C5C?style=flat-square) ![Zigbee2MQTT](https://img.shields.io/badge/Zigbee2MQTT-v2.12.1-5C5C5C?style=flat-square) ![Mosquitto](https://img.shields.io/badge/Mosquitto-2.1.2--alpine-5C5C5C?style=flat-square)
 
-This project provides a comprehensive, production-ready solution for deploying **Home Assistant** with integrated smart home services using Ansible and Docker Swarm. The deployment creates a complete smart home automation platform with Zigbee device support, MQTT communication, and secure external access.
+An Ansible deployment for a Docker Swarm based smart home stack: [Home Assistant](https://www.home-assistant.io/), [Zigbee2MQTT](https://www.zigbee2mqtt.io/), and [Mosquitto](https://mosquitto.org/), routed through Traefik and backed by shared NFS storage.
 
-## Table of Contents
+This deployment is built for a small home lab cluster where Home Assistant should survive node maintenance, keep its configuration on persistent storage, and integrate cleanly with Zigbee devices through MQTT.
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Post-Deployment](#post-deployment)
-- [Management](#management)
-- [Troubleshooting](#troubleshooting)
-- [Security](#security)
-- [Backup & Recovery](#backup--recovery)
-- [Contributing](#contributing)
+> [!WARNING]
+> This stack is designed for a home lab. The bundled Mosquitto service currently runs with the upstream no-auth configuration, so review MQTT exposure and network access before using it anywhere sensitive.
 
-## Overview
-
-This deployment solution creates a complete smart home automation stack consisting of:
-
-- **Home Assistant Core**: Primary automation platform with web interface
-- **Zigbee2MQTT**: Bridge for Zigbee smart devices (lights, sensors, switches)
-- **Mosquitto MQTT Broker**: Communication backbone for IoT devices
-- **Traefik Integration**: Reverse proxy with automatic SSL certificates
-- **NFS Storage**: Persistent, shared storage for configurations and data
-
-The deployment is designed for high availability, security, and ease of management in a Docker Swarm environment.
-
-## Architecture
-
-### System Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Internet      │    │   Docker Swarm   │    │   NFS Storage   │
-│                 │    │                  │    │                 │
-│  ┌───────────┐  │    │ ┌──────────────┐ │    │ ┌─────────────┐ │
-│  │  Users    │  │    │ │   Traefik    │ │    │ │   Config    │ │
-│  │  Devices  │  │    │ │  (Proxy)     │ │    │ │   Database  │ │
-│  └───────────┘  │    │ └──────┬───────┘ │    │ │   Logs      │ │
-│                 │    │        │         │    │ └─────────────┘ │
-└─────────────────┘    │ ┌──────▼───────┐ │    └─────────────────┘
-                       │ │ Home         │ │            │
-┌─────────────────┐    │ │ Assistant    │◄├────────────┘
-│  Zigbee Devices │    │ └──────┬───────┘ │
-│                 │    │        │         │
-│ ┌─────┐ ┌─────┐ │    │ ┌──────▼───────┐ │
-│ │Light│ │Sensor│ │    │ │ Zigbee2MQTT  │ │
-│ └─────┘ └─────┘ │    │ └──────┬───────┘ │
-│                 │    │        │         │
-└─────────────────┘    │ ┌──────▼───────┐ │
-                       │ │ MQTT Broker  │ │
-                       │ │ (Mosquitto)  │ │
-                       │ └──────────────┘ │
-                       └──────────────────┘
-```
-
-### Network Design
-
-- **Proxy Network**: External network for Traefik reverse proxy
-- **Default Network**: Internal service communication
-- **Host Network**: Direct hardware access for USB devices
-
-### Data Flow
-
-1. **External Access**: Users → Traefik → Home Assistant (HTTPS)
-2. **Device Communication**: Zigbee Devices → Zigbee2MQTT → MQTT → Home Assistant
-3. **Data Persistence**: All services → NFS Storage
-
-## Features
-
-### Home Automation
-- **Complete Home Assistant Installation**: Latest stable version with all integrations
-- **Zigbee Device Support**: Native support for 1000+ Zigbee devices
-- **MQTT Integration**: Reliable IoT device communication
-- **Web Interface**: Modern, responsive web UI for device management
-
-### Infrastructure
-- **Docker Swarm Deployment**: High availability and container orchestration
-- **NFS Persistent Storage**: Shared storage across cluster nodes
-- **Automatic SSL Certificates**: Let's Encrypt integration via Traefik
-- **Zero-Downtime Updates**: Rolling updates with Docker Swarm
-
-### Security
-- **Ansible Vault Integration**: Encrypted secrets management
-- **HTTPS Enforcement**: Automatic HTTP to HTTPS redirection
-- **Network Isolation**: Segregated internal and external networks
-- **Container Security**: Minimal privileges and security contexts
-
-### Operations
-- **Infrastructure as Code**: Fully automated deployment
-- **Configuration Management**: Template-based configuration
-- **Health Monitoring**: Built-in service health checks
-- **Backup Integration**: NFS-based backup strategy
-
-## Prerequisites
-
-### Infrastructure Requirements
-
-- **Docker Swarm Cluster**: Initialized and operational
-  ```bash
-  docker swarm init
-  ```
-
-- **NFS Server**: Accessible storage for persistent data
-  ```bash
-  # Mount point must exist: /mnt/nfs/docker
-  ```
-
-- **Ansible Control Machine**: With required collections
-  ```bash
-  ansible-galaxy collection install community.docker
-  ansible-galaxy collection install ansible.posix
-  ```
-
-### Hardware Requirements
-
-- **Zigbee Coordinator**: USB dongle for Zigbee communication
-  - Recommended: ConBee II, Sonoff Zigbee 3.0, CC2652R
-  - Connected to Docker Swarm node running Zigbee2MQTT
-
-- **System Resources** (per node):
-  - RAM: 2GB minimum, 4GB recommended
-  - Storage: 10GB minimum for system, NFS for data
-  - CPU: 2 cores recommended
-
-### Network Requirements
-
-- **Domain Name**: For external access (e.g., `yourdomain.com`)
-- **DNS Configuration**: Subdomains pointing to Traefik
-  - `homeassistant.yourdomain.com`
-  - `zigbee2mqtt.yourdomain.com`
-- **Firewall Rules**: Ports 80, 443, 1883 (MQTT) accessible
-
-## Quick Start
-
-### 1. Clone and Navigate
-```bash
-git clone <repository-url>
-cd deployments/home-assistant
-```
-
-### 2. Configure Secrets
-```bash
-# Create and encrypt secrets
-ansible-vault create group_vars/all.yml
-```
-
-Add the following encrypted variables:
-```yaml
 ---
-vault_proxy: "https://homeassistant.yourdomain.com"
-vault_mqtt_server: "192.168.1.100"
-vault_zigbee_serial_port: "/dev/ttyUSB0"
+
+## ✨ What It Deploys
+
+| Service | Image | Purpose |
+| --- | --- | --- |
+| `homeassistant` | `ghcr.io/home-assistant/home-assistant:2026.7.2` | Main automation platform and web UI. |
+| `zigbee2mqtt` | `ghcr.io/koenkk/zigbee2mqtt:2.12.1` | Bridges Zigbee devices into MQTT topics Home Assistant can discover. |
+| `mqtt` | `eclipse-mosquitto:2.1.2-alpine` | MQTT broker used by Zigbee2MQTT and Home Assistant. |
+
+The stack name is `home_assistant`, so Swarm service names become:
+
+- `home_assistant_homeassistant`
+- `home_assistant_zigbee2mqtt`
+- `home_assistant_mqtt`
+
+---
+
+## 🧱 Architecture
+
+```text
+Zigbee devices
+     │
+     ▼
+Zigbee coordinator ── Zigbee2MQTT ── Mosquitto MQTT ── Home Assistant
+                                             │
+                                             ▼
+                                    Traefik HTTPS routing
 ```
 
-### 3. Update Inventory
-```bash
-# Copy the example inventory and edit it with your host details
-cp inventory.example.yml inventory.yml
-vim inventory.yml
-```
+Traefik exposes:
 
-See [`inventory.example.yml`](../../inventory.example.yml) at the repo root for the full reference structure.
+- `https://homeassistant.<your-domain>`
+- `https://zigbee2mqtt.<your-domain>`
 
-### 4. Deploy
-```bash
-# Run the deployment playbook
-ansible-playbook -i ../../inventory.yml deploy.yml --ask-vault-pass
-```
+The domain comes from `vault.shared.general.domain`, which is shared across the deployment catalog.
 
-### 5. Verify Deployment
-```bash
-# Check service status
-docker service ls
-docker service logs homeassistant_homeassistant
-```
+---
 
-## Configuration
+## 📁 Files
 
-### Ansible Variables
+| Path | Purpose |
+| --- | --- |
+| [`deploy.yml`](deploy.yml) | Main playbook. Targets the `manager` group and deploys from one selected manager. |
+| [`group_vars/all.yml`](group_vars/all.yml) | Home Assistant variables, vault lookups, and pinned image versions. |
+| [`templates/docker-compose.yaml`](templates/docker-compose.yaml) | Docker Swarm stack template. |
+| [`templates/configuration.yaml`](templates/configuration.yaml) | Initial Home Assistant configuration template. |
+| [`templates/zigbee/configuration.yaml`](templates/zigbee/configuration.yaml) | Initial Zigbee2MQTT configuration template. |
+| [`roles/check_nfs/tasks/main.yml`](roles/check_nfs/tasks/main.yml) | Creates persistent directories and first-run config files. |
+| [`roles/deploy_home_assistant/tasks/main.yml`](roles/deploy_home_assistant/tasks/main.yml) | Stops old services, renders the compose template, and deploys the stack. |
 
-The deployment uses several configuration files:
+---
 
-#### `group_vars/all.yml` (Encrypted)
+## ✅ Prerequisites
+
+- A working Docker Swarm created by [`docker-swarm/create.yml`](../../docker-swarm/create.yml).
+- At least one Swarm node labelled `storage=true`.
+- The external `proxy` overlay network created by the core/Traefik deployment.
+- Traefik already deployed and able to route wildcard service domains.
+- NFS mounted and available on the deployment host.
+- A Zigbee coordinator connected to the node that will run Zigbee2MQTT.
+- Vault values defined in [`../../vault.template.yml`](../../vault.template.yml).
+
+The compose template places all three services on nodes with:
+
 ```yaml
-# Reverse proxy configuration
-vault_proxy: "https://homeassistant.yourdomain.com"
-
-# MQTT broker address
-vault_mqtt_server: "192.168.1.100"
-
-# Zigbee coordinator device path
-vault_zigbee_serial_port: "/dev/ttyUSB0"
+node.labels.storage == true
 ```
 
-#### `deploy.yml` (Main Playbook)
-The main deployment playbook that orchestrates the entire process:
-- Environment preparation
-- NFS directory structure creation
-- Docker Swarm service deployment
-- Configuration template deployment
+---
 
-### Service Configuration
+## 🚀 Quick Start
 
-#### Home Assistant (`templates/configuration.yaml`)
-- Integration configurations
-- Device discovery settings
-- Database configuration
-- Logging preferences
+Run from the repository root:
 
-#### Zigbee2MQTT (`templates/zigbee/configuration.yaml`)
-- MQTT broker connection
-- Zigbee coordinator settings
-- Device pairing configuration
-- Network security settings
-
-#### Docker Compose (`templates/docker-compose.yaml`)
-- Service definitions
-- Volume mappings
-- Network configuration
-- Traefik labels
-
-## Deployment
-
-### Standard Deployment Process
-
-1. **Environment Preparation**
-   ```bash
-   # Verify NFS mount
-   ls -la /mnt/nfs/docker/
-
-   # Check Docker Swarm status
-   docker node ls
-   ```
-
-2. **Run Deployment**
-   ```bash
-   ansible-playbook -i ../../inventory.yml deploy.yml --ask-vault-pass
-   ```
-
-3. **Monitor Progress**
-   ```bash
-   # Watch service deployment
-   watch docker service ls
-
-   # Check specific service logs
-   docker service logs -f homeassistant_homeassistant
-   ```
-
-### Advanced Deployment Options
-
-#### Selective Service Deployment
 ```bash
-# Deploy only specific roles
-ansible-playbook deploy.yml --tags "nfs,config"
+ansible-playbook -i inventory.yml deployments/home-assistant/deploy.yml --ask-vault-pass
 ```
 
-#### Dry Run
+If your Ansible user requires a sudo password, add:
+
 ```bash
-# Check what would be changed
-ansible-playbook deploy.yml --check --diff
+--ask-become-pass
 ```
 
-#### Verbose Output
+After deployment, check the Swarm services:
+
 ```bash
-# Detailed deployment logs
-ansible-playbook deploy.yml -vvv
+docker service ls
+docker service ps home_assistant_homeassistant
+docker service ps home_assistant_zigbee2mqtt
+docker service ps home_assistant_mqtt
 ```
 
-## Post-Deployment
-
-### Service Verification
-
-1. **Check Service Status**
-   ```bash
-   docker service ls
-   docker service ps homeassistant_homeassistant
-   docker service ps homeassistant_zigbee2mqtt
-   docker service ps homeassistant_mqtt
-   ```
-
-2. **Access Web Interfaces**
-   - Home Assistant: `https://homeassistant.yourdomain.com`
-   - Zigbee2MQTT: `https://zigbee2mqtt.yourdomain.com`
-
-3. **Test MQTT Connectivity**
-   ```bash
-   # Install MQTT client
-   sudo apt install mosquitto-clients
-
-   # Test MQTT broker
-   mosquitto_pub -h <mqtt-server> -t test/topic -m "Hello World"
-   mosquitto_sub -h <mqtt-server> -t test/topic
-   ```
-
-### Initial Configuration
-
-1. **Home Assistant Setup**
-   - Access web interface
-   - Complete initial setup wizard
-   - Configure integrations
-   - Add MQTT broker integration
-
-2. **Zigbee2MQTT Setup**
-   - Access web interface
-   - Verify coordinator connection
-   - Enable device pairing
-   - Add your first Zigbee device
-
-3. **MQTT Integration**
-   - Configure Home Assistant MQTT integration
-   - Verify device discovery
-   - Test device control
-
-## Management
-
-### Service Management
+Follow logs while the stack starts:
 
 ```bash
-# Scale services (if supported)
-docker service scale homeassistant_homeassistant=1
-
-# Update service image
-docker service update --image ghcr.io/home-assistant/home-assistant:2024.1.0 homeassistant_homeassistant
-
-# Remove service
-docker service rm homeassistant_homeassistant
-
-# Redeploy entire stack
-docker stack deploy -c docker-compose.yaml homeassistant
+docker service logs -f home_assistant_homeassistant
+docker service logs -f home_assistant_zigbee2mqtt
+docker service logs -f home_assistant_mqtt
 ```
 
-### Configuration Updates
+---
 
-```bash
-# Update configuration
-ansible-playbook deploy.yml --tags "config"
+## 🔐 Vault Variables
 
-# Restart services after config changes
-docker service update --force homeassistant_homeassistant
+This deployment reads its sensitive and environment-specific values from the root vault structure:
+
+```yaml
+vault:
+  shared:
+    general:
+      domain: "example.com"
+
+  services:
+    home_assistant:
+      proxy: "172.18.0.0/16"
+      mqtt_server: "mqtt://mqtt:1883"
+      zigbee_serial_port: "/dev/ttyUSB0"
 ```
 
-### Log Management
+| Variable | Used For |
+| --- | --- |
+| `vault.shared.general.domain` | Builds Traefik hostnames for Home Assistant and Zigbee2MQTT. |
+| `vault.services.home_assistant.proxy` | Populates Home Assistant `trusted_proxies`. |
+| `vault.services.home_assistant.mqtt_server` | Sets the MQTT broker URL in Zigbee2MQTT. |
+| `vault.services.home_assistant.zigbee_serial_port` | Sets the Zigbee coordinator serial port in Zigbee2MQTT. |
 
-```bash
-# View service logs
-docker service logs homeassistant_homeassistant
-docker service logs homeassistant_zigbee2mqtt
-docker service logs homeassistant_mqtt
+For the bundled Mosquitto service, `mqtt://mqtt:1883` is the expected internal broker URL. Use a different value only if Zigbee2MQTT should connect to an external broker.
 
-# Follow logs in real-time
-docker service logs -f homeassistant_homeassistant
+---
 
-# Export logs
-docker service logs homeassistant_homeassistant > homeassistant.log
+## 💾 Storage
+
+The NFS role prepares:
+
+```text
+/mnt/nfs/docker/home_assistant
+/mnt/nfs/docker/home_assistant/mosquitto
+/mnt/nfs/docker/home_assistant/zigbee2mqtt
+/mnt/nfs/docker/home_assistant/zigbee2mqtt/data
 ```
 
-## Troubleshooting
+The Swarm stack mounts the storage export paths into containers:
 
-### Common Issues
+```text
+/exports/docker/home_assistant                -> /config
+/exports/docker/home_assistant/zigbee2mqtt/data -> /app/data
+/exports/docker/home_assistant/mosquitto      -> /mosquitto
+```
 
-#### Service Won't Start
+The role also creates these Home Assistant files if they do not already exist:
+
+- `configuration.yaml`
+- `automations.yaml`
+- `scenes.yaml`
+- `scripts.yaml`
+
+The Home Assistant and Zigbee2MQTT configuration templates use `force: false`, so existing configuration files are preserved on later runs.
+
+---
+
+## 🔌 Zigbee Notes
+
+The Zigbee coordinator path must be valid on the node that runs the service. Prefer a stable `/dev/serial/by-id/...` path when possible, because `/dev/ttyUSB0` can change after reboot or when USB devices are reordered.
+
+The compose template currently maps `/dev/ttyUSB0` into the Home Assistant container and the Zigbee2MQTT template uses `vault.services.home_assistant.zigbee_serial_port`. If you use a different device path, update the vault value and make sure the stack template maps the same hardware path.
+
+Pairing is disabled by default:
+
+```yaml
+permit_join: false
+```
+
+Enable pairing only while adding devices, then turn it off again.
+
+---
+
+## 🛠️ Operations
+
+### Redeploy the Stack
+
 ```bash
-# Check service status
-docker service ps homeassistant_homeassistant --no-trunc
+ansible-playbook -i inventory.yml deployments/home-assistant/deploy.yml --ask-vault-pass
+```
 
-# Check node resources
-docker node ls
-docker system df
+The deployment role removes the existing Home Assistant services before redeploying the stack, so expect a short interruption.
 
-# Verify network
-docker network ls
+### Restart a Service
+
+```bash
+docker service update --force home_assistant_homeassistant
+docker service update --force home_assistant_zigbee2mqtt
+docker service update --force home_assistant_mqtt
+```
+
+### Inspect Rendered Services
+
+```bash
+docker service inspect home_assistant_homeassistant
+docker service inspect home_assistant_zigbee2mqtt
+docker service inspect home_assistant_mqtt
+```
+
+### Check Persistent Data
+
+```bash
+ls -la /mnt/nfs/docker/home_assistant
+ls -la /mnt/nfs/docker/home_assistant/zigbee2mqtt/data
+```
+
+---
+
+## 🧯 Troubleshooting
+
+| Symptom | What to Check |
+| --- | --- |
+| Home Assistant returns proxy errors | Confirm `vault.services.home_assistant.proxy` matches the Traefik network CIDR or proxy IP. |
+| Zigbee2MQTT cannot reach MQTT | Confirm `vault.services.home_assistant.mqtt_server` is reachable from the stack, usually `mqtt://mqtt:1883`. |
+| Zigbee coordinator is missing | Check the device path on the storage-labelled node with `ls -la /dev/serial/by-id /dev/ttyUSB* /dev/ttyACM*`. |
+| Services stay pending | Confirm at least one Swarm node has the label `storage=true`. |
+| Traefik routes do not work | Confirm the `proxy` network exists and DNS points `homeassistant.<domain>` and `zigbee2mqtt.<domain>` at Traefik. |
+| Config changes do not appear | Existing config files are preserved by design. Edit files under `/mnt/nfs/docker/home_assistant` directly or remove the file before rerunning the playbook. |
+
+Useful commands:
+
+```bash
+docker service ps home_assistant_homeassistant --no-trunc
+docker service logs home_assistant_homeassistant
+docker service logs home_assistant_zigbee2mqtt
 docker network inspect proxy
 ```
 
-#### Database Issues
-```bash
-# Check NFS mount
-df -h /mnt/nfs/docker
-ls -la /mnt/nfs/docker/home_assistant/
+---
 
-# Check permissions
-sudo chown -R nobody:nogroup /mnt/nfs/docker/home_assistant/
-```
+## 🛡️ Security Notes
 
-#### Zigbee Coordinator Not Found
-```bash
-# List USB devices
-lsusb
-ls -la /dev/ttyUSB*
-
-# Check udev rules
-sudo udevadm info -a -p $(udevadm info -q path -n /dev/ttyUSB0)
-
-# Verify device permissions
-ls -la /dev/ttyUSB0
-```
-
-#### Network Connectivity Issues
-```bash
-# Test internal network
-docker exec -it $(docker ps -q -f name=homeassistant) ping mqtt
-
-# Test external access
-curl -I https://homeassistant.yourdomain.com
-
-# Check Traefik configuration
-docker service logs traefik_traefik
-```
-
-### Debug Commands
-
-```bash
-# Enter running container
-docker exec -it $(docker ps -q -f name=homeassistant) /bin/bash
-
-# Check container logs in detail
-docker service logs homeassistant_homeassistant 2>&1 | grep ERROR
-
-# Verify service discovery
-docker service inspect homeassistant_homeassistant
-```
-
-## Security
-
-### Security Best Practices
-
-1. **Secrets Management**
-   - Use Ansible Vault for all sensitive data — see [`vault.template.yml`](../../vault.template.yml) for the full variable reference
-   - Rotate vault passwords regularly
-   - Never commit unencrypted secrets
-
-2. **Network Security**
-   - Use HTTPS for all external access
-   - Restrict MQTT broker access
-   - Implement firewall rules
-   - Network segmentation for IoT devices
-
-3. **Container Security**
-   - Regular image updates
-   - Minimal container privileges
-   - Security scanning of images
-   - Resource limits and constraints
-
-4. **Access Control**
-   - Strong Home Assistant passwords
-   - Enable two-factor authentication
-   - Regular access reviews
-   - Audit logs monitoring
-
-### Security Hardening
-
-```bash
-# Enable MQTT authentication
-# Edit mosquitto configuration to require passwords
-
-# Implement network policies
-# Use Docker network policies for traffic control
-
-# Regular security updates
-ansible-playbook deploy.yml --tags "security"
-```
-
-## Backup & Recovery
-
-### Backup Strategy
-
-1. **NFS Storage Backup**
-   ```bash
-   # Backup all Home Assistant data
-   sudo tar -czf homeassistant-backup-$(date +%Y%m%d).tar.gz \
-     -C /mnt/nfs/docker/home_assistant .
-   ```
-
-2. **Configuration Backup**
-   ```bash
-   # Backup Ansible configuration
-   tar -czf ansible-config-backup-$(date +%Y%m%d).tar.gz \
-     group_vars/ templates/ *.yml
-   ```
-
-3. **Zigbee Network Backup**
-   ```bash
-   # Backup Zigbee coordinator state
-   cp /mnt/nfs/docker/home_assistant/zigbee2mqtt/data/coordinator_backup.json \
-     zigbee-backup-$(date +%Y%m%d).json
-   ```
-
-### Recovery Procedures
-
-1. **Full System Recovery**
-   ```bash
-   # Restore NFS data
-   sudo tar -xzf homeassistant-backup-YYYYMMDD.tar.gz \
-     -C /mnt/nfs/docker/home_assistant/
-
-   # Redeploy services
-   ansible-playbook deploy.yml
-   ```
-
-2. **Zigbee Network Recovery**
-   ```bash
-   # Restore Zigbee coordinator backup
-   cp zigbee-backup-YYYYMMDD.json \
-     /mnt/nfs/docker/home_assistant/zigbee2mqtt/data/coordinator_backup.json
-
-   # Restart Zigbee2MQTT service
-   docker service update --force homeassistant_zigbee2mqtt
-   ```
-
-### Automated Backup
-
-```bash
-# Create backup script
-cat > /usr/local/bin/homeassistant-backup.sh << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/backup/homeassistant"
-DATE=$(date +%Y%m%d-%H%M%S)
-
-# Create backup directory
-mkdir -p "$BACKUP_DIR"
-
-# Backup Home Assistant data
-tar -czf "$BACKUP_DIR/homeassistant-$DATE.tar.gz" \
-  -C /mnt/nfs/docker/home_assistant .
-
-# Keep only last 30 days of backups
-find "$BACKUP_DIR" -name "homeassistant-*.tar.gz" -mtime +30 -delete
-EOF
-
-chmod +x /usr/local/bin/homeassistant-backup.sh
-
-# Add to crontab for daily backups
-echo "0 2 * * * /usr/local/bin/homeassistant-backup.sh" | sudo crontab -
-```
-
-## Contributing
-
-We welcome contributions to improve this deployment solution!
-
-### How to Contribute
-
-1. **Fork the Repository**
-2. **Create a Feature Branch**
-   ```bash
-   git checkout -b feature/improvement-name
-   ```
-3. **Make Changes**
-   - Update documentation
-   - Improve automation
-   - Add new features
-   - Fix bugs
-
-4. **Test Changes**
-   ```bash
-   # Test in staging environment
-   ansible-playbook deploy.yml --check
-   ```
-
-5. **Submit Pull Request**
-   - Clear description of changes
-   - Testing evidence
-   - Documentation updates
-
-### Development Guidelines
-
-- Follow Ansible best practices
-- Document all changes
-- Test in isolated environment
-- Maintain backward compatibility
-- Update version numbers appropriately
+- Keep `vault.services.home_assistant.proxy` narrow. Do not trust broad networks unless they are truly controlled.
+- The bundled Mosquitto service uses `mosquitto -c /mosquitto-no-auth.conf`; restrict network exposure or add authentication before exposing MQTT beyond the stack.
+- Leave Zigbee pairing disabled except during device onboarding.
+- Enable strong Home Assistant authentication and MFA from the Home Assistant UI.
+- Back up `/mnt/nfs/docker/home_assistant`, especially `.storage/` and `zigbee2mqtt/data`.
 
 ---
 
-## Support
+## 📚 Related Docs
 
-For support and questions:
-
-1. **Check Documentation**: Review this README and inline comments
-2. **Search Issues**: Look for similar problems in project issues
-3. **Create Issue**: Report bugs or request features
-4. **Community Support**: Join Home Assistant community forums
-
+- [Root README](../../README.md)
+- [Deployments catalog](../README.md)
+- [Core deployments](../core-deployments/README.md)
+- [Traefik deployment](../traefik/README.md)
+- [Vault template](../../vault.template.yml)

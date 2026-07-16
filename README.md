@@ -1,141 +1,246 @@
-# Home Lab
+# 🏠 Home Lab
+
 [![Issues and PRs](https://img.shields.io/github/issues/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/issues)
 [![Release](https://img.shields.io/github/v/release/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/releases)
 [![Last commit](https://img.shields.io/github/last-commit/joe-mccarthy/homelab?style=flat-square)](https://github.com/joe-mccarthy/homelab/commits/main)
 [![License](https://img.shields.io/github/license/joe-mccarthy/homelab?style=flat-square)](LICENSE)
 [![ansible-lint](https://img.shields.io/github/actions/workflow/status/joe-mccarthy/homelab/ansible-linter.yml?style=flat-square&label=ansible%20lint)](https://github.com/joe-mccarthy/homelab/actions/workflows/ansible-linter.yml)
 
+An Ansible-powered Raspberry Pi home lab for building, running, and maintaining a small Docker Swarm cluster.
 
-The purpose of this repository is to create and manage a simple [home lab](https://linuxhandbook.com/homelab/) built around clusters of [Raspberry Pi's](https://www.raspberrypi.com/) using [Docker Swarm](https://docs.docker.com/engine/swarm/) for container deployment and management. The primary tool for managing the home lab is [Ansible](https://docs.ansible.com/ansible/latest/index.html). 
+This repository contains the playbooks, roles, templates, and documentation I use to bootstrap machines, create a Swarm, deploy services, manage persistent storage, and keep the cluster healthy. It is built for learning and experimentation, but it is structured like real infrastructure so it stays repeatable instead of becoming a pile of one-off shell commands.
 
-This repository is designed to help you learn, test, and experiment with deploying and managing services in a clustered environment. It provides a structured approach to setting up a home lab, automating deployments, and maintaining the cluster.
-
-For a service-by-service deployment catalog, see [deployments/README.md](deployments/README.md).
-
-> **⚠️ Warning**  
-> All examples within this repository are for testing, learning, and development purposes and should not be used for production environments.
+> [!WARNING]
+> This repository is intended for home lab, learning, testing, and development use. Review every variable, secret, network rule, and exposed service before adapting anything for a public or production environment.
 
 ---
 
-## Hardware
+## ✨ What This Lab Does
 
-This home lab is built entirely using Raspberry Pi devices. The current setup includes:
-
-- **8 Raspberry Pi 4s** with 8GB of memory, each with a 64GB SD card.
-- **1 Raspberry Pi 5** with 8GB of memory and a 2TB NVMe drive connected via PCIe using a [Pimoroni NVMe base](https://shop.pimoroni.com/products/nvme-base?variant=41219587178579).
-- **PoE Hats** for each Raspberry Pi 4 to simplify power and networking.
-- **8-Port PoE Switch** to power and connect all devices.
-
-The cluster is designed to be flexible, with services distributed across nodes. However, one node must host the [NFS](https://en.wikipedia.org/wiki/Network_File_System) server for persistent storage. In this setup, the Raspberry Pi 5 with the NVMe drive serves as the NFS server.
-
-### Why Persistent Storage?
-
-Persistent storage is critical for:
-- Allowing services to move between nodes without losing data.
-- Supporting deployments like [Home Assistant](https://www.home-assistant.io/) that perform frequent writes, which can quickly wear out SD cards.
+- 🐳 Creates and manages a multi-node [Docker Swarm](https://docs.docker.com/engine/swarm/) cluster.
+- 🤖 Uses [Ansible](https://docs.ansible.com/ansible/latest/index.html) for repeatable provisioning, deployment, and maintenance.
+- 💾 Provides shared persistent storage through [NFS](https://en.wikipedia.org/wiki/Network_File_System).
+- 🌐 Routes services through [Traefik](https://doc.traefik.io/traefik/) with domain-based access and HTTPS.
+- 🔐 Keeps sensitive values in [Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html).
+- 🧰 Includes ready-to-run deployments for self-hosted apps, observability, backups, automation, and cluster operations.
 
 ---
 
-## Authentication, Hosts, and Vaults
+## 🧭 Repository Map
 
-Before deploying services to Docker Swarm, the cluster must be defined, machines set up, and sensitive variables secured.
+| Path | Purpose |
+| --- | --- |
+| [`docker-swarm/`](docker-swarm/README.md) | Create, manage, and destroy the Docker Swarm cluster. |
+| [`deployments/`](deployments/README.md) | Service deployments, Docker Compose templates, roles, and per-service docs. |
+| [`maintenance/`](maintenance/README.md) | Operational playbooks for updates, setup, shutdown, restarts, and Docker registry login. |
+| [`inventory.example.yml`](inventory.example.yml) | Example Ansible inventory for managers, workers, and the NFS host. |
+| [`vault.template.yml`](vault.template.yml) | Complete reference for expected secret values. |
+| [`requirements.yml`](requirements.yml) | Required Ansible collections. |
 
-### Defining Hosts
+---
 
-Ansible uses an inventory file to define the hosts it manages. In this project, the inventory is referenced externally using [Ansible configuration](https://docs.ansible.com/ansible/latest/reference_appendices/config.html). A ready-to-use example is provided at [`inventory.example.yml`](inventory.example.yml). Copy it and populate it with your own IPs and hostnames:
+## 🧱 Architecture
+
+The lab is designed around Raspberry Pi nodes running Ubuntu and participating in a Docker Swarm.
+
+### Current Hardware
+
+- 8 Raspberry Pi 4s with 8 GB RAM and 64 GB SD cards.
+- 1 Raspberry Pi 5 with 8 GB RAM and a 2 TB NVMe drive on a [Pimoroni NVMe Base](https://shop.pimoroni.com/products/nvme-base?variant=41219587178579).
+- PoE HATs for the Raspberry Pi 4 nodes.
+- An 8-port PoE switch for power and networking.
+
+### Cluster Shape
+
+The example inventory models the cluster with three Ansible groups:
+
+| Group | Role |
+| --- | --- |
+| `nfs_servers` | Hosts the NFS export used for persistent Docker volumes. |
+| `manager` | Docker Swarm manager nodes. |
+| `docker` | Docker Swarm worker nodes. |
+
+Both `manager` and `docker` sit under the `cluster` group so maintenance playbooks can target every node together.
+
+In the sample setup, `odin` acts as the first manager and NFS server, `thor` and `loki` are additional managers, and the remaining nodes are workers. The Raspberry Pi 5 is the natural fit for NFS because the NVMe drive gives services durable storage without hammering SD cards.
+
+> [!TIP]
+> Use an odd number of Swarm managers. A cluster with `N` managers can tolerate the loss of at most `(N - 1) / 2` managers, and Docker recommends no more than seven manager nodes.
+
+---
+
+## 🚀 Quick Start
+
+These commands assume you are running from the root of this repository and have already installed an operating system on each node.
+
+### 1. Install Ansible Collections
+
+```bash
+ansible-galaxy collection install -r requirements.yml
+```
+
+### 2. Create Your Inventory
 
 ```bash
 cp inventory.example.yml inventory.yml
 ```
 
-The inventory defines three Ansible groups: `nfs_servers` (the NFS host, which can double as a Swarm manager), `manager` (all Swarm manager nodes), and `docker` (Swarm worker nodes). Both `manager` and `docker` are children of `cluster`, which lets maintenance playbooks target all nodes at once. The example uses Norse mythology names — `odin` as the primary manager and NFS server, `thor` and `loki` as additional managers, and `freyr`, `tyr`, `heimdall`, `baldur`, `frigg`, and `skadi` as workers.
+Edit `inventory.yml` with your node names, IP addresses, SSH users, and Swarm labels.
 
-It's important to consider the number of managers you have for the size and reliability of the cluster[^1].
-
-### Setting Up Machines
-
-All nodes in the cluster have had a similar installation of Ubuntu 24.10 along with a hostname to match what their role will become within the cluster. 
-
-Once the machine has been booted up for the first time, then a static IP address is assigned to it from my router. Your configuration, IP address ranges, and networking hardware might vary and limit what you're able to do with networking. However, hostnames should in most cases be enough to get the cluster running.
-
-Other than this configuration, all other management will be done through Ansible.
-
-### Keeping Secrets Secure with Vaults
-
-Within this repository, there are deployments and configurations that require sensitive information in order to work. For example, the Cloudflare API token for setting the Dynamic DNS records that you wish. For this reason, the use of [Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html) is leaned on in order to keep these sensitive credentials safe.
-
-A complete reference of every vault variable expected across all deployments is documented in [`vault.template.yml`](vault.template.yml) at the root of this repository. Copy it, fill in your real values, and encrypt it:
+### 3. Create and Encrypt Your Vault
 
 ```bash
 cp vault.template.yml vault.yml
-# edit vault.yml with real values
+# edit vault.yml with your real values
 ansible-vault encrypt vault.yml
 ```
 
-The variables are referenced within each deployment's `group_vars/all.yml`, which maps vault lookups to the variables used in templates. If you prefer not to use vaults, you can replace the vault lookup with your actual data directly — for example:
+The vault template documents every secret expected by the deployment stack, including Cloudflare credentials, registry credentials, service passwords, backup keys, and application-specific values.
 
-```yml
-# With vault (recommended)
-cf_token: "{{ vault_cf_token }}"
+### 4. Generate a Cluster SSH Key
 
-# Without vault (keep the file private)
-cf_token: your-actual-token
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com" -f ~/.ssh/homelab
 ```
 
-#### Domain Name Information
+### 5. Prepare the Machines
 
-There is one other vault variable used in the inventory itself — the base domain for all proxy routing. This is consumed by [Traefik](https://doc.traefik.io/traefik/) to define what it listens for, where it forwards traffic, and which domain to issue certificates for. It is documented in [`vault.template.yml`](vault.template.yml) under `vault.shared.general.domain`.
-
-```yml
-general:
-   domain: "example.com"
+```bash
+ansible-playbook -i inventory.yml maintenance/set-up-machine/setup.yml --ask-pass --ask-become-pass
 ```
 
-This value can sit in `all.vars` of your `inventory.yml` as plain text, or be encrypted using [Ansible Vault Strings](https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#encrypting-individual-variables-with-ansible-vault) — sharing less is always better.
+This bootstraps new nodes with SSH access, package updates, common tools, and any required reboot.
+
+### 6. Create the Swarm
+
+```bash
+ansible-playbook -i inventory.yml docker-swarm/create.yml --ask-vault-pass
+```
+
+This installs Docker, configures NFS, initializes the Swarm, joins managers and workers, applies labels, and creates the shared proxy network.
+
+### 7. Deploy the Core Services
+
+```bash
+ansible-playbook -i inventory.yml deployments/core-deployments/deploy.yml --ask-vault-pass
+```
+
+The core deployment brings up the foundation used by the rest of the lab, including routing and DNS support.
 
 ---
 
-## Getting Started
+## 📦 Service Catalog
 
-Assuming that you've created an `inventory.yml` from [`inventory.example.yml`](inventory.example.yml) as described above, along with actually installing an Operating System and setting up the initial Hardware, I recommend the following steps.
+The full service catalog lives in [`deployments/README.md`](deployments/README.md). Each deployment has its own README, variables, templates, and playbook.
 
-1. **Create an SSH Key Pair**:
-   - Generate a private/public key pair for the cluster:
-     ```bash
-     ssh-keygen -t rsa -b 4096 -C "your_email@example.com" -f ~/.ssh/homelab
-     ```
-   - Place the private key in your `.ssh` folder.
+| Service | What It Provides |
+| --- | --- |
+| [Traefik](deployments/traefik/README.md) | Reverse proxy, routing, and HTTPS certificate handling. |
+| [DDNS](deployments/ddns/README.md) | Dynamic DNS updates for home internet connections. |
+| [Portainer](deployments/portainer/README.md) | Web UI for Docker and Swarm visibility. |
+| [Dozzle](deployments/dozzle/README.md) | Browser-based real-time container logs. |
+| [Cioban](deployments/cioban/README.md) | Automated Docker service updates. |
+| [Gitea](deployments/gitea/README.md) | Self-hosted Git service and runners. |
+| [Home Assistant](deployments/home-assistant/README.md) | Smart home automation platform. |
+| [Immich](deployments/immich/README.md) | Self-hosted photo and video management. |
+| [Paperless](deployments/paperless/README.md) | Document management and OCR workflow. |
+| [Omni Tools](deployments/omni/README.md) | Self-hosted everyday browser utilities. |
+| [NFS Backup](deployments/nfs-backup/README.md) | Restic-based backups for shared NFS data. |
+| [Personal Blog](deployments/blog/README.md) | Example private-image blog deployment. |
 
-2. **Set Up Machines**:
-   - Use the [set-up-machine](maintenance/set-up-machine/README.md) playbook to prepare all nodes in the cluster. This playbook installs updates, required packages, and copies the public SSH key to each node.
+To deploy a single service:
 
-3. **Create the Cluster**:
-   - Once the machines are ready, initialize Docker Swarm using the [create-swarm](docker-swarm/README.md) playbook.
+```bash
+ansible-playbook -i inventory.yml deployments/<service>/deploy.yml --ask-vault-pass
+```
 
-4. **Deploy Core Services**:
-   - Deploy essential services like Traefik, Portainer, and Dynamic DNS using the [core-deployments](deployments/core-deployments/README.md) playbook.
-  - Use the [deployments catalog](deployments/README.md) for the full list of available services and per-service documentation.
+For example:
 
----
-
-## Contributions
-
-I'm one person, who has learned this stuff and developed this for their own use. I don't pretend to be an expert; I'm just sharing what I've learned. That being said, if you see any issues, or ways to do things better, then please raise an issue and pull request to make everything better for everyone. Any contributions you make are greatly appreciated.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-1. Create your Feature Branch (git checkout -b feature/AmazingFeature)
-1. Commit your Changes (git commit -m 'Add some AmazingFeature')
-1. Push to the Branch (git push origin feature/AmazingFeature)
-1. Open a Pull Request
+```bash
+ansible-playbook -i inventory.yml deployments/immich/deploy.yml --ask-vault-pass
+```
 
 ---
 
-## License
+## 🔐 Secrets and Configuration
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Sensitive values are intentionally kept out of normal group variable files. The pattern used throughout the repository is:
 
-[^1]: An odd number N of manager nodes in the cluster tolerates the loss of at most (N-1)/2 managers. Docker recommends a maximum of seven manager nodes for a swarm.
+```yml
+cf_token: "{{ vault.shared.cloudflare.token }}"
+```
+
+If you do not want to use Ansible Vault, you can replace vault lookups with literal values, but those files should stay private.
+
+The most important shared value is the base domain used by Traefik:
+
+```yml
+vault:
+  shared:
+    general:
+      domain: "example.com"
+```
+
+You can keep the domain in `vault.yml`, put it in `inventory.yml`, or encrypt it as an individual vault string. Prefer the smallest amount of plain-text configuration that still keeps your workflow practical.
+
+---
+
+## 🛠️ Day-to-Day Operations
+
+### Update Every Node
+
+```bash
+ansible-playbook -i inventory.yml maintenance/update.yml --ask-become-pass
+```
+
+### Log Into Private Docker Registries
+
+```bash
+ansible-playbook -i inventory.yml maintenance/docker-login/login.yml --ask-vault-pass
+```
+
+### Gracefully Shut Down the Cluster
+
+```bash
+ansible-playbook -i inventory.yml maintenance/shutdown-cluster.yml --ask-become-pass
+```
+
+### Tear Down the Swarm
+
+```bash
+ansible-playbook -i inventory.yml docker-swarm/destroy.yml --ask-vault-pass
+```
+
+Use destructive playbooks with care. Back up important data first, especially anything under shared NFS volumes.
+
+---
+
+## 🧪 Philosophy
+
+This lab is intentionally practical:
+
+- Keep infrastructure documented in the same repository as the automation.
+- Prefer repeatable playbooks over manual node-by-node changes.
+- Make services movable by using shared storage and Swarm placement rules.
+- Keep secret material centralized and encrypted.
+- Use the lab as a place to learn real operational patterns without pretending it is production.
+
+---
+
+## 🤝 Contributions
+
+This is a personal home lab built in public. I am sharing what I have learned, and there will always be room to improve the structure, playbooks, defaults, documentation, and service templates.
+
+Issues, suggestions, and pull requests are welcome:
+
+1. Fork the project.
+2. Create a feature branch: `git checkout -b feature/amazing-feature`.
+3. Commit your changes: `git commit -m "Add amazing feature"`.
+4. Push the branch: `git push origin feature/amazing-feature`.
+5. Open a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.

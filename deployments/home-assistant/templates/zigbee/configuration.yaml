@@ -72,7 +72,7 @@ serial:
     # - true: Disables LED to reduce power consumption or light pollution
 
     advanced:
-        transmit_power: 20
+        transmit_power: 15
         # RF transmission power in dBm (0-20 for most coordinators).
         # Higher values increase range but may cause interference.
         # - 20: Maximum power, longest range

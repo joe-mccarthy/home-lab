@@ -32,7 +32,7 @@ services:
         target: /root/.docker/config.json
         read_only: true
       # Mounts the Docker configuration file to provide access to private registries.
-      # The file is mounted as read-only (`ro`) for security.
+      # The read_only setting prevents Cioban from modifying the host credential file.
 
     environment:
       SLEEP_TIME: '1m'

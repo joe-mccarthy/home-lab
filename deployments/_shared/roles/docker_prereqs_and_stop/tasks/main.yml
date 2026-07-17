@@ -28,6 +28,6 @@
   ansible.builtin.file:
     path: /home/docker-compose
     state: directory
-    mode: '0755'
-    owner: nobody
-    group: nogroup
+    mode: '0700'
+    owner: root
+    group: root

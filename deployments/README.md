@@ -11,6 +11,10 @@ This directory includes deployments for a variety of services, ranging from pers
 - Provide examples of best practices for deploying containerized applications.
 - Ensure services are configured with proper proxying, DNS resolution, and HTTPS certificates.
 
+## Temporary Compose Files
+
+Deployments that use the shared `copy_and_deploy` role render Docker Compose templates to `/home/docker-compose/docker-compose.yaml` before applying them with `community.docker.docker_stack`. Some templates include vault-backed values that are still present in the rendered compose file, so the shared role keeps the working directory private to `root`, writes the compose file with `0600` permissions, suppresses template output with `no_log`, and removes the temporary directory in an `always` block after deployment.
+
 ## Deployments
 
 ### 1. [Cioban](cioban/README.md)

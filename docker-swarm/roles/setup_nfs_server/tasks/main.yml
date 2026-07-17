@@ -30,9 +30,9 @@
   ansible.builtin.template:
     src: "templates/exports.j2"  # Path to the Jinja2 template for the NFS exports configuration.
     dest: "/etc/exports"  # Destination path for the NFS exports configuration file.
-    mode: '7777'  # Set the file permissions to allow full access (read, write, execute) for all users.
-    owner: nobody  # Set the file owner to `nobody`.
-    group: nogroup  # Set the file group to `nogroup`.
+    mode: '0644'  # Allow only root to modify the NFS export rules.
+    owner: root  # Keep this system configuration file owned by root.
+    group: root
   notify:
     - Restart NFS Server  # Notify the handler to restart the NFS server after the configuration is updated.
   # This task copies the NFS exports configuration file to the target system and ensures it has the correct permissions.
@@ -43,5 +43,5 @@
 # - The `templates/exports.j2` file should define the NFS export rules, such as which clients can access the share
 #   and their permissions (e.g., read-only or read-write).
 # - The `notify` directive ensures that the NFS server is restarted after the exports file is updated.
-# - The `7777` permissions on the directory and file are very permissive and should be adjusted based on your security requirements.
+# - The exported directory permissions must support container access, while `/etc/exports` remains root-owned.
 # - Ensure that the NFS server is properly configured to allow access from the intended clients.

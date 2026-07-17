@@ -1,0 +1,51 @@
+name: "📦 Dependency Update"
+description: "Track an Ansible collection, container image, action, or other dependency update."
+title: "deps: "
+labels:
+  - dependencies
+body:
+  - type: input
+    id: dependency
+    attributes:
+      label: "Dependency"
+      description: "Name the collection, image, GitHub Action, package, or upstream project."
+      placeholder: "community.docker"
+    validations:
+      required: true
+
+  - type: input
+    id: current_version
+    attributes:
+      label: "Current version"
+      placeholder: "v1.2.3"
+
+  - type: input
+    id: target_version
+    attributes:
+      label: "Target version"
+      placeholder: "v1.2.4"
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "Reason"
+      description: "Why should this dependency be updated?"
+      placeholder: "Security fix, bug fix, compatibility update, or routine maintenance."
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact"
+      description: "Mention affected deployments, playbooks, workflows, or breaking changes."
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: "Validation"
+      description: "What should be checked after updating?"
+      placeholder: |
+        - ansible-lint
+        - Relevant deployment playbook
+        - Upstream release notes reviewed

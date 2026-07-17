@@ -1,0 +1,51 @@
+name: "✨ Feature Request"
+description: "Suggest a new playbook, role, automation, or enhancement."
+title: "feature: "
+labels:
+  - feature
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem"
+      description: "What gap or pain point should this solve?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposed solution"
+      description: "Describe the change you want."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Area"
+      options:
+        - "Docker Swarm"
+        - "Deployment"
+        - "Maintenance"
+        - "Documentation"
+        - "GitHub automation"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives considered"
+      description: "Any other approach that might work?"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance criteria"
+      description: "What should be true when this is complete?"
+      placeholder: |
+        - Playbook is documented.
+        - ansible-lint passes.
+        - Sensitive values are kept in vault.

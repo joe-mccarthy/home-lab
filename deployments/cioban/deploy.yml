@@ -12,6 +12,40 @@
     # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
     cioban_deploy_host: "{{ ansible_play_hosts_all | first }}"
   tasks:
+    - name: Validate Cioban Docker config path
+      ansible.builtin.assert:
+        that:
+          - (cioban_docker_config_path | default('')) is string
+          - ((cioban_docker_config_path | default('')) | regex_search('^/')) is not none
+        fail_msg: >-
+          cioban_docker_config_path must be an absolute path on every Swarm
+          manager; shell shortcuts such as ~ are not supported.
+        quiet: true
+
+    - name: Inspect Cioban Docker config
+      ansible.builtin.stat:
+        path: "{{ cioban_docker_config_path }}"
+        follow: false
+        get_attributes: false
+        get_checksum: false
+        get_mime: false
+      register: cioban_docker_config
+
+    - name: Require protected Cioban Docker config
+      ansible.builtin.assert:
+        that:
+          - cioban_docker_config.stat.exists | default(false)
+          - cioban_docker_config.stat.isreg | default(false)
+          - (cioban_docker_config.stat.pw_name | default('')) == 'root'
+          - (cioban_docker_config.stat.gr_name | default('')) == 'root'
+          - (cioban_docker_config.stat.mode | default('')) == '0600'
+        fail_msg: >-
+          {{ cioban_docker_config_path }} on {{ inventory_hostname }} must be a
+          root:root regular file with mode 0600. Create or update it with
+          maintenance/docker-login/login.yml, then correct its ownership and
+          mode on every manager before deploying Cioban.
+        quiet: true
+
     - name: Deploy Cioban stack
       ansible.builtin.include_role:
         name: deploy
@@ -23,4 +57,4 @@
 # - This playbook assumes that the Docker Swarm cluster is already initialized and functional.
 # - Always test the deployment in a staging environment before applying it to production.
 # - Use `become: true` cautiously and ensure that the user running the playbook has the necessary sudo privileges.
-# - Tasks run only on the first host selected for the play, ensuring a single-manager deployment.
+# - Preflight checks run on every manager; stack deployment runs only on the selected host.

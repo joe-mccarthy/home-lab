@@ -129,16 +129,12 @@
       until: node_management_node_inspect.rc == 0
       changed_when: false
 
-    # Labels are optional. If swarm_labels is absent or empty for the target,
-    # this loop has no items and no labels are changed.
+    # Match the existing assign_labels role behavior: when swarm_labels is
+    # defined, replace the full label map. An empty dictionary intentionally
+    # clears stale labels so placement constraints cannot linger.
     - name: Apply swarm labels
-      ansible.builtin.command:
-        argv:
-          - docker
-          - node
-          - update
-          - "--label-add"
-          - "{{ item.key }}={{ item.value }}"
-          - "{{ node_management_target_node_name }}"
-      loop: "{{ hostvars[target_node].swarm_labels | default({}) | dict2items }}"
-      changed_when: true
+      community.docker.docker_node:
+        hostname: "{{ node_management_target_node_name }}"
+        labels: "{{ hostvars[target_node].swarm_labels }}"
+        labels_state: replace
+      when: hostvars[target_node].swarm_labels is defined

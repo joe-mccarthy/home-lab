@@ -24,12 +24,12 @@ services:
       # Disables sending anonymous usage data to Traefik.
 
       # API and dashboard
-      - "--api.insecure=true"
-      # Enables the Traefik API and dashboard without authentication. Use cautiously in production.
-      - "--api.dashboard=true"
-      # Enables the Traefik dashboard.
-      - "--api.debug=true"
-      # Enables debug mode for the API.
+      - "--api.insecure=false"
+      # Disables the unauthenticated dashboard/API listener on port 8080.
+      - "--api.dashboard={{ (traefik.dashboard.enabled | bool) | ternary('true', 'false') }}"
+      # Exposes the dashboard only through the protected HTTPS router below.
+      - "--api.debug=false"
+      # Keeps API debug endpoints disabled.
 
       - "--log.level=DEBUG"
       - "--log.filePath=/logs/traefik.log"
@@ -89,16 +89,18 @@ services:
         # Ensures that the Traefik service is deployed only on manager nodes in the Swarm cluster.
 
       labels:
-        - "traefik.enable=true"
-        # Enables Traefik integration for this service.
+        - "traefik.enable={{ (traefik.dashboard.enabled | bool) | ternary('true', 'false') }}"
+        # Enables or disables the Traefik dashboard/API route from shared configuration.
         - "traefik.http.routers.traefik.entrypoints=web"
         # Configures the HTTP entry point for the Traefik router.
         - "traefik.http.routers.traefik.rule=Host(`traefik.{{ vault.shared.general.domain }}`)"
         # Specifies the routing rule for the Traefik dashboard.
+        - "traefik.http.middlewares.traefik-dashboard-allowlist.ipallowlist.sourcerange={{ traefik.dashboard.allowed_ips }}"
+        # Limits dashboard/API access to the configured trusted source ranges.
         - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
         # Redirects HTTP traffic to HTTPS.
-        - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
-        # Applies the HTTPS redirection middleware to the Traefik router.
+        - "traefik.http.routers.traefik.middlewares=traefik-dashboard-allowlist,traefik-https-redirect"
+        # Applies the allowlist and HTTPS redirection middleware to the Traefik router.
         - "traefik.http.routers.traefik-secure.entrypoints=websecure"
         # Configures the HTTPS entry point for the Traefik router.
         - "traefik.http.routers.traefik-secure.rule=Host(`traefik.{{ vault.shared.general.domain }}`)"
@@ -107,10 +109,10 @@ services:
         # Enables TLS for the secure Traefik router.
         - "traefik.http.routers.traefik-secure.tls.certresolver=letsencrypt"
         # Configures Let's Encrypt as the certificate resolver for the secure router.
-        - "traefik.http.routers.traefik-secure.service=traefik"
-        # Associates the secure router with the Traefik service.
-        - "traefik.http.services.traefik.loadbalancer.server.port={{ traefik.ports.dashboard_internal }}"
-        # Specifies the internal port (8080) of the Traefik service for the dashboard.
+        - "traefik.http.routers.traefik-secure.middlewares=traefik-dashboard-allowlist"
+        # Applies the trusted source range allowlist to HTTPS dashboard/API requests.
+        - "traefik.http.routers.traefik-secure.service=api@internal"
+        # Routes the protected dashboard/API host to Traefik's internal API service.
         - "traefik.docker.network=proxy"
         # Specifies the Docker network that Traefik should use.
 
@@ -119,8 +121,6 @@ services:
       # Maps port 80 on the host to port 80 in the container for HTTP traffic.
       - "{{ traefik.ports.websecure }}:443"
       # Maps port 443 on the host to port 443 in the container for HTTPS traffic.
-      - "{{ traefik.ports.dashboard }}:{{ traefik.ports.dashboard_internal }}"
-      # Maps port 8080 on the host to port 8080 in the container for the Traefik dashboard.
       - "{{ traefik.ports.ssh }}:2222"
       # Maps port 2222 on the host to port 2222 in the container for SSH traffic.
 

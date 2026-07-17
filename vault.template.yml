@@ -67,6 +67,7 @@ vault:
       ports:
         web: "80"
         websecure: "443"
-        dashboard_internal: "8080"
-        dashboard: "8080"
         ssh: "2222"
+      dashboard:
+        enabled: true
+        allowed_ips: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"

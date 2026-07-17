@@ -8,9 +8,13 @@ traefik:
   ports:
     web: "{{ ((vault.services.traefik | default({})).ports | default({})).web | default('80') }}"
     websecure: "{{ ((vault.services.traefik | default({})).ports | default({})).websecure | default('443') }}"
-    dashboard_internal: "{{ ((vault.services.traefik | default({})).ports | default({})).dashboard_internal | default('8080') }}"
-    dashboard: "{{ ((vault.services.traefik | default({})).ports | default({})).dashboard | default('8080') }}"
     ssh: "{{ ((vault.services.traefik | default({})).ports | default({})).ssh | default('2222') }}"
+
+  # Dashboard/API exposure through the HTTPS router.
+  # `allowed_ips` is a comma-separated Traefik source range list.
+  dashboard:
+    enabled: "{{ ((vault.services.traefik | default({})).dashboard | default({})).enabled | default(true) }}"
+    allowed_ips: "{{ ((vault.services.traefik | default({})).dashboard | default({})).allowed_ips | default('10.0.0.0/8,172.16.0.0/12,192.168.0.0/16') }}"
 
   # Pinned image tag for reproducible deployments
   version: "3.6.11"

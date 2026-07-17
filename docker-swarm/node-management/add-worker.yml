@@ -63,8 +63,8 @@
   become: true
   gather_facts: true
   roles:
-    - role: ../roles/mount_nfs
-    - role: ../roles/docker_install
+    - role: mount_nfs
+    - role: docker_install
   tasks:
     # Ensure any Docker restart notified by docker_install has completed before
     # the node attempts to join the Swarm.

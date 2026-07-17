@@ -68,8 +68,8 @@
   become: true
   gather_facts: true
   roles:
-    - role: ../roles/mount_nfs
-    - role: ../roles/docker_install
+    - role: mount_nfs
+    - role: docker_install
   tasks:
     # docker_install can notify a Docker restart after daemon config changes.
     # Flush before `docker swarm join` so the join happens against the final

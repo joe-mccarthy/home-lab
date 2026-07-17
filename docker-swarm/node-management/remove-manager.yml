@@ -68,6 +68,8 @@
 
     # Demotion converts the target to a worker before it leaves. This is the
     # normal Swarm path for removing a manager without tearing down the cluster.
+    # If a previous run already demoted or removed the node, treat that as
+    # recoverable so the rest of the cleanup can continue.
     - name: Demote manager node
       ansible.builtin.command:
         argv:
@@ -75,7 +77,30 @@
           - node
           - demote
           - "{{ node_management_target_node_name }}"
-      changed_when: true
+      register: node_management_demote_manager
+      failed_when: >-
+        node_management_demote_manager.rc != 0 and
+        'not found' not in (
+          (node_management_demote_manager.stdout | default('') ~ ' ' ~
+          node_management_demote_manager.stderr | default('')) | lower
+        ) and
+        'no such node' not in (
+          (node_management_demote_manager.stdout | default('') ~ ' ' ~
+          node_management_demote_manager.stderr | default('')) | lower
+        ) and
+        'not a manager' not in (
+          (node_management_demote_manager.stdout | default('') ~ ' ' ~
+          node_management_demote_manager.stderr | default('')) | lower
+        ) and
+        'not a swarm manager' not in (
+          (node_management_demote_manager.stdout | default('') ~ ' ' ~
+          node_management_demote_manager.stderr | default('')) | lower
+        ) and
+        'already a worker' not in (
+          (node_management_demote_manager.stdout | default('') ~ ' ' ~
+          node_management_demote_manager.stderr | default('')) | lower
+        )
+      changed_when: node_management_demote_manager.rc == 0
       when: node_management_node_inspect.rc == 0
 
 # Once demoted, ask the target node to leave its local Swarm state. This play is

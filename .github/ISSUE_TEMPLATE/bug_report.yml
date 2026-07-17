@@ -1,0 +1,89 @@
+name: "🐛 Bug Report"
+description: "Report something that is broken or behaving unexpectedly."
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Include enough detail to reproduce the
+        issue without exposing secrets, private domains, or internal IPs you do
+        not want public.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Summary"
+      description: "What is broken?"
+      placeholder: "The Traefik deployment fails when..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Area"
+      description: "Which part of the homelab is affected?"
+      options:
+        - "Docker Swarm"
+        - "Deployment"
+        - "Maintenance"
+        - "Inventory or vault"
+        - "Documentation"
+        - "GitHub automation"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: affected_paths
+    attributes:
+      label: "Affected path(s)"
+      description: "List the playbook, role, template, or README path if known."
+      placeholder: "deployments/traefik/deploy.yml"
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to reproduce"
+      description: "How can the issue be reproduced?"
+      placeholder: |
+        1. Run `ansible-playbook -i inventory.yml ...`
+        2. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected behavior"
+      description: "What should have happened?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual behavior"
+      description: "What happened instead? Include relevant logs or Ansible output."
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Include useful versions and node details."
+      value: |
+        - OS:
+        - Ansible version:
+        - Docker version:
+        - Target node type:
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Additional context"
+      description: "Anything else useful for debugging."

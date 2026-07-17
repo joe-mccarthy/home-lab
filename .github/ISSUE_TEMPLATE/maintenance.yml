@@ -1,0 +1,39 @@
+name: "🔧 Maintenance"
+description: "Track cleanup, refactoring, dependency, or repository maintenance."
+title: "chore: "
+labels:
+  - chore
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: "Task"
+      description: "What maintenance work needs to happen?"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: "Maintenance type"
+      options:
+        - "Refactor"
+        - "Dependency update"
+        - "Repository automation"
+        - "Linting or formatting"
+        - "Cleanup"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: affected_paths
+    attributes:
+      label: "Affected path(s)"
+      placeholder: ".github/workflows/ansible-linter.yml"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Notes"
+      description: "Risks, constraints, or commands that should be considered."

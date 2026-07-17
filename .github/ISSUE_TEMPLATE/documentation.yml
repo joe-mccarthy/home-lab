@@ -1,0 +1,31 @@
+name: "📚 Documentation"
+description: "Request a README, usage, or operational documentation improvement."
+title: "docs: "
+labels:
+  - documentation
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Documentation change"
+      description: "What should be added, clarified, corrected, or removed?"
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: "Page or path"
+      placeholder: "docker-swarm/README.md"
+
+  - type: textarea
+    id: audience
+    attributes:
+      label: "Audience"
+      description: "Who is this for, and what should they be able to do afterwards?"
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "Useful details"
+      description: "Add examples, commands, screenshots, logs, or links that should inform the docs."

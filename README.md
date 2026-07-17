@@ -233,11 +233,33 @@ This is a personal home lab built in public. I am sharing what I have learned, a
 
 Issues, suggestions, and pull requests are welcome:
 
+### Issue Types
+
+Use the guided issue forms when opening work:
+
+| Type | Use It For |
+| --- | --- |
+| 🐛 Bug Report | Broken playbooks, deployments, automation, or unexpected behavior. |
+| ✨ Feature Request | New playbooks, roles, automation, or improvements to existing workflows. |
+| 🚀 Deployment Request | New self-hosted services that should live under `deployments/`. |
+| 📚 Documentation | README, usage, runbook, or troubleshooting improvements. |
+| 🔧 Maintenance | Refactoring, cleanup, linting, workflow, or repository maintenance. |
+| 📦 Dependency Update | Ansible collections, container images, GitHub Actions, or upstream versions. |
+
+### Pull Request Types
+
+Use the default pull request template for most changes. Dedicated PR templates
+are also available for deployments, documentation-only changes, and maintenance
+work.
+
+Before opening a pull request:
+
 1. Fork the project.
 2. Create a feature branch: `git checkout -b feature/amazing-feature`.
 3. Commit your changes: `git commit -m "Add amazing feature"`.
-4. Push the branch: `git push origin feature/amazing-feature`.
-5. Open a pull request.
+4. Run validation where relevant, especially `ansible-lint`.
+5. Push the branch: `git push origin feature/amazing-feature`.
+6. Open a pull request and choose the template that best matches the change.
 
 ---
 

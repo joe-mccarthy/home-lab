@@ -1,0 +1,68 @@
+name: "🚀 Deployment Request"
+description: "Suggest a new self-hosted app or service deployment."
+title: "deployment: "
+labels:
+  - deployment
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for new services that should live under `deployments/`.
+
+  - type: input
+    id: service_name
+    attributes:
+      label: "Service name"
+      placeholder: "Immich"
+    validations:
+      required: true
+
+  - type: textarea
+    id: purpose
+    attributes:
+      label: "What does it provide?"
+      description: "Describe the service and why it belongs in the lab."
+    validations:
+      required: true
+
+  - type: input
+    id: upstream
+    attributes:
+      label: "Upstream project"
+      description: "Link to the project, image, chart, or documentation."
+      placeholder: "https://github.com/example/project"
+
+  - type: textarea
+    id: runtime
+    attributes:
+      label: "Runtime requirements"
+      description: "List ports, volumes, databases, devices, environment variables, or placement constraints."
+      value: |
+        - Ports:
+        - Volumes:
+        - Secrets:
+        - Placement:
+        - External dependencies:
+
+  - type: textarea
+    id: storage
+    attributes:
+      label: "Persistent data"
+      description: "What data needs to survive redeploys, and where should it live?"
+
+  - type: textarea
+    id: security
+    attributes:
+      label: "Security notes"
+      description: "Mention authentication, public exposure, admin defaults, or sensitive values."
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance criteria"
+      description: "What should be true when this deployment is done?"
+      placeholder: |
+        - A deployment README exists.
+        - The stack deploys through Ansible.
+        - Secrets are read from vault values.

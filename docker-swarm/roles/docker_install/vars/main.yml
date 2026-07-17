@@ -31,5 +31,5 @@ docker_install_docker_daemon_options:
 # Notes:
 # - Ensure that the `docker_install_deb_architecture` variable is defined and populated by a task that retrieves the system architecture.
 # - The `ansible_distribution_release` variable is automatically provided by Ansible and corresponds to the Ubuntu release name.
-# - The `docker_daemon_options` dictionary can be extended to include additional configuration options for the Docker daemon.
+# - The `docker_install_docker_daemon_options` dictionary can be extended with additional Docker daemon options.
 # - These variables are designed to be flexible and reusable across different environments and playbooks.

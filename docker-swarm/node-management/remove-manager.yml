@@ -18,7 +18,7 @@
 # Draining and demoting are manager-side operations, so they run from an active
 # control manager rather than on the target node itself.
 - name: Drain and demote manager node
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: false
   tasks:
@@ -115,7 +115,7 @@
 # Finally remove the node object from the manager's cluster membership list.
 # This also cleans up stale entries for offline targets.
 - name: Remove manager from swarm node list
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: false
   tasks:

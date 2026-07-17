@@ -17,7 +17,7 @@
 # Draining is a manager-side operation. Run it from an active manager before
 # asking the worker to leave its local Swarm state.
 - name: Drain worker node
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: false
   tasks:
@@ -98,7 +98,7 @@
 
 # Remove the worker object from the cluster membership list on a manager.
 - name: Remove worker from swarm node list
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: false
   tasks:

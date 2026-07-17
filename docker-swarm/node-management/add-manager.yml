@@ -26,7 +26,7 @@
 # control manager is also used later to apply labels because node metadata is a
 # manager-side operation.
 - name: Get manager join details
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: true
   tasks:
@@ -104,7 +104,7 @@
 # Labels are applied from the control manager after the node is visible in the
 # manager API. This mirrors the inventory-driven labels used by create.yml.
 - name: Apply labels to manager node
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: false
   tasks:

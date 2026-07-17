@@ -25,7 +25,7 @@
 # Worker join tokens are read from an existing manager at run time. This avoids
 # storing tokens in source-controlled inventory and works after token rotation.
 - name: Get worker join details
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: true
   tasks:
@@ -96,7 +96,7 @@
 
 # Swarm labels must be applied through a manager, not from the worker itself.
 - name: Apply labels to worker node
-  hosts: "{{ swarm_manager | default(groups['manager'][0]) }}"
+  hosts: "{{ swarm_manager | default('manager[0]') }}"
   become: true
   gather_facts: false
   tasks:

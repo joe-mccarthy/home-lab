@@ -27,7 +27,10 @@ services:
       # Mounts the Docker socket to allow the service to interact with the Docker API.
       # This is required for Cioban to manage and update other services.
       # Use caution as this grants the container full access to the Docker daemon.
-      - '~/.docker/config.json:/root/.docker/config.json:ro'
+      - type: bind
+        source: "{{ cioban_docker_config_path }}"
+        target: /root/.docker/config.json
+        read_only: true
       # Mounts the Docker configuration file to provide access to private registries.
       # The file is mounted as read-only (`ro`) for security.
 
@@ -43,7 +46,7 @@ services:
 # Notes:
 # - Ensure that the Docker Swarm cluster is properly configured before deploying this stack.
 # - The `volumes` section grants the container significant privileges. Use it only in trusted environments.
-# - Replace `~/.docker/config.json` with the appropriate path to the Docker configuration file on the host.
+# - `cioban_docker_config_path` must reference a protected config file on every manager node.
 # - The `SLEEP_TIME` and `FILTER_SERVICES` environment variables can be adjusted to customize the update behavior.
 # - If Traefik is used for routing, set `traefik.enable` to `true` and configure additional labels for routing rules.
 # - Always test changes in a staging environment before deploying to production.

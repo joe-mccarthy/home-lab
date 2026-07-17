@@ -29,6 +29,8 @@ The deployment process involves preparing the environment, ensuring the required
 
 The deployment emphasizes security by encrypting sensitive data, restricting permissions on configuration files, and automating the issuance of SSL/TLS certificates. It is recommended to test the deployment in a staging environment before applying it to production.
 
+The Traefik dashboard and API are not published directly on the host. The insecure API listener is disabled, API debug endpoints are disabled, and dashboard access is routed through `https://traefik.<domain>` with a Traefik IP allowlist middleware. Configure trusted dashboard source ranges in `vault.services.traefik.dashboard.allowed_ips` as a comma-separated list. Set `vault.services.traefik.dashboard.enabled` to `false` to disable the dashboard route entirely.
+
 ## Troubleshooting
 
 Common issues such as missing directories, uninitialized Docker Swarm, or misconfigured secrets can be resolved by verifying the environment setup and reviewing Ansible playbook logs.

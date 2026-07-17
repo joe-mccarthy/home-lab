@@ -15,8 +15,8 @@
     - name: Validate Cioban Docker config path
       ansible.builtin.assert:
         that:
-          - cioban_docker_config_path is string
-          - (cioban_docker_config_path | regex_search('^/')) is not none
+          - (cioban_docker_config_path | default('')) is string
+          - ((cioban_docker_config_path | default('')) | regex_search('^/')) is not none
         fail_msg: >-
           cioban_docker_config_path must be an absolute path on every Swarm
           manager; shell shortcuts such as ~ are not supported.

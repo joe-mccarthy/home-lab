@@ -57,4 +57,4 @@ The playbook checks the configured path on every manager before stopping the exi
 
 - **Absolute-path assertion fails**: remove `~` or relative components and set `cioban_docker_config_path` to an absolute manager-host path.
 - **Protected-file assertion fails**: run the Docker login maintenance playbook on every cluster node, then verify ownership and mode on the named manager.
-- **Cioban cannot inspect a private registry**: confirm the registry entry exists in the configured Docker file on every manager and rerun the login playbook after credential rotation.
+- **Cioban cannot inspect a private registry**: confirm the registry entry exists in the Docker configuration file at `cioban_docker_config_path` on every manager and rerun the login playbook after credential rotation.

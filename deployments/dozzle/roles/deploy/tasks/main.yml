@@ -5,9 +5,9 @@
   ansible.builtin.include_role:
     name: docker_prereqs_and_stop
   vars:
-    # Swarm service name generated from stack + service: dozzle_dozzel.
+    # Swarm service name generated from stack + service: dozzle_dozzle.
     docker_prereqs_and_stop_services_to_stop:
-      - dozzle_dozzel
+      - dozzle_dozzle
 
 # Render compose template and deploy/update the dozzle stack.
 - name: Deploy Services

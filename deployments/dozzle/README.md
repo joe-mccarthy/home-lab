@@ -6,7 +6,7 @@ This directory contains an Ansible-based deployment for **Dozzle** using Docker 
 
 ## What this deployment does
 
-- Stops any running `dozzle_dozzel` service before redeployment.
+- Stops any running `dozzle_dozzle` service before redeployment.
 - Renders a Docker Compose stack definition from a Jinja2 template.
 - Deploys the stack to Docker Swarm using `docker stack deploy`.
 - Exposes Dozzle through Traefik with automatic HTTPS redirection and Let's Encrypt TLS certificates.
@@ -65,4 +65,4 @@ Common issues and their resolutions:
 - **Service not accessible**: confirm Traefik is running and DNS resolves `dozzle.<domain>` to your cluster ingress IP.
 - **TLS certificate issues**: verify Traefik ACME configuration and that `web`/`websecure` entrypoints are active.
 - **Missing logs**: ensure `/var/run/docker.sock` is mounted and readable by the Dozzle container.
-- **Deployment conflicts**: if an old service remains, manually remove it with `docker service rm dozzle_dozzel` and redeploy.
+- **Deployment conflicts**: if an old service remains, manually remove it with `docker service rm dozzle_dozzle` and redeploy.

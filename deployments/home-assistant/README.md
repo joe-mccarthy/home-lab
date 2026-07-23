@@ -1,13 +1,13 @@
 # 🏡 Home Assistant Deployment
 
-[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![MQTT](https://img.shields.io/badge/MQTT-IoT%20Messaging-660066?logo=eclipsemosquitto&logoColor=white&style=flat-square)](https://mqtt.org/) [![Zigbee](https://img.shields.io/badge/Zigbee-Device%20Network-EB0443?style=flat-square)](https://csa-iot.org/all-solutions/zigbee/) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.7.2-5C5C5C?style=flat-square) ![Zigbee2MQTT](https://img.shields.io/badge/Zigbee2MQTT-v2.12.1-5C5C5C?style=flat-square) ![Mosquitto](https://img.shields.io/badge/Mosquitto-2.1.2--alpine-5C5C5C?style=flat-square)
+[![Ansible](https://img.shields.io/badge/Ansible-Automation-EE0000?logo=ansible&logoColor=white&style=flat-square)](https://docs.ansible.com/) [![Docker Swarm](https://img.shields.io/badge/Docker%20Swarm-Orchestration-2496ED?logo=docker&logoColor=white&style=flat-square)](https://docs.docker.com/engine/swarm/) [![Traefik](https://img.shields.io/badge/Traefik-HTTPS%20Access-24A1C1?logo=traefikproxy&logoColor=white&style=flat-square)](https://doc.traefik.io/traefik/) [![MQTT](https://img.shields.io/badge/MQTT-IoT%20Messaging-660066?logo=eclipsemosquitto&logoColor=white&style=flat-square)](https://mqtt.org/) [![Zigbee](https://img.shields.io/badge/Zigbee-Device%20Network-EB0443?style=flat-square)](https://csa-iot.org/all-solutions/zigbee/) [![Matter](https://img.shields.io/badge/Matter-Wi--Fi%20Devices-00BFB3?style=flat-square)](https://csa-iot.org/all-solutions/matter/) ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.7.2-5C5C5C?style=flat-square) ![Zigbee2MQTT](https://img.shields.io/badge/Zigbee2MQTT-v2.12.1-5C5C5C?style=flat-square) ![Matter Server](https://img.shields.io/badge/Matter%20Server-8.1.2-5C5C5C?style=flat-square) ![Mosquitto](https://img.shields.io/badge/Mosquitto-2.1.2--alpine-5C5C5C?style=flat-square)
 
-An Ansible deployment for a Docker Swarm based smart home stack: [Home Assistant](https://www.home-assistant.io/), [Zigbee2MQTT](https://www.zigbee2mqtt.io/), and [Mosquitto](https://mosquitto.org/), routed through Traefik and backed by shared NFS storage.
+An Ansible deployment for a Docker Swarm based smart home stack: [Home Assistant](https://www.home-assistant.io/), [Matter Server](https://github.com/matter-js/python-matter-server), [Zigbee2MQTT](https://www.zigbee2mqtt.io/), and [Mosquitto](https://mosquitto.org/), routed through Traefik and backed by shared NFS storage.
 
-This deployment is built for a small home lab cluster where Home Assistant should survive node maintenance, keep its configuration on persistent storage, and integrate cleanly with Zigbee devices through MQTT.
+This deployment is built for a small home lab cluster where Home Assistant should survive node maintenance, keep its configuration on persistent storage, and integrate cleanly with Zigbee devices through MQTT and Wi-Fi Matter devices through a local Matter controller.
 
 > [!WARNING]
-> This stack is designed for a home lab. The bundled Mosquitto service currently runs with the upstream no-auth configuration, so review MQTT exposure and network access before using it anywhere sensitive.
+> This stack is designed for a home lab. The bundled Mosquitto service currently runs with the upstream no-auth configuration, and Matter Server listens directly on the storage node's LAN port `5580`, so review MQTT and LAN exposure before using it anywhere sensitive.
 
 ---
 
@@ -16,12 +16,16 @@ This deployment is built for a small home lab cluster where Home Assistant shoul
 | Service | Image | Purpose |
 | --- | --- | --- |
 | `homeassistant` | `ghcr.io/home-assistant/home-assistant:2026.7.2` | Main automation platform and web UI. |
+| `matter-server` | `ghcr.io/matter-js/python-matter-server:8.1.2` | Matter controller WebSocket server for Wi-Fi Matter devices. |
+| `matter-server-proxy` | `alpine/socat:1.8.1.3` | Stack-local TCP proxy exposing `matter-server` DNS to Home Assistant. |
 | `zigbee2mqtt` | `ghcr.io/koenkk/zigbee2mqtt:2.12.1` | Bridges Zigbee devices into MQTT topics Home Assistant can discover. |
 | `mqtt` | `eclipse-mosquitto:2.1.2-alpine` | MQTT broker used by Zigbee2MQTT and Home Assistant. |
 
 The stack name is `home_assistant`, so Swarm service names become:
 
 - `home_assistant_homeassistant`
+- `home_assistant_matter-server`
+- `home_assistant_matter-server-proxy`
 - `home_assistant_zigbee2mqtt`
 - `home_assistant_mqtt`
 
@@ -37,12 +41,29 @@ Zigbee coordinator ── Zigbee2MQTT ── Mosquitto MQTT ── Home Assistan
                                              │
                                              ▼
                                     Traefik HTTPS routing
+
+Matter Wi-Fi devices ── Matter Server host network
+                                  ▲
+                                  │
+Home Assistant ── overlay DNS: matter-server ── Matter Server proxy
 ```
 
 Traefik exposes:
 
 - `https://homeassistant.<your-domain>`
 - `https://zigbee2mqtt.<your-domain>`
+
+Matter Server is not exposed through Traefik. Home Assistant should connect through the stack-local proxy at:
+
+```text
+ws://matter-server:5580/ws
+```
+
+The underlying Matter Server also listens directly on the storage node for debugging at:
+
+```text
+ws://<storage-node-lan-ip>:5580/ws
+```
 
 The domain comes from `vault.shared.general.domain`, which is shared across the deployment catalog.
 
@@ -70,9 +91,11 @@ The domain comes from `vault.shared.general.domain`, which is shared across the 
 - Traefik already deployed and able to route wildcard service domains.
 - NFS mounted and available on the deployment host.
 - A Zigbee coordinator connected to the node that will run Zigbee2MQTT.
+- IPv6 and mDNS/multicast working between the storage node, the phone used for commissioning, and Wi-Fi Matter devices.
+- The storage-labelled placement constraint should identify one node, or the Matter Server and proxy may not land on the same host.
 - Vault values defined in [`../../vault.template.yml`](../../vault.template.yml).
 
-The compose template places all three services on nodes with:
+The compose template places all five services on nodes with:
 
 ```yaml
 node.labels.storage == true
@@ -99,6 +122,8 @@ After deployment, check the Swarm services:
 ```bash
 docker service ls
 docker service ps home_assistant_homeassistant
+docker service ps home_assistant_matter-server
+docker service ps home_assistant_matter-server-proxy
 docker service ps home_assistant_zigbee2mqtt
 docker service ps home_assistant_mqtt
 ```
@@ -107,6 +132,8 @@ Follow logs while the stack starts:
 
 ```bash
 docker service logs -f home_assistant_homeassistant
+docker service logs -f home_assistant_matter-server
+docker service logs -f home_assistant_matter-server-proxy
 docker service logs -f home_assistant_zigbee2mqtt
 docker service logs -f home_assistant_mqtt
 ```
@@ -147,6 +174,7 @@ The NFS role prepares:
 
 ```text
 /mnt/nfs/docker/home_assistant
+/mnt/nfs/docker/home_assistant/matter-server/data
 /mnt/nfs/docker/home_assistant/mosquitto
 /mnt/nfs/docker/home_assistant/zigbee2mqtt
 /mnt/nfs/docker/home_assistant/zigbee2mqtt/data
@@ -156,6 +184,7 @@ The Swarm stack mounts the storage export paths into containers:
 
 ```text
 /exports/docker/home_assistant                -> /config
+/exports/docker/home_assistant/matter-server/data -> /data
 /exports/docker/home_assistant/zigbee2mqtt/data -> /app/data
 /exports/docker/home_assistant/mosquitto      -> /mosquitto
 ```
@@ -187,6 +216,27 @@ Enable pairing only while adding devices, then turn it off again.
 
 ---
 
+## 🧩 Matter Notes
+
+Matter Server runs on Docker's predefined `host` network because Matter over Wi-Fi depends on local IPv6 and mDNS multicast. Docker host networking cannot be combined with an overlay network for normal service discovery, so this stack adds a small `matter-server-proxy` service on the overlay network.
+
+The proxy has the stack-local alias `matter-server` and forwards Home Assistant's WebSocket connection to the host-networked Matter Server through `host.docker.internal`. It does not carry Matter device traffic.
+
+> [!NOTE]
+> Home Assistant recommends Home Assistant OS with the official Matter Server app as the supported Matter installation type. This stack uses the documented self-managed Docker container path for a Swarm-based home lab.
+
+After deployment, add the Matter integration in Home Assistant under **Settings > Devices & services**. When asked for the Matter Server connection, use:
+
+```text
+ws://matter-server:5580/ws
+```
+
+For Wi-Fi Matter device commissioning, use the Home Assistant Companion app on a phone with Bluetooth enabled and connected to the same Wi-Fi/LAN where the Matter device will run. Many Wi-Fi Matter devices require 2.4 GHz Wi-Fi during onboarding.
+
+This deployment supports Wi-Fi Matter devices. Thread Matter devices still need a Thread border router and additional Thread network planning.
+
+---
+
 ## 🛠️ Operations
 
 ### Redeploy the Stack
@@ -201,6 +251,8 @@ The deployment role removes the existing Home Assistant services before redeploy
 
 ```bash
 docker service update --force home_assistant_homeassistant
+docker service update --force home_assistant_matter-server
+docker service update --force home_assistant_matter-server-proxy
 docker service update --force home_assistant_zigbee2mqtt
 docker service update --force home_assistant_mqtt
 ```
@@ -209,6 +261,8 @@ docker service update --force home_assistant_mqtt
 
 ```bash
 docker service inspect home_assistant_homeassistant
+docker service inspect home_assistant_matter-server
+docker service inspect home_assistant_matter-server-proxy
 docker service inspect home_assistant_zigbee2mqtt
 docker service inspect home_assistant_mqtt
 ```
@@ -217,6 +271,7 @@ docker service inspect home_assistant_mqtt
 
 ```bash
 ls -la /mnt/nfs/docker/home_assistant
+ls -la /mnt/nfs/docker/home_assistant/matter-server/data
 ls -la /mnt/nfs/docker/home_assistant/zigbee2mqtt/data
 ```
 
@@ -227,6 +282,8 @@ ls -la /mnt/nfs/docker/home_assistant/zigbee2mqtt/data
 | Symptom | What to Check |
 | --- | --- |
 | Home Assistant returns proxy errors | Confirm `vault.services.home_assistant.proxy` matches the Traefik network CIDR or proxy IP. |
+| Home Assistant cannot connect to Matter | Confirm the Matter integration uses `ws://matter-server:5580/ws`, then check `home_assistant_matter-server-proxy` and `home_assistant_matter-server` logs. |
+| Matter devices fail commissioning | Confirm IPv6 is enabled, mDNS/multicast is not filtered, and the phone, storage node, and Matter device are on the same LAN or VLAN. |
 | Zigbee2MQTT cannot reach MQTT | Confirm `vault.services.home_assistant.mqtt_server` is reachable from the stack, usually `mqtt://mqtt:1883`. |
 | Zigbee coordinator is missing | Check the device path on the storage-labelled node with `ls -la /dev/serial/by-id /dev/ttyUSB* /dev/ttyACM*`. |
 | Services stay pending | Confirm at least one Swarm node has the label `storage=true`. |
@@ -238,8 +295,11 @@ Useful commands:
 ```bash
 docker service ps home_assistant_homeassistant --no-trunc
 docker service logs home_assistant_homeassistant
+docker service logs home_assistant_matter-server
+docker service logs home_assistant_matter-server-proxy
 docker service logs home_assistant_zigbee2mqtt
 docker network inspect proxy
+docker network inspect host
 ```
 
 ---
@@ -248,9 +308,10 @@ docker network inspect proxy
 
 - Keep `vault.services.home_assistant.proxy` narrow. Do not trust broad networks unless they are truly controlled.
 - The bundled Mosquitto service uses `mosquitto -c /mosquitto-no-auth.conf`; restrict network exposure or add authentication before exposing MQTT beyond the stack.
+- Do not expose Matter Server port `5580` to the internet. It should only be reachable on the trusted LAN.
 - Leave Zigbee pairing disabled except during device onboarding.
 - Enable strong Home Assistant authentication and MFA from the Home Assistant UI.
-- Back up `/mnt/nfs/docker/home_assistant`, especially `.storage/` and `zigbee2mqtt/data`.
+- Back up `/mnt/nfs/docker/home_assistant`, especially `.storage/`, `matter-server/data`, and `zigbee2mqtt/data`.
 
 ---
 
@@ -261,3 +322,5 @@ docker network inspect proxy
 - [Core deployments](../core-deployments/README.md)
 - [Traefik deployment](../traefik/README.md)
 - [Vault template](../../vault.template.yml)
+- [Home Assistant Matter integration](https://www.home-assistant.io/integrations/matter/)
+- [Matter Server Docker notes](https://github.com/matter-js/python-matter-server/blob/main/docs/docker.md)

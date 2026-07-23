@@ -43,9 +43,9 @@ Deployments that use the shared `copy_and_deploy` role render Docker Compose tem
 - **Dependencies**: Requires Traefik for proxying and certificate management.
 
 ### 6. [Home Assistant](home-assistant/README.md)
-- **Description**: Deploys Home Assistant, an open-source platform for home automation. It integrates with various smart devices to provide a centralized control interface.
+- **Description**: Deploys Home Assistant, an open-source platform for home automation, with Zigbee2MQTT, Mosquitto, and Matter Server for Wi-Fi Matter devices.
 - **Use Case**: Perfect for managing and automating smart home devices.
-- **Dependencies**: Requires Traefik for proxying and certificate management.
+- **Dependencies**: Requires Traefik for proxying and certificate management. Matter Server also requires working LAN IPv6 and mDNS/multicast on the storage-labelled node.
 
 ### 7. [Immich](immich/README.md)
 - **Description**: Immich is a high-performance self-hosted photo and video management solution that serves as a complete alternative to Google Photos. Features include:
@@ -99,6 +99,8 @@ Deployments that use the shared `copy_and_deploy` role render Docker Compose tem
 | [Gitea](gitea/README.md) | server | `1.25.5` |
 | [Gitea](gitea/README.md) | act_runner | `0.2.12` |
 | [Home Assistant](home-assistant/README.md) | home-assistant | `2026.7.2` |
+| [Home Assistant](home-assistant/README.md) | matter-server | `8.1.2` |
+| [Home Assistant](home-assistant/README.md) | matter-server-proxy | `1.8.1.3` |
 | [Home Assistant](home-assistant/README.md) | zigbee2mqtt | `2.12.1` |
 | [Home Assistant](home-assistant/README.md) | mosquitto | `2.1.2-alpine` |
 | [Immich](immich/README.md) | immich-server | `v2.6.1` |

@@ -10,6 +10,8 @@ home_assistant:
     homeassistant: "2026.7.2"
     zigbee2mqtt: "2.12.1"
     mqtt: "2.1.2-alpine"
+    matter_server: "8.1.2"
+    matter_proxy: "1.8.1.3"
 
 # Notes:
 # - All vault.services.home_assistant.* variables must be defined and encrypted in Ansible Vault.

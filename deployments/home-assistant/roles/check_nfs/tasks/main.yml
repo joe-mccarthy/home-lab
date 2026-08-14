@@ -111,9 +111,10 @@
     path: /mnt/nfs/docker/home_assistant/matter-server/data
     state: directory
     mode: '0755'
-    owner: nobody
-    group: nogroup
+    owner: '1000'
+    group: '1000'
   # Stores Matter fabric data and certificates for the Matter controller.
+  # Matter.js Server runs as UID/GID 1000 instead of root.
   # Losing this directory may require recommissioning Matter devices.
 
 # ============================================================================
@@ -190,6 +191,7 @@
 #    - The 0777 permission on the main NFS directory allows Docker containers
 #      with varying UIDs to access the storage across cluster nodes
 #    - nobody/nogroup ownership is standard for NFS shared storage
+#    - Matter Server data is owned by UID/GID 1000 for its rootless container
 #    - Subdirectories use 0755 for better security while maintaining access
 #
 # 3. Security Considerations:

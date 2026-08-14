@@ -26,6 +26,7 @@ all:
           ansible_user: pi
           swarm_labels:
             storage: "true"
+            matter: "true"  # Keep this label on exactly one trusted-LAN node.
 
     # -------------------------------------------------------------------------
     # cluster: parent group that encompasses every Swarm node.

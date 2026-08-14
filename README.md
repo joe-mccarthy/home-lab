@@ -141,7 +141,7 @@ The full service catalog lives in [`deployments/README.md`](deployments/README.m
 | [Dozzle](deployments/dozzle/README.md) | Browser-based real-time container logs. |
 | [Cioban](deployments/cioban/README.md) | Automated Docker service updates. |
 | [Gitea](deployments/gitea/README.md) | Self-hosted Git service and runners. |
-| [Home Assistant](deployments/home-assistant/README.md) | Smart home automation platform. |
+| [Home Assistant](deployments/home-assistant/README.md) | Smart home automation with Zigbee, MQTT, and Wi-Fi Matter support. |
 | [Immich](deployments/immich/README.md) | Self-hosted photo and video management. |
 | [Paperless](deployments/paperless/README.md) | Document management and OCR workflow. |
 | [Omni Tools](deployments/omni/README.md) | Self-hosted everyday browser utilities. |

@@ -5,10 +5,11 @@
 # This Ansible task file orchestrates the complete deployment of the Home Assistant
 # stack on Docker Swarm. It handles prerequisite verification, service cleanup,
 # infrastructure preparation, and stack deployment for a containerized Home Assistant
-# environment with integrated MQTT and Zigbee2MQTT services.
+# environment with integrated Matter Server, MQTT, and Zigbee2MQTT services.
 #
 # Deployment Architecture:
 # - Home Assistant Core: Main home automation platform
+# - Matter Server: Matter controller WebSocket service for Wi-Fi Matter devices
 # - Mosquitto MQTT: Message broker for IoT device communication
 # - Zigbee2MQTT: Bridge between Zigbee devices and MQTT
 # - Shared NFS storage for persistent data and configuration
@@ -17,6 +18,7 @@
 # - Docker Swarm cluster initialized and operational
 # - NFS storage mounted and accessible (/mnt/nfs/docker)
 # - Network connectivity for container image downloads
+# - Working IPv6 and mDNS/multicast on the LAN for Wi-Fi Matter devices
 # - Zigbee coordinator hardware connected to deployment target
 # ============================================================================
 
@@ -28,11 +30,24 @@
     name: docker_prereqs_and_stop
   vars:
     docker_prereqs_and_stop_services_to_stop:
-      - homeassistant_homeassistant
-      - homeassistant_zigbee2mqtt
-      - homeassistant_mqtt
+      - home_assistant_homeassistant
+      - home_assistant_matter-server
+      - home_assistant_matter-server-proxy  # Remove the proxy from earlier revisions of this stack.
+      - home_assistant_zigbee2mqtt
+      - home_assistant_mqtt
   # This task includes a shared role that ensures Docker and Docker Compose are installed and running.
   # It also removes any existing Docker Swarm services related to Home Assistant to ensure a clean deployment.
+
+- name: Ensure Matter Server data is owned by its rootless container user
+  ansible.builtin.file:
+    path: /mnt/nfs/docker/home_assistant/matter-server/data
+    state: directory
+    owner: '1000'
+    group: '1000'
+    recurse: true
+  # Existing Python Matter Server data is migrated in place on first start.
+  # Apply ownership after stopping the old service so no root-owned files are
+  # created between the migration preparation and the replacement deployment.
 
 - name: Deploy Services
   ansible.builtin.include_role:
@@ -63,18 +78,21 @@
 # 1. Service Health Verification:
 #    After deployment, verify service status with:
 #    - docker service ls (check all services are running)
-#    - docker service logs homeassistant_homeassistant
-#    - docker service logs homeassistant_mqtt
-#    - docker service logs homeassistant_zigbee2mqtt
+#    - docker service logs home_assistant_homeassistant
+#    - docker service logs home_assistant_matter-server
+#    - docker service logs home_assistant_mqtt
+#    - docker service logs home_assistant_zigbee2mqtt
 #
 # 2. Network Connectivity Testing:
 #    - Verify Home Assistant web interface accessibility
+#    - Confirm Matter Server is reachable from Home Assistant on ws://<matter-node-lan-ip>:5580/ws
 #    - Test MQTT broker connectivity from external clients
 #    - Confirm Zigbee coordinator device access
 #    - Validate NFS mount accessibility across cluster nodes
 #
 # 3. Configuration Validation:
 #    - Check Home Assistant startup logs for configuration errors
+#    - Add the Matter integration from the Home Assistant UI with the Matter Server WebSocket URL
 #    - Verify MQTT broker is accepting connections
 #    - Confirm Zigbee2MQTT can communicate with coordinator
 #    - Test device discovery and state reporting

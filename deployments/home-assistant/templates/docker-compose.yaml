@@ -8,12 +8,14 @@
 #
 # Stack Architecture:
 # - Home Assistant Core: Main automation platform with web interface
+# - Matter Server: Matter controller service for Wi-Fi Matter devices
 # - Zigbee2MQTT: Bridge between Zigbee devices and MQTT protocol
 # - Mosquitto MQTT: Message broker for device-to-service communication
 # - Traefik Integration: Reverse proxy with automatic SSL certificates
 #
 # Network Design:
 # - proxy: External network for Traefik reverse proxy communication
+# - matter_host: Docker's host network for Matter mDNS/IPv6 multicast
 # - default: Internal network for service-to-service communication
 #
 # Security Features:
@@ -244,6 +246,62 @@ services:
         - "traefik.docker.network=proxy"
 
   # ==========================================================================
+  # Matter Server Service
+  # ==========================================================================
+  # Provides the Matter controller used by Home Assistant's Matter integration.
+  # Matter over Wi-Fi relies on local IPv6 and mDNS multicast, so this service
+  # attaches to Docker's predefined host network instead of Swarm overlay
+  # networking. Home Assistant connects to this service through the dedicated
+  # Matter node's trusted LAN address.
+  # ==========================================================================
+  matter-server:
+    container_name: matter-server
+    # Container naming for easier identification in Docker commands and logs.
+
+    image: "ghcr.io/matter-js/matterjs-server:{{ home_assistant.versions.matter_server }}"
+    # Official Matter.js Server container image. It is the maintained,
+    # WebSocket-compatible successor to the archived Python Matter Server.
+    # This stores Matter fabric data under /data and exposes its WebSocket API
+    # on TCP port 5580 on the host network.
+
+    restart: unless-stopped
+    # Restarts the Matter controller after host reboots or service failures.
+
+    read_only: true
+    # Matches the upstream container's hardened default. Persistent writes are
+    # limited to /data, which is owned by the image's unprivileged UID 1000.
+
+    volumes:
+      - /exports/docker/home_assistant/matter-server/data:/data
+      # Persistent Matter fabric data and controller certificates.
+      # Backup Importance: losing this directory may require recommissioning
+      # Matter devices into a new Home Assistant Matter fabric.
+
+    networks:
+      matter_host:
+        # Docker's predefined host network, required for Matter mDNS and IPv6
+        # link-local multicast traffic to reach the LAN directly.
+
+    environment:
+      - TZ=Europe/London
+      # Timezone configuration for consistent service logs.
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      # Single Matter controller instance. Multiple instances would represent
+      # different fabrics and conflict with shared persistent state.
+      placement:
+        constraints:
+          - node.labels.storage == true             # Target nodes with persistent Matter data
+          - node.labels.matter == true              # Pin host networking to one dedicated Matter node
+
+      labels:
+        - "traefik.enable=false"
+        # Matter Server is intentionally not routed through Traefik. It must be
+        # reached directly on the LAN at ws://<matter-node-lan-ip>:5580/ws.
+
+  # ==========================================================================
   # Mosquitto MQTT Broker Service
   # ==========================================================================
   # MQTT message broker providing reliable communication infrastructure
@@ -325,6 +383,13 @@ networks:
     # - DNS records must point to Traefik ingress points
     #
     # Creation Command: docker network create --driver overlay proxy
+
+  matter_host:
+    external: true
+    name: host
+    # Uses Docker's predefined host network for the Matter Server service.
+    # This network exists on every Docker host and is required because Swarm
+    # overlay networks do not carry Matter's local multicast traffic correctly.
 
 # ============================================================================
 # Deployment Notes and Best Practices

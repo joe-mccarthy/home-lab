@@ -1,0 +1,48 @@
+---
+- name: Create Paperless data directory
+  ansible.builtin.file:
+    path: "{{ paperless.data_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Create Paperless application data directories
+  ansible.builtin.file:
+    path: "{{ paperless.data_dir }}/{{ item }}"
+    state: directory
+    mode: '0750'
+    owner: "{{ paperless.uid }}"
+    group: "{{ paperless.gid }}"
+  loop:
+    - consume
+    - data
+    - export
+    - media
+
+- name: Create Paperless broker data directory
+  ansible.builtin.file:
+    path: "{{ paperless.data_dir }}/broker"
+    state: directory
+    mode: '0750'
+    owner: '999'
+    group: '999'
+
+- name: Create Paperless PostgreSQL data directory
+  ansible.builtin.file:
+    path: "{{ paperless.database.data_dir }}"
+    state: directory
+    mode: '0700'
+    owner: '999'
+    group: '999'
+
+- name: Create Paperless Compose project directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+  loop:
+    - "{{ paperless.compose_dir }}"
+    - "{{ paperless.compose_dir }}/secrets"

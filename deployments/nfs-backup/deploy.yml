@@ -1,45 +1,32 @@
 ---
-# This playbook orchestrates the deployment of restic backup services to a Docker Swarm cluster.
-# The deployment includes three services:
-#   1. backup - Creates regular backups of the NFS shared data
-#   2. prune - Manages backup retention and removes old backups according to policy
-#   3. check - Verifies backup integrity by scanning the repository
+# NFS BACKUP DEPLOYMENT
 #
-# The playbook targets the manager group and gates deployment tasks to one selected
-# manager host so commands execute exactly once and avoid duplicate deployments.
-
+# Install, validate, and activate the backup jobs on the one authoritative NFS
+# host. This deployment uses only the local Docker daemon and systemd.
 - name: Deploy NFS Backup Jobs
-  hosts: manager  # Target the manager group in the Swarm cluster.
-  order: shuffle  # Select a manager without always preferring the first inventory host.
-  become: true       # Execute tasks with elevated privileges (sudo)
-                     # Required for Docker operations and filesystem access
-  vars:
-    # Use one selected manager host for deployment to avoid `run_once` strategy caveats.
-    nfs_backup_deploy_host: "{{ ansible_play_hosts_all | first }}"
+  hosts: nfs_servers
+  become: true
+  any_errors_fatal: true
+  gather_facts: false
 
-  # Pre-deployment checks could be added here
-  # Examples:
-  #   - Check if backup target directories exist
-  #   - Verify Docker Swarm is operational
-  #   - Validate storage capacity for backups
+  pre_tasks:
+    # Multiple source hosts would run duplicate backups under the same Restic
+    # hostname, path, and tag.
+    - name: Require one authoritative NFS server
+      ansible.builtin.assert:
+        that:
+          - groups['nfs_servers'] | length == 1
+        fail_msg: The deployment requires exactly one host in nfs_servers
 
   tasks:
-    - name: Deploy backup services
+    # Preparation pauses existing timers, refuses to replace files while a job
+    # is active, installs the runner, and validates the repository.
+    - name: Prepare scheduled one-shot backup jobs
       ansible.builtin.include_role:
         name: deploy_backup
-      when: inventory_hostname == nfs_backup_deploy_host
 
-# ==============================================================================
-# DEPLOYMENT PROCESS:
-# 1. Install required dependencies (docker-compose)
-# 2. Ensure Docker service is running
-# 3. Remove any existing backup services to avoid conflicts
-# 4. Prepare local directory structure for deployment
-# 5. Deploy the stack using docker stack deploy
-# 6. Clean up temporary files
-#
-# MAINTENANCE NOTES:
-# - The backup encryption key is stored in Ansible Vault (referenced in group_vars/all.yml)
-# - Backup retention policies are defined in the docker-compose template
-# - Services are configured to run on nodes with the "storage" label
-# ==============================================================================
+    # Activate timers only after all installation and validation tasks succeed.
+    - name: Enable scheduled one-shot backup jobs
+      ansible.builtin.include_role:
+        name: deploy_backup
+        tasks_from: enable_timers

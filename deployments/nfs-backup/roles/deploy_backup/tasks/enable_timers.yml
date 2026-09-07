@@ -1,0 +1,18 @@
+---
+# ACTIVATE THE PREPARED TIMERS
+#
+# This file is called only after the parent playbook completes installation and
+# validation. Separating activation from main.yml keeps that safety barrier.
+
+# Enabling creates boot-time symlinks under timers.target.wants. `started`
+# makes timers active immediately without running their service before
+# OnCalendar is reached. Each registered result retains the original job item,
+# so only a timer whose own rendered file changed needs to restart.
+- name: Enable scheduled backup timers
+  ansible.builtin.systemd:
+    name: "nfs-backup-{{ item.item.key }}.timer"
+    enabled: true
+    state: "{{ item.changed | ternary('restarted', 'started') }}"
+  loop: "{{ deploy_backup_timer_units.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"

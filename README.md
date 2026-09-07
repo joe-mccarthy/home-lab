@@ -157,7 +157,8 @@ ansible-playbook -i inventory.yml deployments/<service>/deploy.yml --ask-vault-p
 For example:
 
 ```bash
-ansible-playbook -i inventory.yml deployments/immich/deploy.yml --ask-vault-pass
+ansible-playbook -i inventory.yml deployments/immich/deploy.yml \
+  -e target=odin --ask-vault-pass
 ```
 
 ---

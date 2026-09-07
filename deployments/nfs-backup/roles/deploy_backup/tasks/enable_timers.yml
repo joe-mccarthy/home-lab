@@ -13,6 +13,6 @@
     name: "nfs-backup-{{ item.item.key }}.timer"
     enabled: true
     state: "{{ item.changed | ternary('restarted', 'started') }}"
-  loop: "{{ nfs_backup_timer_units.results }}"
+  loop: "{{ deploy_backup_timer_units.results }}"
   loop_control:
     label: "{{ item.item.key }}"

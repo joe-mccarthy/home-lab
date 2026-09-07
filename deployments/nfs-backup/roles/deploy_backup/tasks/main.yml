@@ -31,14 +31,14 @@
     - check
   loop_control:
     label: "{{ item }}"
-  register: nfs_backup_existing_timer_files
+  register: deploy_backup_existing_timer_files
 
 - name: Pause existing backup timers during deployment
   ansible.builtin.systemd:
     name: "nfs-backup-{{ item.item }}.timer"
     enabled: false
     state: stopped
-  loop: "{{ nfs_backup_existing_timer_files.results }}"
+  loop: "{{ deploy_backup_existing_timer_files.results }}"
   loop_control:
     label: "{{ item.item }}"
   when: item.stat.exists
@@ -58,7 +58,7 @@
     - check
   loop_control:
     label: "{{ item }}"
-  register: nfs_backup_existing_services
+  register: deploy_backup_existing_services
   changed_when: false
   failed_when: false
 
@@ -71,7 +71,7 @@
     fail_msg: >-
       {{ item.item }} is still active; timers have been disabled, so wait
       for the job to finish and rerun this playbook
-  loop: "{{ nfs_backup_existing_services.results }}"
+  loop: "{{ deploy_backup_existing_services.results }}"
   loop_control:
     label: "{{ item.item }}"
 
@@ -84,14 +84,14 @@
       - --nonblock
       - /run/lock/nfs-backup.lock
       - "true"
-  register: nfs_backup_host_lock_check
+  register: deploy_backup_host_lock_check
   changed_when: false
   failed_when: false
 
 - name: Refuse to rewrite files while a manual backup job is active
   ansible.builtin.assert:
     that:
-      - nfs_backup_host_lock_check.rc == 0
+      - deploy_backup_host_lock_check.rc == 0
     fail_msg: >-
       A local nfs-backup-job command is active; timers have been disabled, so
       wait for it to finish and rerun this playbook
@@ -131,13 +131,13 @@
 - name: Check backup source path
   ansible.builtin.stat:
     path: "{{ nfs_backup.source_path }}"
-  register: nfs_backup_source
+  register: deploy_backup_source
 
 # `stat.isdir` proves both that the path exists and that it is a directory.
 - name: Require backup source directory
   ansible.builtin.assert:
     that:
-      - nfs_backup_source.stat.isdir | default(false)
+      - deploy_backup_source.stat.isdir | default(false)
     fail_msg: >-
       Backup source {{ nfs_backup.source_path }} is not a directory on
       {{ inventory_hostname }}
@@ -217,7 +217,7 @@
     owner: root
     group: root
     mode: "0644"
-  register: nfs_backup_service_unit
+  register: deploy_backup_service_unit
 
 # Render one timer per item in nfs_backup.jobs. Each timer activates a matching
 # instance of the service template; timers themselves consume negligible
@@ -232,14 +232,14 @@
   loop: "{{ nfs_backup.jobs | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
-  register: nfs_backup_timer_units
+  register: deploy_backup_timer_units
 
 # systemd does not automatically notice unit files written under /etc. Reload
 # only when a service or timer definition actually changed.
 - name: Reload systemd units
   ansible.builtin.systemd:
     daemon_reload: true
-  when: nfs_backup_service_unit.changed or nfs_backup_timer_units.changed
+  when: deploy_backup_service_unit.changed or deploy_backup_timer_units.changed
 
 # Ask systemd to parse every installed unit before enabling it. This catches
 # invalid calendar expressions, missing executables, and unsupported directives
@@ -261,7 +261,7 @@
 - name: Verify backup image and repository access
   ansible.builtin.command:
     cmd: /usr/local/sbin/nfs-backup-job verify
-  register: nfs_backup_repository_check
+  register: deploy_backup_repository_check
   changed_when: false
 
 # Opening any Restic repository is not enough: it could be the wrong repository.
@@ -273,7 +273,7 @@
   ansible.builtin.assert:
     that:
       - >-
-        nfs_backup_repository_check.stdout |
+        deploy_backup_repository_check.stdout |
         regex_findall('(?m)^[0-9a-f]{8}[ ]') | length > 0
     fail_msg: >-
       The configured repository has no nfs-backup snapshot for /exports/docker
@@ -284,7 +284,7 @@
 - name: Inspect live repository locks
   ansible.builtin.command:
     cmd: /usr/local/sbin/nfs-backup-job restic list locks
-  register: nfs_backup_repository_locks
+  register: deploy_backup_repository_locks
   changed_when: false
 
 # Never enable scheduled jobs while Restic reports a lock. A stale lock must be
@@ -293,7 +293,7 @@
   ansible.builtin.assert:
     that:
       - >-
-        nfs_backup_repository_locks.stdout |
+        deploy_backup_repository_locks.stdout |
         regex_findall('(?m)^[0-9a-f]{64}$') | length == 0
     fail_msg: >-
       The Restic repository has a lock; confirm that no operation is active,
